@@ -170,16 +170,16 @@ const FEAT={
  harabe:{ad:'Antik Harabe',e:'🏛️',d:'Eski bir medeniyetin kalıntıları. Bilgi +2/tur.',y:{bilgi:2}},
  kale:{ad:'Eski Kale',e:'🏰',d:'Sağlam temelli eski bir kale. Savunma +%15, azami sur +1.',def:.15},
  mabet:{ad:'Kutsal Mabet',e:'🕯️',d:'Elinde tuttukça ordunun morali her tur +2 artar.'},
- verimli:{ad:'Verimli Topraklar',e:'🌻',d:'Tarla ve pazar alanları ×1,5 üretir; +1 alan yuvası.'},
- damar:{ad:'Zengin Damar',e:'💎',d:'Demir madeni ve taş ocağı alanları ×1,6 üretir.'},
+ verimli:{ad:'Verimli Topraklar',e:'🌻',d:'Tarla ve pazar tesisleri ×1,5 üretir; +1 tesis yuvası.'},
+ damar:{ad:'Zengin Damar',e:'💎',d:'Demir madeni ve taş ocağı tesisleri ×1,6 üretir.'},
 };
 const FIELD={
- tarla:{ad:'Tarla',e:'🌾',r:'tahil',base:3,fund:100,cost:{odun:15,altin:15},ask:'Ordu ikmalini besler.',eff:{ova:1.5,vadi:1.6,tepe:1,orman:.6,dag:.4,maden:.4}},
- kereste:{ad:'Kereste Ormanı',e:'🪵',r:'odun',base:3,fund:100,cost:{altin:15,tahil:10},ask:'Kuşatma ve inşaat gücü.',eff:{orman:1.7,tepe:1,vadi:.8,ova:.6,dag:.6,maden:.5}},
- tasocagi:{ad:'Taş Ocağı',e:'🧱',r:'tas',base:3,fund:110,cost:{odun:15,altin:15},ask:'Sur ve kuruluş inşası.',eff:{dag:1.6,tepe:1.4,maden:1.2,ova:.5,vadi:.5,orman:.6}},
- demir:{ad:'Demir Madeni',e:'⚒️',r:'demir',base:2.5,fund:150,cost:{odun:25,altin:20},ask:'Silah donanımı, saldırı gücü.',eff:{maden:1.8,dag:1.4,tepe:1,ova:.4,vadi:.4,orman:.5}},
- pazar:{ad:'Pazar Yeri',e:'🪙',r:'altin',base:3,fund:130,cost:{odun:20,tas:15},ask:'Asker üretimi ve maaşlar.',eff:{vadi:1.4,ova:1.2,tepe:1,orman:.8,dag:.7,maden:1}},
- medrese:{ad:'Medrese',e:'📜',r:'bilgi',base:1.5,fund:160,cost:{tas:25,altin:25,odun:10},ask:'Askeri teknoloji araştırması.',eff:{}},
+ tarla:{ad:'Tarla',e:'🌾',r:'tahil',base:3,fund:100,cost:{tahil:25,odun:5},ask:'Ordu ikmalini besler.',eff:{ova:1.5,vadi:1.6,tepe:1,orman:.6,dag:.4,maden:.4}},
+ kereste:{ad:'Kereste Ormanı',e:'🪵',r:'odun',base:3,fund:100,cost:{tahil:25,altin:5},ask:'Kuşatma ve inşaat gücü.',eff:{orman:1.7,tepe:1,vadi:.8,ova:.6,dag:.6,maden:.5}},
+ tasocagi:{ad:'Taş Ocağı',e:'🧱',r:'tas',base:3,fund:110,cost:{tahil:30,odun:10},ask:'Sur ve kuruluş inşası.',eff:{dag:1.6,tepe:1.4,maden:1.2,ova:.5,vadi:.5,orman:.6}},
+ demir:{ad:'Demir Madeni',e:'⚒️',r:'demir',base:2.5,fund:150,cost:{tahil:35,odun:15},ask:'Silah donanımı, saldırı gücü.',eff:{maden:1.8,dag:1.4,tepe:1,ova:.4,vadi:.4,orman:.5}},
+ pazar:{ad:'Pazar Yeri',e:'🪙',r:'altin',base:3,fund:130,cost:{tahil:30,tas:10},ask:'Asker üretimi ve maaşlar.',eff:{vadi:1.4,ova:1.2,tepe:1,orman:.8,dag:.7,maden:1}},
+ medrese:{ad:'Medrese',e:'📜',r:'bilgi',base:2,fund:160,cost:{tahil:40,tas:15},ask:'Askeri teknoloji araştırması.',eff:{}},
 };
 const LVM=[0,1,2.2,3.6,5.2,7];
 const MIL=[null,
@@ -205,11 +205,11 @@ const BR=[
   {ad:'Kuşatma Kuleleri',d:'Kuşatma etkinliği %55; kuşatma odun gideri -%25.'},
   {ad:'Mancınık',d:'Kuşatma etkinliği %75.'},
   {ad:'Topçu',d:'Kuşatma etkinliği %95; surlu bölgelere saldırıda +%10.'}]},
- {id:'eko',ad:'İkmal & Ekonomi',e:'🌾',d:'Kaynak alanları ve ordunun beslenmesi.',t:[
-  {ad:'Sulama',d:'Tarla üretimi +%25. Kaynak alanları Sv.3\'e çıkabilir.'},
-  {ad:'Loncalar',d:'Tüm kaynak alanları +%15. Alanlar Sv.4\'e çıkabilir.'},
+ {id:'eko',ad:'İkmal & Ekonomi',e:'🌾',d:'Kaynak tesisleri ve ordunun beslenmesi.',t:[
+  {ad:'Sulama',d:'Tarla üretimi +%25. Kaynak tesisleri Sv.3\'e çıkabilir.'},
+  {ad:'Loncalar',d:'Tüm kaynak tesisleri +%15. Tesisler Sv.4\'e çıkabilir.'},
   {ad:'Lojistik',d:'Ordu gideri (tahıl/altın) -%30.'},
-  {ad:'Ticaret Yolları',d:'Altın geliri +%30. Alanlar Sv.5\'e çıkabilir.'}]},
+  {ad:'Ticaret Yolları',d:'Altın geliri +%30. Tesisler Sv.5\'e çıkabilir.'}]},
  {id:'ure',ad:'Askeri Üretim',e:'🏭',d:'Askeri kuruluş kademeleri.',t:[
   {ad:'Talim Usulü',d:'Kademe 2 kuruluş açılır: Kışla (+4 asker/tur).'},
   {ad:'Sefer Düzeni',d:'Kademe 3 açılır: Talimhane (+6 asker/tur, maliyet -%10).'},
@@ -221,7 +221,7 @@ const BR=[
   {ad:'Yol Ağı',d:'Askerler kendi topraklarında tek turda istediği bölgeye gider.'},
   {ad:'Askeri Disiplin',d:'Kazanılan savaşlarda kayıp -%30; azami moral 120.'}]},
 ];
-const TCOST=[15,35,70,130];
+const TCOST=[15,30,60,110];
 const NAME_A=['Kara','Ak','Gök','Demir','Yeşil','Kızıl','Boz','Uzun','Eski','Yeni','Taş','Gün','Ay','Kurt','Alp','Er','Tuz','Bal','Kır','Sarı','Çam','Kartal','Tunç','Altın','Yel','Buz','Kuzgun','Arslan','Sis','Ilgın'];
 const NAME_B=['ova','dere','yurt','kale','köy','tepe','pınar','han','hisar','kent','su','yayla','oba','eli','bük','göl','dağ','burun'];
 
@@ -385,7 +385,7 @@ function newGame(seed){
  for(let k=1;k<4;k++){let best=-1,bv=-1;for(const i of play){if(starts.includes(i)||G[i].adj.length<2)continue;const v=Math.min(...dists.map(d=>d[i]))+rng()*.5;if(v>bv){bv=v;best=i}}starts.push(best);dists.push(bfs(best))}
  starts.forEach((i,f)=>{const r=S.regions[i];r.owner=f;r.capital=true;r.fort=1;addU(r,f===0?{piy:15}:{piy:14,okc:4},true);if(f===0)r.mil=1});
  S.regions.forEach((r,i)=>{if(r.owner!==NEUTRAL)return;const g=G[i];
-  const t=Math.min(32,4+dists[0][i]*2+fl(rng()*6)+(g.feat?3:0)+(g.feat==='gecit'?5:0));r.base=t;addU(r,{piy:t-Math.round(t*.3),okc:Math.round(t*.3)},true);r.fort=g.feat==='kale'?2:rng()<.2?1:0});
+  const t=Math.min(26,3+Math.round(dists[0][i]*1.6)+fl(rng()*5)+(g.feat?3:0)+(g.feat==='gecit'?5:0));r.base=t;addU(r,{piy:t-Math.round(t*.3),okc:Math.round(t*.3)},true);r.fort=g.feat==='kale'?2:rng()<.2?1:0});
  ui.sel=starts[0];
  log(`${FAC[0].ad} ${G[starts[0]].name} bölgesinde kuruluyor.`,'good');
 }
@@ -437,7 +437,7 @@ function resolve(ao,from,to,A){
 function conquer(i,o,troops){
  const r=S.regions[i],old=r.owner,g=MAP.regions[i];r.owner=o;r.u=Object.assign(Z(),troops);r.rd=Z();sync(r);r.fort=Math.max(0,r.fort-1);
  if(r.mil>1)r.mil--;r.fields.forEach(f=>{if(f.lv>1)f.lv--});
- if(o===0){S.res.bilgi+=4;S.res.altin+=10+(r.capital?20:0);r.auto=true}
+ if(o===0){S.res.bilgi+=5;S.res.altin+=10+(r.capital?20:0);r.auto=true}
  if(old===0)S.morale=Math.max(0,S.morale-6);
  if(r.capital){r.capital=false;if(old!==NEUTRAL){const rest=S.regions.map((x,k)=>k).filter(k=>S.regions[k].owner===old);
   if(rest.length){const c=rest.sort((a,b)=>S.regions[b].troops-S.regions[a].troops)[0];S.regions[c].capital=true;
@@ -458,7 +458,7 @@ function prodParts(i){const g=MAP.regions[i],r=S.regions[i],p=[],am=mil().altinM
 function production(i){const y={};prodParts(i).forEach(([,k,v])=>y[k]=(y[k]||0)+v);return y}
 function economy(){const gross={tahil:0,odun:0,tas:0,demir:0,altin:0,bilgi:0};let troops=0;
  let uw=0;own().forEach(i=>{addY(gross,production(i));troops+=S.regions[i].troops;uw+=UK.reduce((s,k)=>s+S.regions[i].u[k]*UNITS[k].up,0)});
- const M=mil(),up={tahil:uw*.2*M.upkeep,altin:uw*.1*M.upkeep},net={};for(const k in gross)net[k]=gross[k]-(up[k]||0);
+ const M=mil(),up={tahil:uw*.15*M.upkeep,altin:uw*.1*M.upkeep},net={};for(const k in gross)net[k]=gross[k]-(up[k]||0);
  return{gross,up,net,troops}}
 const fieldCount=()=>own().reduce((s,i)=>s+S.regions[i].fields.length,0);
 function newFieldCost(t){return scaleC(FIELD[t].cost,1+.2*fieldCount())}
@@ -524,7 +524,7 @@ function updAtk(){const{from,to}=ACT,A=pickComp(),n=sumU(A);$('#an').textContent
 function doAttack(){const{from,to}=ACT,A=pickComp();if(!sumU(A))return;const tn=MAP.regions[to].name,prevOwner=S.regions[to].owner,wasCap=S.regions[to].capital;const res=resolve(0,from,to,A);
  if(res.win){log(`${tn} fethedildi! (${res.lost} kayıp)`,'good');ui.sel=to}else log(`${tn} saldırısı püskürtüldü. ${res.lost} asker kaybedildi.`,'bad');
  checkEnd();refresh();
- modal(`<h3>${res.win?'🏆 Zafer!':'💀 Yenilgi'}</h3><p>${res.win?`<b>${tn}</b> artık senin. ${res.sent} askerden <b>${res.surv}</b> tanesi bölgeye yerleşti (${compTxt(res.SV)}). Düşman kaybı: ${res.dLost}.<br><span class=good>Ganimet: 🪙+${10+(wasCap?20:0)} 📜+4 · moral +5</span>${wasCap?`<br><b>${FAC[prevOwner].ad} başkentini kaybetti!</b>`:''}<br><small class=muted>Savaşta bölgenin kuruluş ve alanları bir kademe hasar gördü.</small>`
+ modal(`<h3>${res.win?'🏆 Zafer!':'💀 Yenilgi'}</h3><p>${res.win?`<b>${tn}</b> artık senin. ${res.sent} askerden <b>${res.surv}</b> tanesi bölgeye yerleşti (${compTxt(res.SV)}). Düşman kaybı: ${res.dLost}.<br><span class=good>Ganimet: 🪙+${10+(wasCap?20:0)} 📜+5 · moral +5</span>${wasCap?`<br><b>${FAC[prevOwner].ad} başkentini kaybetti!</b>`:''}<br><small class=muted>Savaşta bölgenin kuruluş ve tesisleri bir kademe hasar gördü.</small>`
  :`Saldırı püskürtüldü. ${res.sent} askerden ${res.back} tanesi geri çekildi. Düşman ${res.dLost} asker kaybetti.<br><span class=bad>Moral -6</span>`}</p>
  <div class=row><button class="btn primary" onclick="closeModal();afterModal()">Tamam</button></div>`)}
 function openMove(from,to){const r=S.regions[from];if(r.ready<1){toast('Bu bölgede bu tur hazır asker yok.');return}ACT={type:'mov',from,to};
@@ -605,15 +605,15 @@ function drawLabels(){if(!MAP)return;const dpr=window.devicePixelRatio||1,ctx=lc
 function fit(){const wr=$('#mapWrap'),bw=wr.clientWidth-12,bh=wr.clientHeight-12;scale=Math.max(.2,Math.min(bw/W,bh/H));const w=fl(W*scale),h=fl(H*scale),st=$('#stage');
  st.style.width=w+'px';st.style.height=h+'px';const dpr=window.devicePixelRatio||1;labC.width=w*dpr;labC.height=h*dpr;drawLabels()}
 function regionAt(e){const b=labC.getBoundingClientRect(),x=fl((e.clientX-b.left)/b.width*W),y=fl((e.clientY-b.top)/b.height*H);if(x<0||y<0||x>=W||y>=H)return -1;return MAP.ids[y*W+x]}
-labC.addEventListener('click',e=>{const i=regionAt(e);if(i<0){ui.sel=null;refresh();return}
- const s=ui.sel;if(s!=null&&s!==i&&!S.over){if(canAttack(s,i)){openAttack(s,i);return}if(canMove(s,i)&&S.regions[s].ready>0){openMove(s,i);return}}
- ui.sel=i;refresh()});
+labC.addEventListener('click',e=>{const i=regionAt(e);ui.sel=i<0?null:i;refresh()});
+labC.addEventListener('contextmenu',e=>{e.preventDefault();const i=regionAt(e),s=ui.sel;if(i<0||s==null||s===i||S.over)return;
+ if(canAttack(s,i))openAttack(s,i);else if(canMove(s,i))openMove(s,i);else{ui.sel=i;refresh()}});
 labC.addEventListener('dblclick',e=>{const i=regionAt(e);if(i>=0&&!MAP.regions[i].block)openRegionWin(i)});
 labC.addEventListener('mousemove',e=>{const i=regionAt(e),t=$('#tip');if(i<0){t.style.display='none';return}const r=S.regions[i],g=MAP.regions[i];
  let h;if(g.block)h=`<b>${g.name}</b> · 🏔️ geçilmez sıradağlar`;
  else{h=`<b>${g.name}</b> · ${FAC[r.owner].ad} · ${TER[g.terrain].e} ${TER[g.terrain].ad} · asker ${vis(i).txt}`;if(g.feat)h+=`<br>${FEAT[g.feat].e} ${FEAT[g.feat].ad}`;
-  const s=ui.sel;if(s!=null&&canAttack(s,i)&&S.regions[s].ready>0){const ch=previewAtk(s,i,S.regions[s].rd).ch;h+=`<br><span style="color:${chanceCol(ch)}">⚔ saldırı şansı %${Math.round(ch*100)}</span>${crossTag(s,i)}`}
-  else if(s!=null&&canMove(s,i)&&S.regions[s].ready>0)h+='<br>➜ asker taşı'}
+  const s=ui.sel;if(s!=null&&canAttack(s,i)&&S.regions[s].ready>0){const ch=previewAtk(s,i,S.regions[s].rd).ch;h+=`<br><span style="color:${chanceCol(ch)}">⚔ saldırı şansı %${Math.round(ch*100)}</span>${crossTag(s,i)} · <span class=muted>sağ tık: saldır</span>`}
+  else if(s!=null&&canMove(s,i)&&S.regions[s].ready>0)h+='<br>➜ <span class=muted>sağ tık: asker taşı</span>'}
  t.innerHTML=h;t.style.display='block';const wb=$('#mapWrap').getBoundingClientRect();t.style.left=(e.clientX-wb.left+14)+'px';t.style.top=(e.clientY-wb.top+14)+'px'});
 labC.addEventListener('mouseleave',()=>$('#tip').style.display='none');
 
@@ -639,9 +639,9 @@ function renderAllWins(){for(const id of WINS.keys())renderWin(id)}
 // --- Kuruluş penceresi ---
 function openSetup(){openWin('kurulus',()=>'👑 Beyliğin Kuruluşu',winSetup,620,true)}
 function winSetup(){const cap=capIdx(),g=MAP.regions[cap],fs=S.regions[cap].fields,sl=slots(cap);
- let h=`<p style="margin-top:0">Beyliğin <b>${g.name}</b> bölgesinde kuruluyor (${TER[g.terrain].e} ${TER[g.terrain].ad}${g.feat?' · '+FEAT[g.feat].e+' '+FEAT[g.feat].ad:''}). Sana <b>${FUND} akçelik kuruluş hazinesi</b> verildi. Bu parayla başkentine <b>kaynak alanı</b> satın al. Bütçe genelde bir veya iki alana yeter, seçimini dikkatli yap.</p>
- <p class=muted style="font-size:12.5px">Alanların verimi araziye göre değişir. Alanlar sonradan seviye atlatılabilir ve yeni bölgelerde de kurulabilir, ama o zaman normal kaynaklarla ödersin.</p>
- <div class=fundbox>💰 Kalan hazine: <b>${S.fund}</b> akçe &nbsp;·&nbsp; Alan yuvası: ${fs.length}/${sl}</div><div class=cards>`;
+ let h=`<p style="margin-top:0">Beyliğin <b>${g.name}</b> bölgesinde kuruluyor (${TER[g.terrain].e} ${TER[g.terrain].ad}${g.feat?' · '+FEAT[g.feat].e+' '+FEAT[g.feat].ad:''}). Sana <b>${FUND} akçelik kuruluş hazinesi</b> verildi. Bu parayla başkentine <b>kaynak tesisi</b> satın al. Bütçe genelde bir veya iki tesise yeter, seçimini dikkatli yap.</p>
+ <p class=muted style="font-size:12.5px">Tesislerin verimi araziye göre değişir. Sonradan her bölgede yeni tesisler kurabilir ve geliştirebilirsin; bunun bedeli ağırlıkla tarımdan gelen 🌾 tahıldır.</p>
+ <div class=fundbox>💰 Kalan hazine: <b>${S.fund}</b> akçe &nbsp;·&nbsp; Tesis yuvası: ${fs.length}/${sl}</div><div class=cards>`;
  for(const[k,F]of Object.entries(FIELD)){const eff=fieldEff(cap,k),out=fieldOut(cap,{t:k,lv:1}),ok=S.fund>=F.fund&&fs.length<sl;
   h+=`<div class=card><div>${F.e} <b>${F.ad}</b></div><small>${RM[F.r].e} ${RM[F.r].ad} <b>+${r1(out)}</b>/tur</small><small class="${eff>=1.3?'good':eff<.8?'bad':'muted'}">Bu arazide verim: ${pct(eff)}</small><small class=muted>⚔ ${F.ask}</small><button class="btn sm ${ok?'primary':''}" ${ok?'':'disabled'} onclick="buyStart('${k}')">💰 ${F.fund} akçe</button></div>`}
  h+='</div>';
@@ -651,7 +651,7 @@ function winSetup(){const cap=capIdx(),g=MAP.regions[cap],fs=S.regions[cap].fiel
 // --- Bölge penceresi ---
 function openRegionWin(i,tab){const id='bolge'+i,x=openWin(id,()=>{const g=MAP.regions[i],r=S.regions[i];return`${TER[g.terrain].e} ${g.name}${r.capital?' ★':''} <span class=muted style="font-weight:400;font-size:12px">— ${g.block?'Geçilmez':FAC[r.owner].ad}</span>`},x=>winRegion(i,x),480);if(tab){x.tab=tab;renderWin(id)}}
 function winRegion(i,x){const g=MAP.regions[i],r=S.regions[i];if(g.block)return'<p>Geçilmez sıradağlar. Ordular bu dağları aşamaz, bu yüzden çevresindeki geçitler stratejik önem taşır.</p>';
- const mine=r.owner===0,tabs=mine?[['genel','Genel'],['alan','Kaynak Alanları'],['ask','Askeri Kuruluş'],['sur','Savunma']]:[['genel','Genel']];
+ const mine=r.owner===0,tabs=mine?[['genel','Genel'],['alan','Kaynak Tesisleri'],['ask','Askeri Kuruluş'],['sur','Savunma']]:[['genel','Genel']];
  const tab=tabs.some(t=>t[0]===x.tab)?x.tab:'genel';
  return`<div class=wtabs>${tabs.map(([k,a])=>`<button class="${k===tab?'on':''}" onclick="setTab('bolge${i}','${k}')">${a}</button>`).join('')}</div>`+({genel:rgGenel,alan:rgAlan,ask:rgAsk,sur:rgSur})[tab](i)}
 function rgGenel(i){const g=MAP.regions[i],r=S.regions[i],mine=r.owner===0;
@@ -660,23 +660,23 @@ function rgGenel(i){const g=MAP.regions[i],r=S.regions[i],mine=r.owner===0;
  if(g.feat)h+=`<div class=feat>${FEAT[g.feat].e} <b>${FEAT[g.feat].ad}</b> — ${FEAT[g.feat].d}</div>`;
  const parts=mine?prodParts(i):prodParts(i).filter(p=>!p[0].startsWith('★'));
  h+=`<h4>${mine?'Üretim kaynakları':'Ele geçirirsen üretir'}</h4><table><tr><th>Kaynak</th><th></th><th>/tur</th></tr>${parts.map(([s,k,v])=>`<tr><td>${s}</td><td>${RM[k].e} ${RM[k].ad}</td><td class=pos>${sgn(v)}</td></tr>`).join('')||'<tr><td colspan=3 class=muted>Üretim yok</td></tr>'}</table>`;
- if(mine)h+=`<div class=kv style="margin-top:8px"><span>Alan yuvası</span><span>${r.fields.length}/${slots(i)}</span></div><div class=kv><span>Askeri kuruluş</span><span>${r.mil?MIL[r.mil].ad+' (kademe '+r.mil+')':'yok'}</span></div>`;
+ if(mine)h+=`<div class=kv style="margin-top:8px"><span>Tesis yuvası</span><span>${r.fields.length}/${slots(i)}</span></div><div class=kv><span>Askeri kuruluş</span><span>${r.mil?MIL[r.mil].ad+' (kademe '+r.mil+')':'yok'}</span></div>`;
  h+=`<h4>Savunma çarpanı</h4>${defParts(i,0).map(([k,v])=>`<div class=kv><span>${k}</span><span>+${pct(v)}</span></div>`).join('')||'<p class=muted>Ek savunma yok.</p>'}${mine?`<div class=kv><span>🔥 Moral</span><span>×${moraleMult(S.morale).toFixed(2)}</span></div>`:''}`;
  h+='<h4>Komşular</h4>'+g.adj.map(j=>{const c=crossAt(i,j);return`<div class=item><div>${regLink(j)}<small>${TER[MAP.regions[j].terrain].e} ${TER[MAP.regions[j].terrain].ad}${MAP.regions[j].feat?' · '+FEAT[MAP.regions[j].feat].e+' '+FEAT[MAP.regions[j].feat].ad:''} · asker ${vis(j).txt}${c?(c.bridge?' · 🌉 köprü':' · 🌊 nehir geçişi'):''}</small></div></div>`}).join('');
  const mtn=g.rawAdj.filter(k=>MAP.blk[k]);if(mtn.length)h+=`<p class=muted style="font-size:12px">🏔️ Sıradağlarla komşu: ${mtn.map(k=>MAP.regions[k].name).join(', ')}</p>`;
  return h}
 function rgAlan(i){const r=S.regions[i],M=mil(),sl=slots(i);
- let h=`<p class=muted style="font-size:12.5px;margin-top:0">Kaynak alanları ekonominin kalbidir. Seviye atlattıkça üretim artar. Şu an azami seviye <b>Sv.${M.maxField}</b>, üstü İkmal & Ekonomi dalındaki teknolojilerle açılır.</p><div class=kv><span>Alan yuvası</span><b>${r.fields.length}/${sl}</b></div>`;
- h+='<h4>Mevcut alanlar</h4>';
- if(!r.fields.length)h+='<p class=muted>Bu bölgede henüz kaynak alanı yok.</p>';
+ let h=`<p class=muted style="font-size:12.5px;margin-top:0">Kaynak tesisleri ekonominin kalbidir. Yeni tesisler ağırlıkla tarımdan gelen 🌾 tahılla kurulur ve geliştirilir. Seviye atlattıkça üretim artar. Şu an azami seviye <b>Sv.${M.maxField}</b>, üstü İkmal & Ekonomi dalındaki teknolojilerle açılır.</p><div class=kv><span>Tesis yuvası</span><b>${r.fields.length}/${sl}</b></div>`;
+ h+='<h4>Mevcut tesisler</h4>';
+ if(!r.fields.length)h+='<p class=muted>Bu bölgede henüz kaynak tesisi yok.</p>';
  r.fields.forEach((f,k)=>{const F=FIELD[f.t],now=fieldOut(i,f);let act;
   if(f.lv>=5)act='<span class=ok>Azami</span>';
   else if(f.lv>=M.maxField){const q=fieldReq(f.lv+1);act=`<small class=muted>🔒 Sv.${f.lv+1}: ${techName(q[0],q[1])}</small>`}
   else{const c=upFieldCost(f);act=`<button class="btn sm ${canPay(c)?'primary':''}" ${canPay(c)?'':'disabled'} onclick="upgradeField(${i},${k})">⬆ ${costTxt(c)}</button>`}
   h+=`<div class=card style="margin-bottom:8px"><div class=rh style="justify-content:space-between"><span>${F.e} <b>${F.ad}</b> <span class=stars>${'★'.repeat(f.lv)}${'☆'.repeat(5-f.lv)}</span></span>${act}</div>
   <small>${RM[F.r].e} Şimdi <b>+${r1(now)}</b>/tur${f.lv<5?` → Sv.${f.lv+1}: <b class=pos>+${r1(fieldOut(i,f,f.lv+1))}</b>`:''} · verim ${pct(fieldEff(i,f.t))}</small><small class=muted>⚔ ${F.ask}</small></div>`});
- h+='<h4>Yeni alan kur</h4>';
- if(r.fields.length>=sl)h+='<p class=muted>Tüm yuvalar dolu. Mevcut alanları geliştir.</p>';
+ h+='<h4>Yeni tesis kur</h4>';
+ if(r.fields.length>=sl)h+='<p class=muted>Tüm yuvalar dolu. Mevcut tesisleri geliştir.</p>';
  else for(const[k,F]of Object.entries(FIELD)){const c=newFieldCost(k),eff=fieldEff(i,k);
   h+=`<div class=item><div>${F.e} <b>${F.ad}</b><small>${RM[F.r].e} +${r1(fieldOut(i,{t:k,lv:1}))}/tur · <span class="${eff>=1.3?'good':eff<.8?'bad':''}">verim ${pct(eff)}</span></small></div><button class="btn sm" ${canPay(c)?'':'disabled'} onclick="buildField(${i},'${k}')">${costTxt(c)}</button></div>`}
  return h}
@@ -735,13 +735,13 @@ function winTechDetail(b,k){const B=BR.find(x=>x.id===b),t=B.t[k],st=techState(b
 function openEco(){openWin('eko',()=>'🏛 Ekonomi',winEco,600)}
 function winEco(){const e=economy(),o=own(),M=mil();
  let h=`<table><tr><th>Kaynak</th><th>Stok</th><th>Üretim</th><th>Ordu gideri</th><th>Net</th></tr>${RES.map(r=>`<tr><td title="${r.ask}">${r.e} ${r.ad}</td><td>${fl(S.res[r.k])}</td><td class=pos>${sgn(e.gross[r.k])}</td><td class=neg>${e.up[r.k]?'-'+r1(e.up[r.k]):''}</td><td class="${e.net[r.k]<0?'neg':'pos'}"><b>${sgn(e.net[r.k])}</b></td></tr>`).join('')}</table>
- <h4>Bölgelere göre üretim</h4><div style="overflow:auto"><table><tr><th>Bölge</th>${RES.map(r=>`<th>${r.e}</th>`).join('')}<th>Alan</th></tr>`;
+ <h4>Bölgelere göre üretim</h4><div style="overflow:auto"><table><tr><th>Bölge</th>${RES.map(r=>`<th>${r.e}</th>`).join('')}<th>Tesis</th></tr>`;
  o.forEach(i=>{const y=production(i);h+=`<tr><td><a href="#" class=lnk onclick="openRegionWin(${i},'alan');return false">${MAP.regions[i].name}${S.regions[i].capital?' ★':''}</a></td>${RES.map(r=>`<td>${y[r.k]?r1(y[r.k]):'<span class=muted>·</span>'}</td>`).join('')}<td>${S.regions[i].fields.length}/${slots(i)}</td></tr>`});
- h+='</table></div><h4>Tüm kaynak alanları</h4>';
+ h+='</table></div><h4>Tüm kaynak tesisleri</h4>';
  let any=false;o.forEach(i=>S.regions[i].fields.forEach((f,k)=>{any=true;const F=FIELD[f.t];let act;
   if(f.lv>=M.maxField)act=`<small class=muted>${f.lv>=5?'Azami':'🔒 '+techName(...fieldReq(f.lv+1))}</small>`;else{const c=upFieldCost(f);act=`<button class="btn sm" ${canPay(c)?'':'disabled'} onclick="upgradeField(${i},${k})">⬆ ${costTxt(c)}</button>`}
   h+=`<div class=item><div>${F.e} <b>${F.ad}</b> <span class=stars>${'★'.repeat(f.lv)}</span><small>${MAP.regions[i].name} · ${RM[F.r].e} +${r1(fieldOut(i,f))}/tur</small></div>${act}</div>`}));
- if(!any)h+='<p class=muted>Henüz kaynak alanın yok.</p>';
+ if(!any)h+='<p class=muted>Henüz kaynak tesisin yok.</p>';
  return h}
 
 // --- Ordu penceresi ---
@@ -776,7 +776,7 @@ function renderHeader(){const e=economy();
  $('#endBtn').disabled=!!S.over||S.phase!=='oyun'}
 function regLink(i){const r=S.regions[i];return`<a href="#" class=lnk onclick="ui.sel=${i};refresh();return false"><span class=dot style="background:${rgb(FAC[r.owner].col)}"></span> ${MAP.regions[i].name}</a>`}
 function renderSide(){const i=ui.sel;let h=S.phase==='kurulus'?'<p class=good style="margin-top:0"><b>Kuruluş aşaması:</b> Açık penceredeki kuruluş hazinesiyle başkentine kaynak alanı satın al.</p>':'';
- if(i==null){$('#side').innerHTML=h+`<p class=muted>Haritadan bir bölge seç. Kendi bölgen seçiliyken komşu bir bölgeye tıklayarak <b>saldırabilir</b> ya da <b>asker taşıyabilirsin</b>. Bir bölgeye çift tıklarsan yönetim penceresi açılır.</p><h4>Bölgelerin</h4>`+own().map(k=>`<div class=item><div>${regLink(k)}</div><span>🛡 ${S.regions[k].troops}</span></div>`).join('');return}
+ if(i==null){$('#side').innerHTML=h+`<p class=muted>Haritadan bir bölge seç. Kendi bölgen seçiliyken komşu bir bölgeye <b>sağ tıklayarak</b> saldırabilir ya da <b>asker taşıyabilirsin</b>. Bir bölgeye çift tıklarsan yönetim penceresi açılır.</p><h4>Bölgelerin</h4>`+own().map(k=>`<div class=item><div>${regLink(k)}</div><span>🛡 ${S.regions[k].troops}</span></div>`).join('');return}
  const g=MAP.regions[i],r=S.regions[i];
  if(g.block){$('#side').innerHTML=h+`<div class=rh><h2>🏔️ ${g.name}</h2></div><p class=muted>Geçilmez sıradağlar. Ordular bu dağları aşamaz. Çevresindeki geçitleri tutan, bölgenin kapısını tutar.</p>`;return}
  const T=TER[g.terrain],mine=r.owner===0,vt=vis(i);
@@ -786,8 +786,9 @@ function renderSide(){const i=ui.sel;let h=S.phase==='kurulus'?'<p class=good st
  <div class=stats><div><span>Asker</span><b>${vt.txt}</b>${mine?`<small>hazır: ${r.ready}</small>`:''}</div><div><span>Sur</span><b>${r.fort?'♜'.repeat(r.fort):'—'}</b></div><div><span>Savunma</span><b>×${defMult(i,0).toFixed(2)}</b></div></div>
  <div class=kv style="margin-top:8px"><span>Birlikler</span><span>${mine||mil().spy?compTxt(r.u):'bileşim bilinmiyor'}</span></div>
  <h4>${mine?'Üretim / tur':'Ele geçirirsen üretir'}</h4><div class=chips>${Object.entries(yy).map(([k,v])=>`<span class=chip title="${RM[k].ask}">${RM[k].e} ${sgn(v)}</span>`).join('')||'<span class=muted>—</span>'}</div>
- ${mine?`<div class=kv style="margin-top:8px"><span>Kaynak alanları</span><span>${r.fields.map(f=>FIELD[f.t].e+f.lv).join(' ')||'—'} (${r.fields.length}/${slots(i)})</span></div><div class=kv><span>Askeri kuruluş</span><span>${r.mil?`${MIL[r.mil].ad} · +${autoRate(i)}/tur`:'yok'}</span></div>`:''}
- <button class="btn wide ${mine?'primary':''}" onclick="openRegionWin(${i})">${mine?'🏛 Bölgeyi Yönet':'🔍 Ayrıntılar'}</button>`;
+ ${mine?`<div class=kv style="margin-top:8px"><span>Kaynak tesisleri</span><span>${r.fields.map(f=>FIELD[f.t].e+f.lv).join(' ')||'—'} (${r.fields.length}/${slots(i)})</span></div><div class=kv><span>Askeri kuruluş</span><span>${r.mil?`${MIL[r.mil].ad} · +${autoRate(i)}/tur`:'yok'}</span></div>`:''}
+ ${mine?`<div class=row style="margin-top:10px"><button class="btn primary" style="flex:1" onclick="openRegionWin(${i})">🏛 Yönet</button><button class="btn" style="flex:1" onclick="openRegionWin(${i},'alan')">🏗 Tesis${r.fields.length<slots(i)?` (${slots(i)-r.fields.length} boş)`:''}</button><button class="btn" style="flex:1" onclick="openRegionWin(${i},'ask')">⚑ Asker</button></div>`:`<button class="btn wide" onclick="openRegionWin(${i})">🔍 Ayrıntılar</button>`}
+ ${mine&&g.adj.some(j=>S.regions[j].owner!==0)?'<p class=muted style="font-size:12px;margin:8px 0 0">Saldırmak için haritada hedefe <b>sağ tıkla</b> ya da aşağıdaki ⚔️ butonlarını kullan.</p>':''}`;
  h+='<h4>Komşular</h4>';
  for(const j of g.adj){const rj=S.regions[j],v=vis(j);let act='';
   if(mine&&rj.owner!==0){const p=previewAtk(i,j,r.rd);act=`<button class="btn sm" ${r.ready<1||S.over||S.phase!=='oyun'?'disabled':''} onclick="openAttack(${i},${j})">⚔️ <span style="color:${chanceCol(p.ch)}">%${Math.round(p.ch*100)}</span></button>`}
@@ -800,12 +801,12 @@ function refresh(){computeVision();draw();renderHeader();renderSide();renderAllW
 // ======================= BAŞLANGIÇ =======================
 function showHelp(){modal(`<h3>⚔ Fetih: Nasıl oynanır?</h3>
 <p><b>Kuruluş:</b> Oyun başında ${FUND} akçelik hazineyle başkentine 1–2 <b>kaynak alanı</b> satın alırsın: tarla, kereste, taş ocağı, demir madeni, pazar ya da medrese.</p>
-<p><b>Ekonomi:</b> Alanları seviye atlatarak üretimi artır, yeni bölgelerde yeni alanlar kur. Verim araziye göre değişir.</p>
+<p><b>Ekonomi:</b> Tesisleri seviye atlatarak üretimi artır, fethettiğin bölgelerde tahılla yeni tesisler kur. Verim araziye göre değişir.</p>
 <p><b>Ordu:</b> Askeri kuruluşlar her tur otomatik asker yetiştirir: Karakol → Kışla → Talimhane → Ordugâh → Harbiye. Üst kademeler <b>Askeri Üretim</b> teknolojileriyle açılır.</p>
 <p><b>Birlikler:</b> 🗡️ Piyade, 🏹 Okçu (savunma), 🐎 Süvari (ovada hücum), 🪨 Kuşatma Takımı (sur kırar) ve ⚔️ Yeniçeri (seçkin). Her kuruluş kademesi yeni bir tür açar. Saldırırken hangi birlikleri göndereceğini seçersin.</p>
 <p><b>Teknoloji:</b> 6 dal ve her dalda 4 kademe var. Bir kademeyi açınca sonraki aktif olur. Her teknolojinin kendi penceresi var.</p>
 <p><b>Harita:</b> 🏔️ Sıradağlar geçilmezdir, geçitler stratejik darboğazlardır. 🌊 Nehirden saldırı cezalıdır, 🌉 köprüden geçiş cezasızdır. Liman, kavşak, harabe gibi özel bölgeler bonus verir.</p>
-<p><b>Fetih:</b> Kendi bölgeni seç, sonra komşu bölgeye tıkla. Çift tıklarsan bölge yönetim penceresi açılır. İlk ${GRACE} yıl rakipler sana saldırmaz.</p>
+<p><b>Fetih:</b> Tıklayınca bölge seçilir. Kendi bölgen seçiliyken komşu bölgeye <b>sağ tıklarsan</b> saldırır ya da asker taşırsın; yan paneldeki ⚔️ butonları da aynı işi yapar. Çift tıklarsan bölge yönetim penceresi açılır. İlk ${GRACE} yıl rakipler sana saldırmaz.</p>
 <p class=muted style="font-size:12px">Pencereleri başlıklarından sürükleyebilirsin. Oyun tarayıcıya otomatik kaydedilir.</p>
 <div class=row><button class="btn primary" onclick="closeModal()">Başla</button></div>`)}
 function askNew(){modal(`<h3>Yeni oyun?</h3><p>Mevcut oyunun silinir ve yeni bir harita oluşturulur.</p><div class=row><button class=btn onclick="closeModal()">Vazgeç</button><button class="btn danger" onclick="startNew()">Yeni Oyun</button></div>`)}

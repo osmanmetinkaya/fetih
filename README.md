@@ -9,8 +9,8 @@ Kurulum gerekmez. `index.html` dosyasını tarayıcıda açman yeterli. Oyun ile
 ## Özellikler
 
 - **Her seferinde farklı bir harita.** Geçilmez sıradağlar, stratejik dağ geçitleri, nehirler ve köprüler, ayrıca liman, kavşak, harabe, eski kale gibi özel bölgeler var.
-- **Kuruluş aşaması.** Oyun başında verilen 260 akçeyle başkentine 1–2 kaynak alanı satın alırsın.
-- **Kaynak alanları.** Tarla, kereste, taş ocağı, demir madeni, pazar ve medrese var. 5 seviyeye kadar gelişirler ve verimleri araziye göre değişir.
+- **Kuruluş aşaması.** Oyun başında verilen 260 akçeyle başkentine 1–2 kaynak tesisi satın alırsın.
+- **Kaynak tesisleri.** Tarla, kereste, taş ocağı, demir madeni, pazar ve medrese var. Fethettiğin bölgelerde tarımdan gelen tahılla yenilerini kurarsın. 5 seviyeye kadar gelişirler ve verimleri araziye göre değişir.
 - **Her kaynağın askeri bir rolü var:**
   - Tahıl ikmali sağlar.
   - Odun kuşatmada kullanılır.
@@ -31,3 +31,9 @@ Kurulum gerekmez. `index.html` dosyasını tarayıcıda açman yeterli. Oyun ile
 ## Teknik
 
 Tek bir HTML dosyası: düz JavaScript ve Canvas. Dış bağımlılık yok.
+
+## Kontroller
+
+- **Sol tık:** bölge seçer.
+- **Sağ tık:** kendi bölgen seçiliyken komşu bölgeye saldırır ya da asker taşır.
+- **Çift tık:** bölge yönetim penceresini açar.
