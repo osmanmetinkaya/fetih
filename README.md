@@ -4,6 +4,9 @@ Tarayıcıda oynanan, tek oyunculu, tur tabanlı bir strateji ve fetih oyunu. Te
 
 ## Nasıl oynanır?
 
+🎮 **Hemen oyna:** https://osmanmetinkaya.github.io/fetih/
+
+
 Kurulum gerekmez. `index.html` dosyasını tarayıcıda açman yeterli. Oyun ilerlemesi tarayıcıya otomatik kaydedilir.
 
 ## Özellikler
