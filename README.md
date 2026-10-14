@@ -11,7 +11,9 @@ Kurulum gerekmez. `index.html` dosyasını tarayıcıda açman yeterli. Oyun ile
 
 ## Özellikler
 
-- **Her seferinde farklı bir harita.** Geçilmez sıradağlar, stratejik dağ geçitleri, nehirler ve köprüler, ayrıca liman, kavşak, harabe, eski kale gibi özel bölgeler var.
+- **Büyük ve gerçekçi harita.** Yaklaşık 55 oynanabilir bölge var. Yakınlaştırılıp kaydırılabilen 3B rölyef haritada karlı sıradağlar, ormanlar, tarlalar, nehirler, köprüler, köyler ve kaleler çizilmiş.
+- **Arazi önemli.** Sıradağlar geçilmez. Dağ geçitleri savunmaya +%40 verir. Köprüsüz nehir geçişi saldırıyı zayıflatır, süvariyi daha da çok. Dağ ve orman savunmayı güçlendirir.
+- **Nüfus.** Askerler bölgenin nüfusundan çıkar. Nüfus tahılla büyür. Çok asker almak işgücünü ve dolayısıyla üretimi düşürür.
 - **Kuruluş aşaması.** Oyun başında verilen 260 akçeyle başkentine 1–2 kaynak tesisi satın alırsın.
 - **Kaynak tesisleri.** Tarla, kereste, taş ocağı, demir madeni, pazar ve medrese var. Fethettiğin bölgelerde tarımdan gelen tahılla yenilerini kurarsın. 5 seviyeye kadar gelişirler ve verimleri araziye göre değişir.
 - **Her kaynağın askeri bir rolü var:**
@@ -29,7 +31,7 @@ Kurulum gerekmez. `index.html` dosyasını tarayıcıda açman yeterli. Oyun ile
   - 🪨 Kuşatma Takımı: surları kırar
   - ⚔️ Yeniçeri: seçkin birlik
 - **Teknoloji ağacı.** 6 dal ve her dalda 4 kademe var. Her teknolojinin kendi detay penceresi açılır.
-- **Yapay zekâ rakipler.** 3 rakip devlet ve bağımsız kabileler var.
+- **Yapay zekâ rakipler.** 4 rakip devlet ve bağımsız kabileler var.
 
 ## Teknik
 
@@ -39,4 +41,6 @@ Tek bir HTML dosyası: düz JavaScript ve Canvas. Dış bağımlılık yok.
 
 - **Sol tık:** bölge seçer.
 - **Sağ tık:** kendi bölgen seçiliyken komşu bölgeye saldırır ya da asker taşır.
-- **Çift tık:** bölge yönetim penceresini açar.
+- **Sürükle / tekerlek:** haritayı kaydırır ve yakınlaştırır.
+- **Çift tık:** bölgeye yakınlaştırır.
+- **Sağ panel:** Bölge, Ekonomi, Ordu, Teknoloji ve Kayıt sekmeleri. Tüm yönetim tek yerde.
