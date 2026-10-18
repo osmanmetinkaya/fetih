@@ -11,8 +11,9 @@ Kurulum gerekmez. `index.html` dosyasını tarayıcıda açman yeterli. Oyun ile
 
 ## Özellikler
 
-- **Büyük ve gerçekçi harita.** Yaklaşık 55 oynanabilir bölge var. Yakınlaştırılıp kaydırılabilen 3B rölyef haritada karlı sıradağlar, ormanlar, tarlalar, nehirler, köprüler, köyler ve kaleler çizilmiş.
+- **Büyük ve gerçekçi harita.** Yaklaşık 55 oynanabilir bölge var. Yakınlaştırılıp kaydırılabilen haritada dağlar, ormanlar, tarlalar, nehirler ve yollar ayrı çıkartmalar değil, tek bir yüzeyin parçası: hepsi aynı ışıkla gölgelenen rölyefe işlenmiş. Dağlar yükseklikten doğar, ormanlar tek tek ağaç taçlarından oluşur, tarlalar sürülmüş parseller halindedir.
 - **Arazi önemli.** Sıradağlar geçilmez. Dağ geçitleri savunmaya +%40 verir. Köprüsüz nehir geçişi saldırıyı zayıflatır, süvariyi daha da çok. Dağ ve orman savunmayı güçlendirir.
+- **Ganimet.** Fethettiğin bölgenin stokundan yalnızca %30–70'i ele geçer, kalanı yangın ve yağmada zayi olur. Az kayıpla kazanırsan daha çok kurtarırsın.
 - **Nüfus.** Askerler bölgenin nüfusundan çıkar. Nüfus tahılla büyür. Çok asker almak işgücünü ve dolayısıyla üretimi düşürür.
 - **Kuruluş aşaması.** Oyun başında verilen 260 akçeyle başkentine 1–2 kaynak tesisi satın alırsın.
 - **Kaynak tesisleri.** Tarla, kereste, taş ocağı, demir madeni, pazar ve medrese var. Fethettiğin bölgelerde tarımdan gelen tahılla yenilerini kurarsın. 5 seviyeye kadar gelişirler ve verimleri araziye göre değişir.

@@ -223,7 +223,7 @@ const BR=[
  {id:'eko',ad:'İkmal & Ekonomi',e:'🌾',d:'Tesisler, nüfus ve ordunun beslenmesi.',t:[
   {ad:'Sulama',d:'Tarla üretimi +%25, nüfus büyümesi +%30. Tesisler Sv.3\'e çıkabilir.'},
   {ad:'Loncalar',d:'Tüm kaynak tesisleri +%15. Tesisler Sv.4\'e çıkabilir.'},
-  {ad:'Lojistik',d:'Ordu gideri (tahıl/altın) -%30.'},
+  {ad:'Lojistik',d:'Ordu gideri (tahıl/altın) -%30. Ganimetten ele geçen pay +%10.'},
   {ad:'Ticaret Yolları',d:'Altın geliri +%30. Tesisler Sv.5\'e çıkabilir.'}]},
  {id:'ure',ad:'Askeri Üretim',e:'🏭',d:'Askeri kuruluş kademeleri.',t:[
   {ad:'Talim Usulü',d:'Kademe 2 açılır: Kışla (🏹 Okçu).'},
@@ -365,74 +365,101 @@ function adjacency(ids,n){const sh=new Map();const add=(a,b)=>{if(a===b||a<0||b<
  const adj=Array.from({length:n},()=>[]);for(const[k,v]of sh)if(v>=14){const a=fl(k/1000),b=k%1000;adj[a].push(b);adj[b].push(a)}return adj}
 function bfs(srcs){const d=new Array(MAP.n).fill(99),q=[].concat(srcs);q.forEach(s=>d[s]=0);while(q.length){const c=q.shift();for(const j of MAP.regions[c].adj)if(d[j]===99){d[j]=d[c]+1;q.push(j)}}return d}
 
-// ======================= HARİTA ÇİZİMİ (3B rölyef + ikonlar) =======================
+// ======================= HARİTA ÇİZİMİ (bütünleşik rölyef) =======================
+// Dağ, orman, tarla, nehir ve yollar ayrı çıkartmalar değil: yükseklik haritasına ve zemin rengine işlenir,
+// hepsi aynı ışıkla gölgelenir. Böylece tek bir yüzeyin parçası gibi görünürler.
 function boxBlur(a,w,h){const t=new Float32Array(a.length);for(let y=0;y<h;y++)for(let x=0;x<w;x++){let s=0,c=0;for(let d=-1;d<=1;d++){const xx=x+d;if(xx>=0&&xx<w){s+=a[y*w+xx];c++}}t[y*w+x]=s/c}
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){let s=0,c=0;for(let d=-1;d<=1;d++){const yy=y+d;if(yy>=0&&yy<h){s+=t[yy*w+x];c++}}a[y*w+x]=s/c}}
+const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)};
+function hash2(x,y,s){let h=(Math.imul(x|0,374761393)+Math.imul(y|0,668265263)+Math.imul(s|0,2246822519))|0;h=Math.imul(h^(h>>>13),1274126177);h^=h>>>16;return(h>>>0)/4294967296}
+// arazi türü başına [dağ, orman, tarla, tepe] ağırlığı
+const TW={sira:[1,.1,0,0],dag:[.8,.22,0,.2],maden:[.5,.1,0,.3],tepe:[.2,.3,.3,1],orman:[0,1,.08,.12],vadi:[0,.22,1,0],ova:[0,.1,.9,.1]};
+function roadList(play,seed){const{regions}=MAP,edges=[];
+ for(const a of play)for(const b of regions[a].adj){if(b<a)continue;const c=MAP.cross.get(pkey(a,b));if(c&&!c.bridge)continue;edges.push({a,b,c,d:Math.hypot(regions[a].lx-regions[b].lx,regions[a].ly-regions[b].ly)})}
+ edges.sort((x,y)=>x.d-y.d);const par=regions.map((r,i)=>i),fd=a=>{while(par[a]!==a){par[a]=par[par[a]];a=par[a]}return a},out=[];
+ for(const e of edges){const ra=fd(e.a),rb=fd(e.b);if(ra!==rb){par[ra]=rb;out.push(e)}else if(e.d<160&&hash2(e.a,e.b,seed&0xffff)<.22)out.push(e)}
+ return out}
 function buildArt(){
- const{ids,landV,regions,blk,LAND,seed,rmask}=MAP,N=W*H,rng=mulberry32(seed+12345),nD=makeNoise(rng),nT=makeNoise(rng),nR=makeNoise(rng);
- const G=8,gw=fl(W/G)+2,gh=fl(H/G)+2,ch=[0,1,2,3,4].map(()=>new Float32Array(gw*gh));
+ const{ids,landV,regions,blk,LAND,seed}=MAP,N=W*H,rng=mulberry32(seed+12345);
+ const nD=makeNoise(rng),nT=makeNoise(rng),nR=makeNoise(rng),nF=makeNoise(rng),nG=makeNoise(rng),nC=makeNoise(rng),nW=makeNoise(rng),nS=makeNoise(rng);
+ const play=regions.map((r,i)=>i).filter(i=>!blk[i]);
+ // 1) bölge kanalları: yükseklik, renk, dağ, orman, tarla, tepe (8px ızgara, yumuşatılmış → bölge sınırları görünmez)
+ const G=8,gw=fl(W/G)+2,gh=fl(H/G)+2,ch=Array.from({length:8},()=>new Float32Array(gw*gh));
  for(let gy=0;gy<gh;gy++)for(let gx=0;gx<gw;gx++){const x=Math.min(W-1,gx*G),y=Math.min(H-1,gy*G),id=ids[y*W+x],q=gy*gw+gx;
-  let e,c,b=0;if(id<0){e=-.05;c=SAND}else{const t=TER[regions[id].terrain];e=t.elev;c=t.art;b=blk[id]?1:0}ch[0][q]=e;ch[1][q]=c[0];ch[2][q]=c[1];ch[3][q]=c[2];ch[4][q]=b}
+  if(id<0){ch[0][q]=-.05;ch[1][q]=SAND[0];ch[2][q]=SAND[1];ch[3][q]=SAND[2];continue}
+  const t=TER[regions[id].terrain],w=TW[regions[id].terrain];ch[0][q]=t.elev;ch[1][q]=t.art[0];ch[2][q]=t.art[1];ch[3][q]=t.art[2];ch[4][q]=w[0];ch[5][q]=w[1];ch[6][q]=w[2];ch[7][q]=w[3]}
  for(const a of ch)for(let it=0;it<3;it++)boxBlur(a,gw,gh);
  const samp=(a,x,y)=>{const fx=x/G,fy=y/G,ix=fl(fx),iy=fl(fy),tx=fx-ix,ty=fy-iy,q=iy*gw+ix;return a[q]*(1-tx)*(1-ty)+a[q+1]*tx*(1-ty)+a[q+gw]*(1-tx)*ty+a[q+gw+1]*tx*ty};
- const E=new Float32Array(N),BM=new Float32Array(N);
- for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x;if(ids[p]<0)continue;const b=samp(ch[0],x,y),m=samp(ch[4],x,y);BM[p]=m;
-  let e=b+(fbm(nD,x/48,y/48,4)-.5)*(.1+b*.6);if(m>.02)e+=(1-Math.abs(2*fbm(nR,x/55,y/55,4)-1))*1.1*m;E[p]=e}
+ // 2) nehir ve yol maskeleri (yüzeye işlenir, üstüne çizilmez)
+ const mk=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.lineCap='round';x.lineJoin='round';x.strokeStyle='#fff';return[c,x]};
+ const[bc,bx]=mk(),[wc,wx]=mk(),[rc,rx]=mk();
+ for(const rv of MAP.rivers){const L=rv.length;for(let k=1;k<L;k++){const w=1.8+4.2*k/L,a=rv[k-1],b=rv[k],pa=rv[Math.max(0,k-2)];
+  for(const[cx,lw]of[[bx,w+11],[wx,w]]){cx.lineWidth=lw;cx.beginPath();cx.moveTo((pa[0]+a[0])/2,(pa[1]+a[1])/2);cx.quadraticCurveTo(a[0],a[1],(a[0]+b[0])/2,(a[1]+b[1])/2);cx.stroke()}}}
+ rx.lineWidth=2.6;
+ for(const e of roadList(play,seed)){const A=regions[e.a],B=regions[e.b],pts=[[A.lx,A.ly]];if(e.c)pts.push([e.c.x,e.c.y]);pts.push([B.lx,B.ly]);const dn=[];
+  for(let i=0;i<pts.length-1;i++){const p0=pts[i],p1=pts[i+1],len=Math.hypot(p1[0]-p0[0],p1[1]-p0[1])||1,n=Math.max(1,Math.round(len/20)),nx=-(p1[1]-p0[1])/len,ny=(p1[0]-p0[0])/len;
+   for(let k=0;k<n;k++){const t=k/n,o=(k===0)?0:(hash2(e.a*77+i*13+k,e.b,seed&0xfff)-.5)*9;dn.push([p0[0]+(p1[0]-p0[0])*t+nx*o,p0[1]+(p1[1]-p0[1])*t+ny*o])}}
+  dn.push(pts[pts.length-1]);rx.beginPath();rx.moveTo(dn[0][0],dn[0][1]);for(let k=1;k<dn.length-1;k++)rx.quadraticCurveTo(dn[k][0],dn[k][1],(dn[k][0]+dn[k+1][0])/2,(dn[k][1]+dn[k+1][1])/2);rx.lineTo(dn[dn.length-1][0],dn[dn.length-1][1]);rx.stroke()}
+ const toMask=(c,passes)=>{const d=c.getContext('2d').getImageData(0,0,W,H).data,m=new Float32Array(N);for(let p=0;p<N;p++)m[p]=d[p*4+3]/255;for(let i=0;i<passes;i++)boxBlur(m,W,H);return m};
+ const bank=toMask(bc,3),water=toMask(wc,1),road=toMask(rc,1);
+ // 3) yükseklik alanı: tepeler, sıradağlar (sırt gürültüsü), vadi oyuğu, orman tacı
+ const E=new Float32Array(N),FM=new Float32Array(N),FT=new Float32Array(N);
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x,id=ids[p];if(id<0){E[p]=-.05;continue}
+  const mw=samp(ch[4],x,y),fw=samp(ch[5],x,y),hw=samp(ch[7],x,y);let e=samp(ch[0],x,y)+(fbm(nD,x/60,y/60,3)-.5)*.14;
+  if(hw>.03)e+=hw*fbm(nD,x/36+50,y/36+20,3)*.3;
+  if(mw>.03){const r1=1-Math.abs(2*fbm(nR,x/85,y/85,4)-1),r2=1-Math.abs(2*fbm(nR,x/28+7,y/28+3,3)-1);e+=mw*(Math.pow(r1,1.4)*1.25+Math.pow(r2,2)*.45)}
+  e-=bank[p]*.07+water[p]*.03+road[p]*.012;
+  let fm=0;if(fw>.03){const g=regions[id],dd=Math.hypot(x-g.lx,y-g.ly),dens=fw+(fbm(nF,x/55,y/55,3)-.5)*.9;
+   fm=smooth(.32,.58,dens)*(1-smooth(.62,1,e))*smooth(26,44,dd)*(1-clamp(bank[p]*1.5,0,1))*(1-clamp(road[p]*2,0,1));
+   if(fm>.01){const TS=6,c0=fl(x/TS),r0=fl(y/TS);let d1=1e9,tt=0;
+    for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){const qi=c0+i,qj=r0+j,dx=x-(qi+.2+.6*hash2(qi,qj,11))*TS,dy=y-(qj+.2+.6*hash2(qi,qj,12))*TS,dq=dx*dx+dy*dy;if(dq<d1){d1=dq;tt=hash2(qi,qj,13)}}
+    const crown=1-smooth(0,3.9,Math.sqrt(d1));e+=fm*(crown*.034+(fbm(nC,x/9+40,y/9,2)-.5)*.04+.012);FT[p]=tt*(.4+.6*crown)+.15*crown}}
+  E[p]=e;FM[p]=fm}
+ // 4) boyama: aynı ışık, eğime ve yüksekliğe bağlı renk, doku
  const can=document.createElement('canvas');can.width=W;can.height=H;const cx=can.getContext('2d'),img=cx.createImageData(W,H),d=img.data;
- const Lx=-.55,Ly=-.65,Lz=.55,Ll=Math.hypot(Lx,Ly,Lz);
- for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x,o=p*4,lv=landV[p];
-  if(ids[p]<0){const dd=clamp((lv-LAND)/.5,0,1),w=.92+.12*fbm(nT,x/40,y/14,2);let c=mix([92,156,172],[16,38,64],Math.sqrt(dd));if(dd<.025)c=mix(c,[200,220,215],(1-dd/.025)*.45);
+ const Lx=-.55,Ly=-.65,Lz=.55,Ll=Math.hypot(Lx,Ly,Lz),K=24;
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x,o=p*4,lv=landV[p],id=ids[p];
+  if(id<0){const dd=clamp((lv-LAND)/.5,0,1),w=.92+.12*fbm(nT,x/40,y/14,2);let c=mix([92,156,172],[16,38,64],Math.sqrt(dd));if(dd<.025)c=mix(c,[200,220,215],(1-dd/.025)*.45);
    d[o]=c[0]*w;d[o+1]=c[1]*w;d[o+2]=c[2]*w;d[o+3]=255;continue}
-  const ex=(x>0&&x<W-1)?E[p+1]-E[p-1]:0,ey=(y>0&&y<H-1)?E[p+W]-E[p-W]:0,nx=-ex*22,ny=-ey*22,nl=Math.hypot(nx,ny,1);
-  const lam=(nx*Lx+ny*Ly+Lz)/(nl*Ll),sh=.42+.78*Math.max(0,lam);
-  let c=[samp(ch[1],x,y),samp(ch[2],x,y),samp(ch[3],x,y)];
-  if(BM[p]>.3){const sn=clamp((E[p]-1.05)/.25,0,1)*BM[p];c=mix(c,[246,248,252],sn)}
+  const e=E[p],xm=Math.max(0,x-1),xp=Math.min(W-1,x+1),ym=Math.max(0,y-1),yp=Math.min(H-1,y+1),q1=y*W+xm,q2=y*W+xp,q3=ym*W+x,q4=yp*W+x;
+  const ex=(ids[q2]<0?e:E[q2])-(ids[q1]<0?e:E[q1]),ey=(ids[q4]<0?e:E[q4])-(ids[q3]<0?e:E[q3]),sl=Math.hypot(ex,ey);
+  const nx=-ex*K,ny=-ey*K,nl=Math.hypot(nx,ny,1),lam=(nx*Lx+ny*Ly+Lz)/(nl*Ll);let sh=.4+.82*Math.max(0,lam);
+  const ao=(E[y*W+clamp(x-5,0,W-1)]+E[y*W+clamp(x+5,0,W-1)]+E[clamp(y-5,0,H-1)*W+x]+E[clamp(y+5,0,H-1)*W+x])/4-e;sh*=1-clamp(ao*2.2,-.08,.08);
+  const mw=samp(ch[4],x,y),hw=samp(ch[7],x,y),tn=fbm(nT,x/9,y/9,2)-.5;
+  let c=[samp(ch[1],x,y)*(1+tn*.16),samp(ch[2],x,y)*(1+tn*.16),samp(ch[3],x,y)*(1+tn*.16)];
+  // kaya: yüksek ve eğimli yerler çıplak taş
+  if(mw>.04||hw>.1){const ra=clamp(smooth(.5,1.15,e)*mw*1.3+smooth(.07,.22,sl)*(mw*.9+hw*.3),0,.95),rn=fbm(nS,x/7,y/16,2)*.6+fbm(nS,x/4+90,y/19,2)*.4;c=mix(c,[104+58*rn,92+50*rn,80+42*rn],ra)}
+  // kar: yüksek zirveler, dik yamaçlarda tutunmaz
+  if(mw>.3){const sn=smooth(1.62,1.95,e+(fbm(nS,x/20,y/20,3)-.5)*.3)*(1-smooth(.12,.34,sl)*.8);if(sn>.01)c=mix(c,[244,247,252],sn)}
+  // orman: gölgelenen taç dokusu, yükseklikle iğne yapraklıya döner
+  const fm=FM[p];if(fm>.01){const tone=fbm(nF,x/110+30,y/110,2)*(1-smooth(.35,.8,e)*.6),fc=mix([30,66,40],[66,104,42],tone),k=.62+.6*FT[p]+.25*fbm(nC,x/14,y/14,2);c=mix(c,[fc[0]*k,fc[1]*k,fc[2]*k],fm*.9)}
+  // tarla: yerleşimin çevresinde, düz arazide, organik parsel yamaları
+  const fdw=samp(ch[6],x,y);
+  if(fdw>.1&&e<.45){const g=regions[id],dd=Math.hypot(x-g.lx,y-g.ly);let dens=fdw+(fbm(nG,x/80,y/80,3)-.5)*.8+.3*smooth(24,44,dd)*(1-smooth(90,160,dd));dens-=smooth(.1,.3,sl)*.8;
+   const fk=smooth(.45,.7,dens)*(1-FM[p])*smooth(22,34,dd)*(1-clamp(bank[p]*1.5,0,1))*(1-clamp(road[p]*2,0,1));
+   if(fk>.02){const th=(fbm(nG,x/260+9,y/260,2)-.5)*3.1,ct=Math.cos(th),sn2=Math.sin(th),wx=x+(fbm(nG,x/28,y/28,2)-.5)*16,wy=y+(fbm(nG,x/28+70,y/28,2)-.5)*16,u=(wx*ct+wy*sn2)/17,v=(-wx*sn2+wy*ct)/32,c0=fl(u),r0=fl(v);
+    let d1=1e9,d2=1e9,bi=0,bj=0;
+    for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){const qi=c0+i,qj=r0+j,du=(u-(qi+.15+.7*hash2(qi,qj,1)))*17,dv=(v-(qj+.15+.7*hash2(qi,qj,2)))*32,dq=du*du+dv*dv;if(dq<d1){d2=d1;d1=dq;bi=qi;bj=qj}else if(dq<d2)d2=dq}
+    const hh=hash2(bi,bj,3),pr=3.4+hash2(bi,bj,5)*2.2,al=hash2(bi,bj,4)*3.1416,st=.9+.12*Math.sin((x*Math.cos(al)+y*Math.sin(al))*6.2832/pr);
+    const cc=hh<.3?[208,184,104]:hh<.52?[126,158,74]:hh<.7?[140,112,80]:hh<.86?[160,168,104]:[104,140,70];
+    const hedge=1-smooth(0,2.2,Math.sqrt(d2)-Math.sqrt(d1));c=mix(c,mix([cc[0]*st,cc[1]*st,cc[2]*st],[64,90,48],hedge*.6),fk*.72)}}
+  // yerleşim: ikonun altındaki çıplak toprak
+  if(!blk[id]){const g=regions[id],dd=Math.hypot(x-g.lx,y-g.ly),rv=(1-smooth(10,24,dd))*.5;if(rv>.01)c=mix(c,[166,146,108],rv)}
+  // yollar
+  const rd=road[p];if(rd>.03)c=mix(c,[178,154,110],clamp(rd*1.4,0,.7));
+  // nehir: ıslak kıyı, akış dokulu su, köpüklü kenar
+  const bk=bank[p],wt=water[p];
+  if(bk>.03)c=mix(c,[88,78,58],clamp(bk*.55,0,.5));
+  if(wt>.03){const flow=fbm(nW,x/18,y/6,2),edge=1-Math.abs(wt-.45)*4;let wcol=mix([46,98,150],[88,150,190],flow*.8);if(edge>0)wcol=mix(wcol,[190,222,236],edge*.35);const a=smooth(.2,.55,wt);c=mix(c,wcol,a);sh=sh+(.98-sh)*a}
   if(lv>LAND-.022)c=mix(c,SAND,clamp((lv-(LAND-.022))/.022,0,1)*.85);
-  const tx=.93+.14*fbm(nT,x/6,y/6,2);d[o]=c[0]*sh*tx;d[o+1]=c[1]*sh*tx;d[o+2]=c[2]*sh*tx;d[o+3]=255}
+  d[o]=c[0]*sh;d[o+1]=c[1]*sh;d[o+2]=c[2]*sh+(1-Math.min(1,sh))*10;d[o+3]=255}
  cx.putImageData(img,0,0);
- const A=document.createElement('canvas');A.width=W*2;A.height=H*2;const ac=A.getContext('2d');ac.imageSmoothingEnabled=true;ac.drawImage(can,0,0,W*2,H*2);ac.scale(2,2);
- // nehirler
- ac.lineCap='round';ac.lineJoin='round';
- for(const rv of MAP.rivers){const L=rv.length;for(const pass of[0,1,2])for(let k=1;k<L;k++){const w=1.6+4.4*k/L;
-  ac.strokeStyle=pass===0?'rgba(40,58,62,.55)':pass===1?'#4a86b8':'rgba(170,212,238,.55)';ac.lineWidth=pass===0?w+2.4:pass===1?w:w*.35;
-  ac.beginPath();const a=rv[k-1],b=rv[k],pa=rv[Math.max(0,k-2)];ac.moveTo((pa[0]+a[0])/2,(pa[1]+a[1])/2);ac.quadraticCurveTo(a[0],a[1],(a[0]+b[0])/2,(a[1]+b[1])/2);ac.stroke()}}
- // dekor
- const spr=[];
- regions.forEach((g,i)=>{const plan={sira:[['mtnS',g.area/600,26,42,17]],dag:[['mtn',g.area/950,16,25,14],['pine',g.area/1500,7,9,6]],tepe:[['hill',g.area/650,12,18,11],['tree',g.area/1400,7,9,6]],
-  orman:[['pine',g.area/80,7,10,5.5],['tree',g.area/700,7,9,6]],vadi:[['tree',g.area/420,7,10,7],['field',g.area/1000,9,13,13]],ova:[['field',g.area/560,9,14,13],['tree',g.area/2000,7,9,7]],maden:[['mtn',g.area/1400,14,20,14],['rock',g.area/500,5,8,7]]}[g.terrain]||[];
-  const b=g.bb,loc=[];
-  for(const[k,cnt,s0,s1,sp]of plan){const want=Math.round(cnt);let pl=0,tr=0;while(pl<want&&tr<want*14){tr++;const x=b[0]+rng()*(b[2]-b[0]),y=b[1]+rng()*(b[3]-b[1]),p=(y|0)*W+(x|0);
-   if(ids[p]!==i||ids[Math.min(H-1,(y|0)+3)*W+(x|0)]!==i||ids[(y|0)*W+Math.min(W-1,(x|0)+4)]!==i||ids[(y|0)*W+Math.max(0,(x|0)-4)]!==i)continue;
-   if(!g.block&&(x-g.lx)**2+(y-g.ly)**2<44*44)continue;if(rmask[p])continue;if(loc.some(q=>(q.x-x)**2+(q.y-y)**2<sp*sp))continue;
-   loc.push({x,y});spr.push({k,x,y,s:s0+rng()*(s1-s0),r:rng()});pl++}}});
- spr.sort((a,b)=>a.y-b.y);
- for(const s of spr)({mtnS:(c,s)=>pMountain(c,s.x,s.y,s.s,true,s.r),mtn:(c,s)=>pMountain(c,s.x,s.y,s.s,false,s.r),pine:(c,s)=>pPine(c,s.x,s.y,s.s),tree:(c,s)=>pTree(c,s.x,s.y,s.s,s.r),
-  hill:(c,s)=>pHill(c,s.x,s.y,s.s),field:(c,s)=>pField(c,s.x,s.y,s.s,s.r),rock:(c,s)=>pRock(c,s.x,s.y,s.s)})[s.k](ac,s);
- // köprüler
+ const A=document.createElement('canvas');A.width=W*2;A.height=H*2;const ac=A.getContext('2d');ac.imageSmoothingEnabled=true;ac.imageSmoothingQuality='high';ac.drawImage(can,0,0,W*2,H*2);ac.scale(2,2);
  for(const c of MAP.cross.values())if(c.bridge)pBridge(ac,c.x,c.y,c.ang);
  return A}
-function pMountain(c,x,y,s,snow,r){const h=s*(.68+r*.3),px=x+(r-.5)*s*.22;
- c.fillStyle='rgba(20,15,10,.22)';c.beginPath();c.ellipse(x+s*.18,y+1,s*.58,s*.13,0,0,7);c.fill();
- c.fillStyle=snow?'#a8a297':'#a2927a';c.beginPath();c.moveTo(x-s/2,y);c.lineTo(px,y-h);c.lineTo(px+s*.1,y);c.closePath();c.fill();
- c.fillStyle=snow?'#6a655d':'#6c5e4a';c.beginPath();c.moveTo(px,y-h);c.lineTo(x+s/2,y);c.lineTo(px+s*.1,y);c.closePath();c.fill();
- c.strokeStyle='rgba(60,50,40,.35)';c.lineWidth=.5;c.beginPath();c.moveTo(px-s*.12,y-h*.55);c.lineTo(px-s*.2,y-h*.2);c.moveTo(px+s*.15,y-h*.5);c.lineTo(px+s*.24,y-h*.15);c.stroke();
- if(snow||r>.7){const sh=h*(snow?.4:.22);c.fillStyle='#f3f6f9';c.beginPath();c.moveTo(px,y-h);c.lineTo(px-sh*.6,y-h+sh);c.lineTo(px-sh*.3,y-h+sh*.78);c.lineTo(px-sh*.05,y-h+sh*1.05);c.lineTo(px+sh*.05,y-h+sh*.85);c.closePath();c.fill();
-  c.fillStyle='#c6cfda';c.beginPath();c.moveTo(px,y-h);c.lineTo(px+sh*.55,y-h+sh);c.lineTo(px+sh*.25,y-h+sh*.78);c.lineTo(px+sh*.05,y-h+sh*.85);c.closePath();c.fill()}
- c.strokeStyle='rgba(35,28,20,.55)';c.lineWidth=.6;c.beginPath();c.moveTo(x-s/2,y);c.lineTo(px,y-h);c.lineTo(x+s/2,y);c.stroke()}
-function pPine(c,x,y,s){c.fillStyle='rgba(10,20,5,.25)';c.beginPath();c.ellipse(x+s*.22,y,s*.36,s*.1,0,0,7);c.fill();
- c.fillStyle='#4a3420';c.fillRect(x-s*.06,y-s*.22,s*.12,s*.22);
- for(let k=0;k<3;k++){const ty=y-s*.18-k*s*.27,tw=s*(.42-k*.1);c.fillStyle='#24482a';c.beginPath();c.moveTo(x-tw,ty);c.lineTo(x,ty-s*.4);c.lineTo(x+tw,ty);c.fill();c.fillStyle='#3a6b37';c.beginPath();c.moveTo(x-tw,ty);c.lineTo(x,ty-s*.4);c.lineTo(x-tw*.05,ty);c.fill()}}
-function pTree(c,x,y,s,r){c.fillStyle='rgba(10,20,5,.25)';c.beginPath();c.ellipse(x+s*.2,y,s*.34,s*.1,0,0,7);c.fill();
- c.fillStyle='#4f3822';c.fillRect(x-s*.06,y-s*.35,s*.12,s*.35);c.fillStyle=r>.5?'#4b7a32':'#5c8a3a';c.beginPath();c.arc(x,y-s*.55,s*.32,0,7);c.fill();
- c.fillStyle='rgba(170,210,120,.45)';c.beginPath();c.arc(x-s*.1,y-s*.63,s*.15,0,7);c.fill()}
-function pHill(c,x,y,s){const g=c.createLinearGradient(x-s/2,y-s*.3,x+s/2,y);g.addColorStop(0,'#bdae7c');g.addColorStop(1,'#7a6c4c');c.fillStyle=g;c.beginPath();c.ellipse(x,y,s/2,s*.34,0,Math.PI,0);c.closePath();c.fill();
- c.strokeStyle='rgba(60,48,30,.4)';c.lineWidth=.6;c.beginPath();c.ellipse(x,y,s/2,s*.34,0,Math.PI,0);c.stroke()}
-function pField(c,x,y,s,r){c.save();c.translate(x,y);c.rotate((r-.5)*.9);const cols=r<.4?['#d6c069','#c4ad57']:r<.7?['#a7b85e','#93a650']:['#b9a167','#a68e57'];
- for(let k=0;k<4;k++){c.fillStyle=cols[k%2];c.fillRect(-s/2,-s*.3+k*s*.15,s,s*.15)}c.strokeStyle='rgba(90,70,35,.45)';c.lineWidth=.5;c.strokeRect(-s/2,-s*.3,s,s*.6);c.restore()}
-function pRock(c,x,y,s){c.fillStyle='#8a7f72';c.beginPath();c.moveTo(x-s/2,y);c.lineTo(x-s*.2,y-s*.6);c.lineTo(x+s*.3,y-s*.5);c.lineTo(x+s/2,y);c.fill();c.fillStyle='#5e554b';c.beginPath();c.moveTo(x+s*.05,y-s*.55);c.lineTo(x+s*.3,y-s*.5);c.lineTo(x+s/2,y);c.lineTo(x+s*.1,y);c.fill()}
-function pBridge(c,x,y,a){c.save();c.translate(x,y);c.rotate(a);c.fillStyle='rgba(0,0,0,.3)';c.fillRect(-10,-2,21,7);
- c.fillStyle='#b3a690';c.fillRect(-10,-4,20,8);c.strokeStyle='#4b4136';c.lineWidth=.8;c.strokeRect(-10,-4,20,8);
- c.strokeStyle='#6f6355';c.beginPath();c.moveTo(-10,-2.5);c.lineTo(10,-2.5);c.moveTo(-10,2.5);c.lineTo(10,2.5);c.stroke();c.restore()}
+function pBridge(c,x,y,a){c.save();c.translate(x,y);c.rotate(a);c.fillStyle='rgba(20,30,40,.35)';c.fillRect(-11,-3,23,9);
+ c.fillStyle='#b8aa8e';c.fillRect(-11,-4,22,8);c.fillStyle='#8f836c';c.fillRect(-11,2,22,2);c.strokeStyle='rgba(60,50,38,.8)';c.lineWidth=.7;c.strokeRect(-11,-4,22,8);
+ c.strokeStyle='#d8ccb0';c.beginPath();c.moveTo(-11,-3);c.lineTo(11,-3);c.stroke();c.restore()}
 
 // ---- Yerleşim ve özellik ikonları (ekranda, her karede) ----
 function house(c,x,y,k,roof){const w=8*k,h=5.5*k;c.fillStyle='#e6d6b2';c.fillRect(x-w/2,y-h,w,h);c.fillStyle='#bba984';c.fillRect(x+w*.15,y-h,w*.35,h);
@@ -515,7 +542,7 @@ function mil(){const t=S.tech,s=t.sal,v=t.sav,k=t.kus,e=t.eko,u=t.ure,g=t.str;re
  def:(v>=1?.1:0)+(v>=3?.15:0)+(v>=4?.2:0),fortPer:.25+(v>=2?.1:0),maxFort:v>=3?5:v>=2?4:3,defLoss:v>=4?.75:1,surDisc:v>=2?.7:1,
  siege:[.2,.35,.55,.75,.95][k],woodMult:k>=2?.75:1,fortAtk:k>=4?.1:0,
  tarla:e>=1?1.25:1,growth:e>=1?1.3:1,fieldMult:e>=2?1.15:1,maxField:e>=4?5:e>=2?4:e>=1?3:2,upkeep:(e>=3?.7:1)*(u>=3?.85:1),altinMult:e>=4?1.3:1,
- autoMult:u>=4?1.25:1,
+ autoMult:u>=4?1.25:1,loot:e>=3?.1:0,
  river:g>=1?.85:.7,sight:g>=1?2:1,spy:g>=2,roads:g>=3,lossMult:g>=4?.7:1,maxMorale:g>=4?120:100,moraleRec:3}}
 const moraleMult=m=>.5+m/200;
 const aiB=()=>Math.min(.5,.03*fl(S.turn/4));
@@ -542,23 +569,23 @@ function resolve(ao,from,to,A){
  const aP=rawAtk(A,from,to,ao)*am,dP=rawDef(T.u)*defMult(to,siege);remU(F,A,true);
  const ra=aP*(.85+Math.random()*.3),rd=dP*(.85+Math.random()*.3),dt=T.troops,D=Object.assign(Z(),T.u);
  if(ra>rd){let fr=rd>0?Math.sqrt(1-(rd/ra)**2):1;if(ao===0){const M=mil();fr=1-(1-fr)*M.lossMult*M.conqLoss}const SV=scaleU(A,fr);if(sumU(SV)<1)SV[UK.find(k=>A[k])]=1;
-  if(ao===0)S.morale=Math.min(mil().maxMorale,S.morale+5);conquer(to,ao,SV);return{win:true,sent:n,surv:sumU(SV),lost:n-sumU(SV),dLost:dt,SV}}
+  if(ao===0)S.morale=Math.min(mil().maxMorale,S.morale+5);const loot=conquer(to,ao,SV,fr);return{win:true,sent:n,surv:sumU(SV),lost:n-sumU(SV),dLost:dt,SV,loot}}
  let fr=Math.sqrt(1-(ra/rd)**2);if(T.owner===0){const M=mil();fr=1-(1-fr)*M.lossMult*M.defLoss}const DS=scaleU(D,fr);if(sumU(DS)<1)DS[UK.find(k=>D[k])||'piy']=1;
  const back=Z();for(const k of UK)back[k]=fl((A[k]||0)*.2);addU(F,back,false);
  T.u=DS;for(const k of UK)T.rd[k]=Math.min(T.rd[k],DS[k]);sync(T);
  if(ao===0)S.morale=Math.max(0,S.morale-6);if(T.owner===0)S.morale=Math.min(mil().maxMorale,S.morale+2);
  return{win:false,sent:n,back:sumU(back),lost:n-sumU(back),dLost:dt-sumU(DS)}}
-function conquer(i,o,comp){
- const r=S.regions[i],old=r.owner,g=MAP.regions[i];r.owner=o;r.u=Object.assign(Z(),comp);r.rd=Z();sync(r);r.fort=Math.max(0,r.fort-1);r.pop*=.7;
+function conquer(i,o,comp,fr){
+ const r=S.regions[i],old=r.owner,g=MAP.regions[i],store=o===0?lootStore(i):null;let loot=null;r.owner=o;r.u=Object.assign(Z(),comp);r.rd=Z();sync(r);r.fort=Math.max(0,r.fort-1);r.pop*=.7;
  if(r.mil>1)r.mil--;r.fields.forEach(f=>{if(f.lv>1)f.lv--});
- if(o===0){S.res.bilgi+=5;S.res.altin+=10+(r.capital?20:0);r.auto=true}
+ if(o===0){r.auto=true;const rate=lootRate(fr==null?.7:fr);loot={store,rate,got:{},lost:{}};for(const k in store){loot.got[k]=store[k]*rate;loot.lost[k]=store[k]-loot.got[k];S.res[k]+=loot.got[k]}}
  if(old===0)S.morale=Math.max(0,S.morale-6);
  if(r.capital){r.capital=false;if(old!==NEUTRAL){const rest=S.regions.map((x,k)=>k).filter(k=>S.regions[k].owner===old);
   if(rest.length){const c=rest.sort((a,b)=>S.regions[b].troops-S.regions[a].troops)[0];S.regions[c].capital=true;
    if(old===0){S.morale=Math.max(0,S.morale-20);log(`Başkentin ${g.name} düştü! Yeni başkent: ${MAP.regions[c].name}. Moral -20.`,'bad')}
    else log(`${FAC[old].ad} başkenti ${g.name}'i kaybetti; yeni başkent ${MAP.regions[c].name}.`)}}}
  if(old>0&&old<NEUTRAL&&!S.regions.some(x=>x.owner===old))log(`${FAC[old].ad} yıkıldı!`,'good');
-}
+ return loot}
 
 // ======================= EKONOMİ & NÜFUS =======================
 function maxPop(i){const g=MAP.regions[i],r=S.regions[i];let m=TER[g.terrain].pop+(r.capital?25:0)+(g.feat==='liman'||g.feat==='kavsak'?10:0)+(g.feat==='verimli'?15:0);for(const f of r.fields)if(f.t==='tarla')m+=6*f.lv;return m}
@@ -578,6 +605,15 @@ function economy(){const gross={tahil:0,odun:0,tas:0,demir:0,altin:0,bilgi:0};le
  own().forEach(i=>{const r=S.regions[i];addY(gross,production(i));troops+=r.troops;pop+=r.pop;mpop+=maxPop(i);uw+=UK.reduce((s,k)=>s+r.u[k]*UNITS[k].up,0)});
  const M=mil(),up={tahil:uw*.15*M.upkeep,altin:uw*.1*M.upkeep},net={};for(const k in gross)net[k]=gross[k]-(up[k]||0);
  return{gross,up,net,troops,pop,mpop}}
+// Ganimet: fethedilen bölgenin stoğu (üretim + garnizon sandığı). Yalnızca bir kısmı ele geçer, kalanı yangın ve yağmada zayi olur.
+function lootStore(i,tr){const r=S.regions[i],g=MAP.regions[i],y=production(i),t=tr==null?r.troops:tr,s={};
+ for(const k of['tahil','odun','tas','demir','altin'])s[k]=(y[k]||0)*8;
+ s.tahil+=t*1.2;s.altin+=8+t*.9;s.demir+=t*.25;s.bilgi=8+(y.bilgi||0)*6+(g.feat==='harabe'?6:0);
+ if(r.capital)for(const k in s)s[k]*=1.5;return s}
+const lootRate=fr=>clamp(.3+.3*fr+mil().loot,.25,.75);
+const lootLine=(st,rate)=>Object.entries(st).filter(([k,v])=>v*rate>=.5).map(([k,v])=>RM[k].e+Math.round(v*rate)).join(' ')||'—';
+function lootHtml(L){if(!L)return'';const ks=Object.keys(L.store).filter(k=>L.store[k]>=.5);
+ return`<h4>💰 Ganimet · bölge stokunun %${Math.round(L.rate*100)}'i ele geçti</h4><table><tr><th>Kaynak</th><th>Bölge stoku</th><th>Alınan</th><th>Zayi</th></tr>${ks.map(k=>`<tr><td>${RM[k].e} ${RM[k].ad}</td><td>${Math.round(L.store[k])}</td><td class=pos>+${Math.round(L.got[k])}</td><td class=neg>-${Math.round(L.lost[k])}</td></tr>`).join('')}</table><p class=muted style="font-size:12px;margin:6px 0 0">Kalan kısım savaşta yangın, yağma ve bozulmayla zayi oldu. Ne kadar az kayıp verirsen o kadar çok kurtarırsın.</p>`}
 function popGrowth(i){const r=S.regions[i],mx=maxPop(i);return Math.max(0,Math.min(mx-r.pop,(mx-r.pop)*.08*(r.owner===0?mil().growth:1)+.5))}
 const fieldCount=()=>own().reduce((s,i)=>s+S.regions[i].fields.length,0);
 function newFieldCost(t){return scaleC(FIELD[t].cost,1+.2*fieldCount())}
@@ -638,14 +674,15 @@ function updAtk(){const{from,to}=ACT,A=pickComp(),n=sumU(A);$('#an').textContent
  ${c?`<div class=kv><span>${c.bridge?'🌉 Köprüden geçiş':'🌊 Köprüsüz nehir geçişi'}</span><span class="${c.bridge?'':'bad'}">${c.bridge?'ceza yok':'×'+M.river+(A.suv?' (süvari ayrıca ×0,6)':'')}</span></div>`:''}
  <div class=kv><span>⚒️ Harcanacak demir</span><span>${fl(p.iron)}/${Math.ceil(p.ironNeed)}</span></div>
  ${T.fort?`<div class=kv><span>🪵 Kuşatma</span><span>${fl(p.wood)}/${Math.ceil(p.woodNeed)} odun${A.kus?` + ${A.kus} kuşatma takımı`:''} → surun %${Math.round(p.siege*100)}'i kırılır</span></div>`:''}
+ <div class=kv><span>💰 Olası ganimet</span><span>${lootLine(lootStore(to,M.spy?T.troops:est(T.troops)),lootRate(.7))}</span></div>
  <h4>Savunma çarpanı</h4>${defParts(to,p.siege).map(([k,v])=>`<div class=kv><span>${k}</span><span>+${pct(v)}</span></div>`).join('')||'<p class=muted>Ek savunma yok.</p>'}
  ${M.spy?'':'<p class=muted style="font-size:12px">Düşman sayısı tahminidir. Strateji II (Casusluk) kesin bilgi verir.</p>'}`}
 function doAttack(){const{from,to}=ACT,A=pickComp();if(!sumU(A))return;const tn=MAP.regions[to].name,prevOwner=S.regions[to].owner,wasCap=S.regions[to].capital;const res=resolve(0,from,to,A);
- if(res.win){log(`${tn} fethedildi! (${res.lost} kayıp)`,'good');ui.sel=to;ui.rtab='genel'}else log(`${tn} saldırısı püskürtüldü. ${res.lost} asker kaybedildi.`,'bad');
+ if(res.win){log(`${tn} fethedildi! (${res.lost} kayıp) Ganimet: ${lootLine(res.loot.got,1)} (zayi %${Math.round((1-res.loot.rate)*100)})`,'good');ui.sel=to;ui.rtab='genel'}else log(`${tn} saldırısı püskürtüldü. ${res.lost} asker kaybedildi.`,'bad');
  checkEnd();refresh();
- modal(`<h3>${res.win?'🏆 Zafer!':'💀 Yenilgi'}</h3><p>${res.win?`<b>${tn}</b> artık senin. ${res.sent} askerden <b>${res.surv}</b> tanesi bölgeye yerleşti (${compTxt(res.SV)}). Düşman kaybı: ${res.dLost}.<br><span class=good>Ganimet: 🪙+${10+(wasCap?20:0)} 📜+5 · moral +5</span>${wasCap?`<br><b>${FAC[prevOwner].ad} başkentini kaybetti!</b>`:''}<br><small class=muted>Savaşta bölgenin nüfusu, kuruluşu ve tesisleri zarar gördü.</small>`
+ modal(`<h3>${res.win?'🏆 Zafer!':'💀 Yenilgi'}</h3><p>${res.win?`<b>${tn}</b> artık senin. ${res.sent} askerden <b>${res.surv}</b> tanesi bölgeye yerleşti (${compTxt(res.SV)}). Düşman kaybı: ${res.dLost}.<br><span class=good>Moral +5</span>${wasCap?`<br><b>${FAC[prevOwner].ad} başkentini kaybetti!</b>`:''}<br><small class=muted>Savaşta bölgenin nüfusu, kuruluşu ve tesisleri zarar gördü.</small>`
  :`Saldırı püskürtüldü. ${res.sent} askerden ${res.back} tanesi geri çekildi. Düşman ${res.dLost} asker kaybetti.<br><span class=bad>Moral -6</span>`}</p>
- <div class=row><button class="btn primary" onclick="closeModal();afterModal()">Tamam</button></div>`,'res')}
+ ${res.win?lootHtml(res.loot):''}<div class=row><button class="btn primary" onclick="closeModal();afterModal()">Tamam</button></div>`,'res')}
 function openMove(from,to){const r=S.regions[from];if(r.ready<1){toast('Bu bölgede bu tur hazır asker yok.');return}ACT={type:'mov',from,to};
  modal(`<h3>➜ ${MAP.regions[from].name} → ${MAP.regions[to].name}</h3><h4>Taşınacak birlikler (toplam <b id=mn>${r.ready}</b>)</h4>${picker(r.rd)}
  <p class=muted style="font-size:12px">Taşınan birlikler bu tur tekrar hareket edemez.</p>
@@ -797,6 +834,7 @@ function rgGenel(i){const g=MAP.regions[i],r=S.regions[i],mine=r.owner===0;let h
  const parts=mine?prodParts(i):prodParts(i).filter(p=>!p[0].startsWith('★'));
  h+=`<h4>${mine?'Üretim / tur':'Ele geçirirsen üretir'}</h4><table>${parts.map(([s,k,v])=>`<tr><td>${s}</td><td>${RM[k].e} ${RM[k].ad}</td><td class=pos>${sgn(v)}</td></tr>`).join('')||'<tr><td class=muted>Üretim yok</td></tr>'}</table>`;
  h+=`<h4>Savunma çarpanı</h4>${defParts(i,0).map(([k,v])=>`<div class=kv><span>${k}</span><span>+${pct(v)}</span></div>`).join('')||'<p class=muted style="margin:0">Ek savunma yok.</p>'}`;
+ if(!mine){const tr=vis(i).v,st=lootStore(i,tr==null?8:tr);h+=`<h4>💰 Ele geçirirsen ganimet</h4><div class=kv><span>Bölge stoku</span><span>${lootLine(st,1)}</span></div><div class=kv><span>Tahmini ele geçecek</span><span class=pos>${lootLine(st,lootRate(.7))}</span></div><p class=muted style="font-size:12px;margin:4px 0 0">Stokun yalnızca %${Math.round(lootRate(0)*100)}–${Math.round(lootRate(1)*100)}'i ele geçer, kalanı yangın ve yağmada zayi olur. Az kayıpla kazanırsan daha çok kurtarırsın.</p>`}
  h+=`<h4>Komşular</h4>`;
  for(const j of g.adj){const rj=S.regions[j],c=crossAt(i,j);let act='';
   if(mine&&rj.owner!==0){const p=previewAtk(i,j,r.rd);act=`<button class="btn sm" ${r.ready<1||S.over||S.phase!=='oyun'?'disabled':''} onclick="openAttack(${i},${j})">⚔️ <span style="color:${chanceCol(p.ch)}">%${Math.round(p.ch*100)}</span></button>`}
@@ -917,6 +955,7 @@ function showHelp(){modal(`<h3>⚔ Fetih: Nasıl oynanır?</h3>
 <p><b>Nüfus ve ordu:</b> Askerler nüfustan çıkar. Nüfus tahıl stoğu varken büyür. Çok asker almak işgücünü ve üretimi düşürür. Birlikler altın, tahıl, demir ve odun ister. Ordu her tur tahıl ve altın tüketir.</p>
 <p><b>Birlikler:</b> 🗡️ Piyade, 🏹 Okçu, 🐎 Süvari, 🪨 Kuşatma, ⚔️ Yeniçeri. Her askeri kuruluş kademesi yeni bir tür açar.</p>
 <p><b>Arazi:</b> Sıradağlar geçilmezdir. Geçitler +%40 savunma verir. Köprüsüz nehir geçişi saldırıyı ×0,7'ye düşürür, süvariyi daha da fazla. Dağ ve ormanda savunma güçlüdür, süvari zayıftır.</p>
+<p><b>Ganimet:</b> Fethettiğin bölgenin stokundan yalnızca bir pay (%30–70) ele geçer. Kalanı yangın ve yağmada zayi olur. Kayıpsız kazanmak daha çok ganimet kurtarır.</p>
 <p><b>Hedef:</b> 4 rakibi yık ya da haritanın %75'ini al. İlk ${GRACE} yıl rakipler sana saldırmaz.</p>
 <div class=row><button class="btn primary" onclick="closeModal();if(S.phase==='kurulus')showSetup()">Başla</button></div>`,'help')}
 function askNew(){modal(`<h3>Yeni oyun?</h3><p>Mevcut oyunun silinir ve yeni bir harita oluşturulur.</p><div class=row><button class=btn onclick="closeModal()">Vazgeç</button><button class="btn danger" onclick="startNew()">Yeni Oyun</button></div>`,'ask')}
