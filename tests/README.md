@@ -18,6 +18,8 @@ r.summary          // kazanma oranı, ortalama tur, koalisyonlu oyun, hata sayı
 window.SIM_RESULT  // son çalıştırmanın tamamı
 await checkMaps()  // Klasik/Kıta/Normal haritaları ve başlangıç durumu Faz 0 ile aynı mı (map-hashes.json)
 simJob('ad', [{difficulty:'kalfa'}, {difficulty:'usta'}])  // uzun ölçüm: arka planda koşar, JOBS.ad'da birikir
+await runSim({difficulty:'kalfa', goal:'hegemonya', seeds:[1,2,3]})  // zafer yolu botu
+await evUnit(7)    // olay birim testi: 18 olay + Biat Teklifi, her seçenek ayrı kopyada, 3 yıl oynanır; [{id,cond,opt,m,bad,err}]
 ```
 
 ## Seçenekler
@@ -34,7 +36,11 @@ simJob('ad', [{difficulty:'kalfa'}, {difficulty:'usta'}])  // uzun ölçüm: ark
 | `fast` | `true` | `refresh()` yalnızca görüşü günceller (çizim/panel atlanır). Oyun mantığını değiştirmez. |
 | `slice` | 8 | Kaç turda bir tarayıcıya nefes aldırılacağı. `0`: turlar arasında hiç bekleme yok, tohumlar arasında MessageChannel ile nefes (gizli sekmede hızlı) |
 | `seedRandom` | `true` | Yalnızca **eski** sürümler (oyunda `rnd()` yoksa, ör. `src:'_eski/index.html?test=1'`) için `Math.random`'ı tohumla sabitler |
-| `bot` | bkz. `SIM_DEFAULTS.bot` | Bot eşikleri (`atkCh:.75`, `upTahil:80`, `okcP:.3`…) |
+| `bot` | bkz. `SIM_DEFAULTS.bot` | Bot eşikleri (`atkCh:.75`, `upTahil:80`, `okcP:.3`…). 1b: `evPick` (`'first'` ilk seçilebilir seçenek, `'random'` bot üreteciyle), `turtle:true` (Medeniyet botu 12 bölgede saldırıyı keser) |
+| `goal` | `fetih` | Bot politikası: `fetih` (eski bot), `medeniyet` (Büyük Eser için taş/odun/bilgi ayırır, altın eksikse otomatik üretimi durdurur, 18 teknolojiden sonra bilgiyi esere saklar), `hegemonya` (tutulmayan eski başkentlere doğru saldırır ve asker kaydırır, tuttuğu başkentlerde sur kurar, geri sayımda oraya yığar) |
+| `ferman` | `false` | `true`: `goal` ferman olarak beyan edilir |
+| `pers` | — | Bütün rakiplere tek kişilik (`saldirgan`, `tuccar`, `savunmaci`, `firsatci`) |
+| `ev` / `alt` | `true` | `false`: olaylar / alternatif zaferler (vasal, eser yarışı dahil) kapalı. İkisi kapalıyken Klasik/Çırak satırları `baseline-v2.json` ile birebir aynıdır |
 
 Varsayılan ayar (Klasik + kart yok + Kıta + Normal + Çırak) Faz 0 oyunudur.
 
@@ -44,7 +50,7 @@ Faz 1a'dan beri oyun içi bütün rastgelelik (savaş zarları, rakip birlik kar
 
 ## Çıktı
 
-Tohum başına: bitiş turu, sonuç (`win`/`lose`/`-`), son bölge sayısı, %25/%50/%75 toprağa ulaşılan tur, kıtlık sayısı, koalisyon sayısı, Akın kullanımı, tur başına eylem, hatalar.
+Tohum başına: bitiş turu, sonuç (`win`/`lose`/`-`), zafer yolu (`winBy`), olay sayısı ve kimlikleri (`ev`, `evN`), koalisyon kırma (`coalBroken`), Büyük Eser aşaması (`wonder`), rakibin eser yarışı (`aiWonder`, `medClosed`), teknoloji, Hegemonya sayacının en yükseği (`hegMax`), vasal sayısı, kişilik başına rakip saldırı/kayıp (`aiS`), son bölge sayısı, %25/%50/%75 toprağa ulaşılan tur, kıtlık sayısı, koalisyon sayısı, Akın kullanımı, tur başına eylem, hatalar.
 Her turdan sonra tutarlılık denetimi yapılır: `troops === sumU(u)`, birimler negatif/NaN değil, kaynaklar ve moral sayı, nüfus ≥ 0. İhlal `invariant`, yakalanan istisna `istisna` hatası olarak yazılır.
 
 ## Taban çizgileri
@@ -58,6 +64,8 @@ const r = await runSim({}), b = await fetch('baseline-v2.json').then(x=>x.json()
 JSON.stringify(r.rows.map(({ms,...x})=>x)) === JSON.stringify(b.rows)
 ```
 
+- `baseline-v3.json`: Faz 1b varsayılanı (Klasik + kart yok + Kıta + Normal + Çırak, olaylar açık), 12 tohum; ayrıca `eq1a` (olaylar/alternatif zaferler kapalıyken `baseline-v2` ile birebir eşitlik) ve olay birim testi özeti.
+- `matrix-1b.json`: Faz 1b denge matrisi (48/96 tohum): zorluklar, hanedanlar, kişilikler, 14 kart, zafer yolu botları, kaplumbağa, harita/boy, olay istatistikleri, kişilik ayrışması (D6).
 - `matrix-1a.json`: Faz 1a denge matrisi (hanedan × Kalfa, harita türleri, tekil kartlar, zorluklar).
 - `_eski/index.html`: Faz 0 oyununun değişmemiş kopyası (eşdeğerlik ve v5 kayıt göçü testleri için). `runSim({src:'_eski/index.html?test=1'})` ile eski oyun koşturulur.
 

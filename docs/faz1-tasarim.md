@@ -930,3 +930,66 @@ Not: Vasal rakip "yok edilmiş" sayılmaz ama Fetih için kalan rakip listesinde
 - Bot ve gerçek oyuncu farklı: kart çarpanları (`x`) bot verisiyle henüz yeniden kalibre edilmedi (`x ≈ 1 + 1,2·Δkazanma` kuralı uygulanmadı). Kabile Seli/Altın Çağı/Sağlam Surlar için `x` artırılabilir, Kanlı Toprak (%67, kolaylaştırıyor) için ×1,10 düşürülebilir.
 - Belgedeki D1 (6×4), D3 (riskli çiftler) ve D5/D6 matrisleri ölçülmedi. Yalnızca indirgenmiş matris koşturuldu.
 - Kalfa AI kazancı 1,6'ya çıktı; 1b'de kişilikler `gain` çarpanı getirince Kalfa yeniden ölçülmeli.
+
+---
+
+## Uygulama notları (1b)
+
+*Uygulandı: 19.10.2026, oyun v0.7.0, kayıt v7. Ölçümler `tests/sim.js` botuyla, başsız Chrome'da paralel; ham sonuçlar `tests/matrix-1b.json`, varsayılan taban çizgisi `tests/baseline-v3.json`. 48 tohum ≈ ±7 puan, 96 tohum ≈ ±5 puan hata payı.*
+
+### Yapılanlar
+- **Kişilikler (§5):** `AIPERS` (Saldırgan, Tüccar, Savunmacı, Fırsatçı + `klasik`). `need/needP`, yedek, `minReady`, kazanç çarpanı (Tüccar: Liman/Kavşak başına +1, ≤ +4), başkent payı, yığınak (`aiStack`/`pickFocus`, odak 5 yılda bir), birlik karışımı (`aiMix` tur eşikleri korunarak ağırlıklı), sur ihtimali/tavanı, hedef skoru, barış tepkisi (Saldırgan `min(3, barış−2)` yıl önce yığınak; Tüccar barıştan sonra 6 yıl `need`+0,3; Fırsatçı oyuncunun savaş kaybettiği yıl ve zayıflamış bölgeye 1,10), Savunmacı karşı saldırısı (`S.ai[f].hit`), ateşkes tepkisi (Saldırgan Haraç'ı ancak 2 kat güçlüysen kabul eder, Fırsatçı ateşkesi bir kez %25 bozabilir), biat eşiği, koalisyona katılma eşiği. Klasik + Çırak dışında rakiplere tekrarsız dağıtılır (`rng` ile, harita çekimlerinden sonra), hükümdar adı da çekilir. Kişilik Ordu → Güç dengesi, bölge sahibi satırı, ipucu ve kuruluş ekranında görünür; **Haritacılık (Strateji I) gerekir**, Casusluk yığınak bölgesini gösterir (§5'teki gibi).
+- **Koalisyon:** üyelik (`S.coal.mem`), kişiliğe göre katılma eşiği, sonradan katılma; bir üyenin başkenti (kim alırsa alsın) düşünce üye çekilir ve o koalisyona dönemez; oyuncu aldıysa `S.stats.coalBroken++` (başarım bayrağı); son üye çekilince koalisyon dağılır. Kutsal İttifak'ta koalisyon sürerken rakipler birbirine hiç saldırmaz, diğer durumlarda yalnız üyeler.
+- **Olaylar (§6):** 18 olay + Biat Teklifi (S3) `EVENTS` tablosunda (koşul, ağırlık çarpanı, olay anı verisi `prep`, seçenekler, `ok` koşulu, sonuç). Zamanlama: ilk olay 5-7. yıl, sonra 6-8 yılda bir (`S.rs`); son 20 yılda çıkan ×0,25; bir oyunda en çok 2 kez (Düğün 1); İyi olaylar × zorluk `evBias`; Kıtlık Çağı kartı Kıtlık Yılı ağırlığını ×2 yapar; Kara Veba kartında veba seçimsiz ve takvimli kalır (E05 havuzdan çıkar). Seçimli olaylar `S.evQ` kuyruğunda (kayda yazılır), yıl raporundan sonra pencere açılır; seçmeden yıl bitmez; 1/2/3 tuşları; sonuç log'a yazılır. Geçici etkiler `S.buffs` ve `S.flags` (kayıtta). Sistem olayları: S1 koalisyon, S2 eser yarışı, S4 barış bitti yıl raporunda.
+- **Zafer yolları (§7):** Fetih (vasal rakip yıkılmış sayılır), Medeniyet (18/24 teknoloji + başkentte 5 aşamalı Büyük Eser; Külliye Ustaları −%25 ve 2 yıl), Hegemonya (orijinal başkentlerin 3'ü, Kısa'da 2'si senin ya da vasalının, 10 yıl). `S.over` hâlâ `'win'/'lose'`, tür `S.winBy`'de. Yeni **🏆 Hedef** sekmesi (üç yol, eser taşları, eser yarışı, başkent yuvaları, geri sayım, vasallar, ferman, etkin olay etkileri) ve üst çubukta kompakt gösterge. Biat teklifi, vasal (saldırmaz, saldırılamaz, haraç ekonomiye eklenir, koalisyona katılmaz, moral < 40 ya da komşusu 2 bölgen düşerse bağımsızlık ve geri sayım sıfırlanır). AI engellemeleri: eser 3+ aşamada bütün rakipler başkentine +1,0 skor, Fırsatçı `need` 1,05; geri sayımda tutulan başkentlere +1,0, Savunmacı eşiği 1,0; eski başkenti oyuncuda olan rakip bütün kazancını oraya yığar; rakip eser yarışı 30. yıldan.
+- **Ferman:** sihirbazın 3. adımında; tutarsa miras ×1,25 (`FERMAN.x`), 30. yıla kadar Hedef sekmesinden bir kez değiştirilebilir (×1,10). MP kazanımı 1c'de; bitiş penceresi "Ferman tuttu" satırını gösterir.
+- **Bitiş:** eski modal + zafer türü başlığı, ferman, olay/koalisyon/vasal özeti; yenilgide üç yoldaki ilerleme.
+- **İstatistik:** `S.stats` (savaş, başkent, ganimet, kıtlık serisi, veba, sur, toplanan birlik, koalisyon, olay/seçim sayısı ve kimlikleri, vasal, Hegemonya en yükseği, eser yılları) ve `S.hist` (1c için).
+- **Kayıt:** `SAVE_VER` 6 → 7, `MIG[6]`: eski rakipler `klasik` kişilik (kayıttaki oyunun davranışı değişmez), orijinal başkent = o anki başkent, ilk olay 6 yıl sonra (rnd tüketmeden), ferman yok. `def1b` eksik alanları tamamlar (`validSave` de çağırır).
+
+### Tasarımdan sapmalar
+- **Büyük Eser bedeli:** §7'deki formül (`50·k^1,2` taş, `40·k^1,2` altın) 5 aşamada ≈ 960 taş / 770 altın ediyor; aynı tablodaki toplamlar (≈ 420 taş, 335 altın) ile çelişiyor. Toplamlar esas alındı: taş `22·k^1,2`, altın `17,5·k^1,2` (bilgi 25·k, odun 20·k aynı). Formülle Medeniyet botu 48 oyunda yalnız 0-3 kez eseri bitirebildi.
+- **≥ 10 bölge** şartı yalnız 1. aşama için (§7'deki gibi). Rakip eseri bitirince oyuncunun 5. aşaması da zafer saymaz (yol kapalı).
+- **Klasik kişilik engelleme yapmaz** (eser/Hegemonya hedeflemesi, intikam yığınağı): "Klasik + Çırak = bugünkü rakip" kuralı için. Yol koşulları ve eser yarışı Çırak'ta da açık.
+- **Savunmacı** oyuncuya yalnız karşı saldırı (son 2 yılda saldırdığın bölge), Hegemonya'da tutulan başkentler ve eser başkenti için saldırır.
+- **Düğün:** ateşkes iki yönlü olduğu için "bozarsan moral −15" yok. **Göçmen:** azami nüfusu +10 aşma süresiz (nüfus azaltılmaz, yalnızca büyümez). **İsyan/Bastır:** isyancılar (6 + nüfus × 0,1 piyade) tek zarlı savaşla bölgeye saldırır.
+- **Eser yarışçısı** yıkılır ya da vasal olursa yarış en büyük rakibe sıfırdan geçer.
+- **Uzun Barış yığınağı** artık kişilik yığınağıyla aynı mekanizma (odak bölgeye tamamı).
+- **Mobil üst çubuk:** 520 px altında "FETİH" yazısı gizlenir (üst çubuk 174 → 128 px; 6. sekme ve 🏆 göstergesi eklenince 5 satıra çıkıyordu).
+
+### Ayarlanan sayılar
+| Ne | Önce | Sonra | Neden (ölçüm) |
+|---|---|---|---|
+| Rakip eser yarışı | 9 yılda bir aşama | **10** | Üç yol botunun zaferleri (48'er tohum): 9'da Fetih %68 / Medeniyet %14 / Hegemonya %19, 11 Medeniyet oyunu rakip eseriyle kapandı. 10'da %64 / %17 / %19, kapanan 6 |
+| Usta AI kazancı | ×1,80 | **×1,95** | Kişiliklerle Usta kolaylaştı: 1,8'de %42 (48 tohum); 1,95'te %33, 2,05'te %25 |
+| Destan AI kazancı | ×1,95 | **×2,10** | 1,95'te %21; 2,1'de %15, 2,25'te %10 (hedef %12 ± 6) |
+| Deniz Beyleri | Liman altın 4, Pazar ×1,3 | **3, ×1,15** | %77 (48). Olaysız %62, alternatif zafersiz %69: güç esas olarak ekonomide. Sonra %56 (48) / %64 (96) |
+| Akıncı | 16 piyade, fetih morali +8 | **14 piyade, +6** | %73 (48), %69 (96); 14 piyade %56-60, moral +6 ile %53 (96) |
+| Savunmacı | need 1,6, minReady 6 | **1,8, 7** | D6 saldırı oranı 1,95 → 2,2-2,4 (birkaç ölçüm); Kalfa %50 korundu |
+| Saldırgan yığınak | 0,6 | **0,45** | aynı ölçüm |
+| Kart çarpanları (`x`) | bkz. aşağıda | | `x ≈ 1 + 1,2·(taban − kart)`, iki 48'lik koşunun ortalaması (96 oyun), taban %51. Fark ≤ 0,1 ise değişmedi; **Kötü/Çok kötü kartlarda en az ×1,05** (kötü etiketli kart çarpansız kalmasın); Sisli Harita bot sisi kullanmadığı için ölçülemedi |
+
+Kartlar (Kalfa, Klasik, 96 oyun → yeni `x`): Kıtlık Çağı %50 → 1,25→**1,05** · Erken Savaş %54 → 1,30→**1,05** · Kabile Seli %42 → 1,20 (kural 1,11, değişmedi) · Sağlam Surlar %48 → 1,15→**1,05** · Paralı Askerler %61 → 1,00→**0,90** · Altın Çağı %51 → 1,10→**1,00** · Bereketli Topraklar %63 → 0,85 (değişmedi) · Demir Kıtlığı %51 → 1,15→**1,05** · Kara Veba %49 → 1,15→**1,05** · Sisli Harita %51 → 1,15 (ölçülemedi) · Kanlı Toprak %67 → 1,10→**0,80** · Uzun Barış %39 → 1,05→**1,15** · Kutsal İttifak %46 → 1,45→**1,05** · Sürgün Bey %51 → 1,25→**1,05**. 1a'daki "Kabile/Sağlam Surlar/Altın Çağı %25" 12 tohumun gürültüsüymüş (96 oyunda %42-51).
+
+Kalfa AI kazancı ×1,60 kişiliklerle yeniden ölçüldü ve değişmedi: %50 (96 tohum).
+
+### Ölçümler (son kod)
+- **Eşdeğerlik:** harita 20/20, başlangıç 12/12 aynı. Olaylar ve alternatif zaferler kapalıyken (`ev:false, alt:false`) Klasik/Çırak 12 tohum satırları `baseline-v2.json` ile **birebir aynı** (Klasik kişilik yolu ve rnd sırası değişmedi). Olaylar açık: Çırak 45/48 (%94); 24 tohumda açık 21/24, kapalı 23/24. `randLeak` bütün koşularda 0; aynı ayar iki kez koşulunca satırlar birebir aynı (olayda rastgele seçimli bot dahil).
+- **Zorluk (Klasik):** Çırak %94 (48) · Kalfa %50 (96) · Usta %25 (48) · Destan %17 (48).
+- **Hanedan × Kalfa:** Börü %50 · Tunç %48 · Bilge %52 (48 tohum) · Kartal %42 · Deniz %64 · Akıncı %53 (96 tohum). Hepsi %35-65.
+- **Tek kişilikli rakipler (Kalfa, 48):** hepsi Saldırgan %56 (ort. bitiş 60) · Tüccar %50 · Fırsatçı %42 · Savunmacı %12 (ort. bitiş 139: oyunlar 140 turda kazanansız bitiyor, bot okçu+sur duvarını kıramıyor).
+- **D6 (karışık rakipler, Kalfa, ~1450 rakip-oyun her biri):** rakip başına saldırı Saldırgan 52,8 · Tüccar 49,9 · Fırsatçı 62,2 · Savunmacı 24,0 → Saldırgan/Savunmacı oranı **2,2 (hedef ≥ 2,5, tutmadı)**; Savunmacı'nın kaybettiği bölge Saldırgan'dan **%60 az** (hedef ≥ %30).
+- **Zafer yolları (Kalfa, 48'er tohum):** Fetih botu 24/48 (23 Fetih, 1 Hegemonya) · Medeniyet botu 22/48 (**16 Medeniyet**) · Hegemonya botu 23/48 (**19 Hegemonya**). Üç botun 69 zaferinde pay Fetih %46 · Medeniyet %23 · Hegemonya %30 (hiçbiri < %10 ya da > %70). Kendi yolundan kazanma: Medeniyet %33, Hegemonya %40 (D5 hedefi %30-60).
+- **Kaplumbağa (Dağ Kartalları + Sağlam Surlar, Medeniyet botu 12 bölgede saldırıyı keser):** 5/48 (%10), hepsi Medeniyet. Kaplumbağasız aynı ayar 11/48 (9 Medeniyet). Baskın değil.
+- **Olaylar (1824 oyun):** 75 turda 10,4 olay (hedef 9-12), seçimli pay %86 (≥ %60), 18 olayın hepsi doğal olarak çıktı, hiçbiri bir oyunda 2'den fazla değil (Düğün 1). En nadir İsyan (30 kez: bot moral/kıtlık eşiğine az düşüyor). Olay birim testi (`evUnit`, 2 tohum): 22 olayın 43 seçeneği koşul + sonuç metni + 3 yıl tutarlılık denetimiyle hatasız; nadir dallar ayrıca (Hizip'in kabileye geçişi, kaybedilen isyan, veba yayılması, paralı bölüğün dağılması, vasal isyanı, barış sözü kilidi, yıldız/mimar indirimleri) doğrulandı.
+- **Kalfa tabanı (48):** %25 toprağa ulaşan 29 oyunda t25 medyan 34, 90. yüzdelik 50 (sınırda); koalisyon 27/48 oyunda (%56).
+- **Harita/boy (Kalfa, 48, ayarlanmadı):** Vadi %79 · Dağ Kalesi %33 · Körfez %56 · Kısa %35 · Uzun %60.
+- **Kayıt (gerçek tarayıcı, localStorage):** kaydet → yenile → devam (olay penceresi açıkken: yenilemede yeniden açıldı, seçim bir kez uygulandı); v6 kaydı → v7 göçü ve 8 yıl oyun; bozuk kayıt → yedek + uyarı; dışa/içe aktarma. Konsol hatası yok.
+- **Arayüz:** 1440×880 ve 375×812'de 31 adım (sihirbaz fermanı, 19 olay penceresi, Hedef sekmesi, Ordu, rakip bölgesi, 4 bitiş türü): yatay taşma yok, pencereler ekrana sığıyor, olay düğmeleri 50 px. 1a'nın geniş arayüz testi (7 hanedan × 14 kart × sekmeler, 2252 kontrol) hatasız.
+
+### Açık riskler / sonraki faz için
+- Bot rakip saldırısını yalnız çok yüksek oranda yaptığı için (zar ±%15) Erken Savaş, Kutsal İttifak ve koalisyonun bota etkisi küçük; bu kartların ×1,05'i bot verisi, insan oyuncu için düşük kalabilir.
+- Sisli Harita: saldırı önizlemesi görüş dışındaki bölgelerde de tahmini gerçek askerden hesaplanıyor (1a'dan kalma); bu yüzden kart botu hiç etkilemiyor.
+- Nehir Vadisi %79 ve Kısa/Dağ uçları; harita/boy dengesi 1b'de ayarlanmadı.
+- Fetih botu biat teklifini hep kabul ediyor (oyun başına ~1,2 vasal); vasallık Fetih'i kısaltıyor, insan oyuncuda ölçülmedi.
+- Zafer yolu botları kaba: Medeniyet ve Hegemonya payları bot politikasına çok duyarlı.
