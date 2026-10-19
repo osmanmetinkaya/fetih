@@ -868,3 +868,65 @@ Not: Vasal rakip "yok edilmiş" sayılmaz ama Fetih için kalan rakip listesinde
 - 28 başarımın her biri için koşul birim testi (sahte `S` + `META` ile). Çırak'ta yalnız izinli 8'i açılıyor.
 - Bitiş ekranında her zaman en az 1 "sıradaki hedef" satırı var (ilerleme, kilit ya da günlük).
 - `localStorage` erişilemezken (gizli mod) oyun çalışıyor, meta yalnız oturumluk kalıyor ve kullanıcıya bir kez uyarı gösteriliyor.
+
+---
+
+## Uygulama notları (1a)
+
+*Uygulandı: 19.10.2026, oyun v0.6.0, kayıt v6. Bütün bot ölçümleri `tests/sim.js` varsayılan botuyla (fetih politikası) yapıldı; ham sonuçlar `tests/matrix-1a.json` ve `tests/baseline-v2.json` içinde.*
+
+### Yapılanlar
+- **Belirlenimci RNG (E7):** `rnd()`, durumu `S.rs`'de (kayda yazılır) tutan mulberry32. `resolve`, `aiMix`, `aiTurn`, veba ve yağma bunu kullanır. Oyun mantığında `Math.random` kalmadı (yalnızca sihirbazdaki rastgele tohum/kart çekimi). Simülasyonda oyunun `Math.random` çağrıları sayılıyor: bütün koşularda `randLeak = 0`. Aynı tohum + ayar + kararlar → aynı sonuç; kaydet → yenile → 10 tur sonrası durum özeti, yenilemesiz koşuyla birebir aynı.
+- **Ayar (`S.cfg`) ve tablolar:** `DYN`, `ABIL`, `MUTS`, `MAPTYPES`, `SIZES`, `DIFFS` (§Veri şemaları'ndan). `GRACE/IRON/FUND/AIS` sabitleri kalktı: `S.cfg.grace`, `mil().iron`, `S.cfg.fund`, `S.cfg.ais`. `mil()` = teknoloji + hanedan + kart (`applyMods`), `S` ve teknoloji anahtarına göre önbellekli.
+- **Hanedanlar:** 6 hanedan + Klasik, güçlü/zayıf yanlar sayısal olarak bağlı, özel başlangıçlar, rakiplere tekrarsız hanedan + aiPerk ve ad ("Kızıl Börüler"). **Klasik oyuncuda rakipler de klasiktir** (perk yok, eski adlar): böylece "Klasik + kart yok + Kıta + Normal + Çırak" eski oyunla aynı kalır.
+- **Yetenekler:** Akın (çalışıyor), Yağma (saldırı penceresinde "🏇 Yağma"), Haraç Diplomasisi (Ordu → Güç dengesi; ateşkes iki yönlü: o rakibe sen de saldıramazsın), Geçit Bekçileri (pasif), Dökümhane (pasif). **Külliye Ustaları yalnızca metin**: Büyük Eser 1b'de gelecek.
+- **14 kart:** hepsi koda bağlı. Yasaklı çiftler (`erken+surgun`, Destan'da `ittifak+kabile`) ve uyarılı çift (`bereket+altincag` → "kolay") var. Kart çarpanı [0,8; 2,0] aralığında, zar ×1,10.
+- **Harita türleri ve boy:** `genMap(seed, P)`; `kita+orta` için Faz 0 sabitleriyle **20/20 tohumda harita özeti aynı**, `initGame` sonrası durum 12/12 aynı (`tests/map-hashes.json`, `checkMaps()`).
+- **Zorluk:** 4 basamak, `DIFFS` çarpanları `aiTurn`, `aiB(f)`, `siegeOf`, kabile garnizonu, hazine ve başlangıç kaynaklarına bağlı.
+- **Koalisyon (en sade hali):** Kalfa+ eşiği (ya da Kutsal İttifak %22) aşılınca 12 yıl; rakipler birbirine saldırmaz, oyuncuya `need −0,15` ve hedef skoru +0,5; eşik −%5'in altında ya da süre bitince dağılır, 10 yıl bekleme. Üyelik/başkent kırma (§5) 1b'ye kaldı. Kutsal İttifak kartı ve `DIFFS.coalAt` bu yüzden 1a'ya alındı.
+- **Kara Veba (kart):** E05'in seçimsiz hali: 15, 30, 45… yılda bir bölgen + 3 komşusu (her sahip) nüfus −%30, asker −%10. Karantina seçeneği 1b'de (olay sistemiyle).
+- **Sihirbaz (§12):** Adım 0 (ilk açılışta tek büyük "Hızlı Başla" + "Seferi kendim hazırlayayım"; sonra Devam / Yeni sefer / Son ayarla yeni harita / Hızlı Başla), 1 hanedan, 2 kartlar, 3 harita·boy·zorluk·tohum, 4 kuruluş (`showSetup`, "⚡ Önerilenle başla" eklendi). Hızlı Başla'dan ilk tura **2 tık** (masaüstü 1440×880 ve mobil 375×812'de iki düğme de kaydırmadan görünür; ölçüldü).
+- **Meta iskeleti:** `fetih-meta-v1`, `META_DEFAULT`, `loadMeta/saveMeta/metaFix`, kilit gösterimi ("🔒 60 MP (sende 0) ya da 1 Medeniyet zaferi"), MP yetiyorsa "🔓 Aç". Debug: konsolda `metaGive(200)`. MP kazanımı 1c'de.
+- **Kayıt:** `SAVE_VER` 5 → 6, `MIG[5]`: `cfg = Klasik+kart yok+Kıta+Normal+Çırak`, rakipler klasik, `rs = seed ^ turn`. Kayıt `cfg`'den haritayı yeniden üretir; `MAP.n` kontrolü korunuyor. Bozuk ya da tanınmayan `cfg` → bozuk kayıt akışı (yedek + uyarı) → sihirbaz.
+
+### Tasarımdan sapmalar
+- **Boy adı:** `orta` kimliği korundu, arayüzde "Normal".
+- **Kartsız oyun:** Kart adımında küçük bir "Kartsız" düğmesi var. Tasarımda bir kart zorunluydu, ama o durumda Klasik/kartsız oyun yalnızca Hızlı Başla'yla açılabiliyordu.
+- **Ferman, tohum kodu (FTH-…), harita önizlemesi** yok: zafer yolları 1b'de, tohum kodu 1c'de. 3. adımda yalnızca sayısal tohum alanı var.
+- **Yeniden çek** oyun başına 1 kez (2. kez 5 MP 1c'de).
+- **Rakip AI kuşatma kartı (`sur`):** kuşatma −0,10 herkese (oyuncu `mil().siege`, AI `siegeOf`).
+- **Uzun Barış yığınağı:** barış bitmeden 3 yıl önce rakiplerin cephe takviyeleri yalnız oyuncuya bakan cephe bölgelerine gider (kişilikler gelince 1b'de `stack` ile değiştirilmeli).
+- **Erken Savaş + zorluk:** `grace = max(3, kart_grace + D.grace − 12)` (Erken+Destan = 3).
+- **Sürgün Bey hazinesi:** `max(hanedan, 420)` + zorluk farkı (§Denge riskli kombinasyon 8'deki öneri).
+- **Kabile çarpanı:** `t = round(min(28, t0) × D.neutral × kart × boy)` (çarpan 1 iken eski değer).
+- **Akın/Yağma botta:** bot Akın'ı kullanıyor (yeni fethedilen bölgelerden ikinci saldırı geçişi; Klasik'te bu geçiş boştur), Yağma ve Haraç'ı kullanmıyor. Deniz/Akıncı ölçümleri yeteneksiz.
+- **Kıtlık Çağı:** "kıtlık olayı ağırlığı ×2" etkisi olaylar gelince (1b) bağlanacak.
+
+### Ayarlanan sayılar (bot ölçümüyle)
+| Ne | Belge | Uygulanan | Neden (ölçüm) |
+|---|---|---|---|
+| Kalfa AI kazancı | ×1,20 | **×1,60** | ×1,2'de Kalfa/Klasik 13/16 (%81). ×1,35: %67, ×1,5: %62, ×1,6: %50 (24 tohum). Bot belgenin varsaydığından güçlü (Çırak'ta %96-100). |
+| Usta AI kazancı | ×1,40 | **×1,80** | ×1,4'te %69 → ×1,8'de 8/24 (%33), hedef %30 ± 8 |
+| Destan AI kazancı | ×1,65 | **×1,95** | ×1,65'te %31, ×2,05'te %4 → ×1,95'te 2/24 (%8), hedef %12 ± 6 |
+| Tunç hazinesi | 150 | **200** | Hediye Demir Madeni ova/vadi başkentinde ×0,4 verimle ~1 demir/tur: değeri düşük. 150 ile 9/24 (%38) |
+| Tunç tarla | ×0,85 | **×0,90** | aynı neden; ikisiyle 24/48 (%50) |
+| Akıncı ganimet | +0,15, tavan 0,90 | **+0,05, tavan 0,85** | +0,15: %67, +0,10: 33/48 (%69); +0,05/0,85: 30/48 (%62). Moral 6'ya düşürmek ya da nüfus ×0,5 etkisizdi (%67-73). |
+| Akıncı başlangıç | 18 piyade + 3 süvari | **16 + 3** | erken kartopu (t25 ~24 tur) |
+| Dağ Kalesi | sıradağ .26, dağ .22, tepe .20, geçit 6-12, kale 6 | **.20 / .18 / .18, geçit 4-9, kale 4** | Kalfa'da 1/16 (%6), Çırak'ta bile 6/16. Yeni değerle Kalfa 6/16 (%38) |
+| Körfez | 86 merkez, minD 94, iç deniz r .30, k 2,2 | **72 merkez, minD 100, r .60, k 4** (d_c normalizasyonu `W·0,3`) | Belgedeki formülle göl neredeyse oluşmuyor (landV merkezde ~0,66 < 0,9). Yeni değerlerle iç deniz görünür, oynanabilir 49-62 (ort. 57); 20 tohumda kopuk harita 0 |
+| Nehir Vadisi minD | 98 | **104** | 98'de oynanabilir 67-74 (hedef ~60) → 58-69 |
+| Boy ölçeği | yalnız `sites`/`minD` | + özellik sayıları, geçit üst sınırı, maden × boy çarpanı; nehir × √çarpan | hesap (ölçülmedi): ölçeksiz bırakılsa Kısa'da ~38 bölgeye 28-33 özellik düşerdi |
+
+### Ölçümler (son kod)
+- **Eşdeğerlik:** harita 20/20, başlangıç 12/12 aynı. Klasik/Çırak 12 tohum: 12/12 kazanma, ort. 69,7 tur (Faz 0 `baseline.json`: 9/12, 68,3). 9/12 tohum şansıymış: aynı 36 yeni tohumda Faz 0 35/36 (%97, ort. 68,3 tur, t25 31,1), Faz 1a 36/36 (%100, ort. 70,4, t25 33,3). Fark ±15 puan içinde.
+- **Zorluk (Klasik, 24 tohum):** Çırak 23/24 (%96) · Kalfa 11/24 (%46) · Usta 8/24 (%33) · Destan 2/24 (%8).
+- **Hanedan × Kalfa (24 tohum):** Klasik %46 · Börü %58 · Tunç %50 · Kartal %42 · Bilge %46 · Deniz %50 · Akıncı %62. Hepsi %35-65 bandında. Belgenin ±8 bandını (%42-58) Akıncı aşıyor; Akıncı'nın 48 tohumluk ölçümü %62.
+- **Harita/boy × Kalfa (16 tohum):** Kıta %46 (24 tohum) · Vadi %56 · Dağ Kalesi %38 · Körfez %25 · Kısa %56 · Uzun %31 (200 tur).
+- **Tekil kart × Kalfa (12 tohum):** kitlik 50 · erken 42 · kabile 25 · sur 25 · parali 42 · altincag 25 · bereket 50 · demirsiz 42 · veba 33 · sis 42 · kanli 67 · baris 42 · ittifak 42 · surgun 33 (%). Hiçbiri %15 altında ya da %90 üstünde değil. 12 tohumda hata payı ±14 puan; Kabile Seli, Sağlam Surlar ve Altın Çağı %25'te (en zor üçü).
+- **Koalisyon:** Kalfa/Klasik 24 oyunun 13'ünde kuruldu (%54; hedef %50-75).
+- **Performans (başsız Chrome):** `genMap` 0,35-0,83 sn, `buildArt` 0,56-0,81 sn (bütün tür/boylarda < 1,5 sn). Uzun haritada (88-98 bölge) bir kare 0,6 ms, `refresh` 5-7 ms, `endTurn` 5-6 ms.
+
+### Açık riskler / sonraki faz için
+- Bot ve gerçek oyuncu farklı: kart çarpanları (`x`) bot verisiyle henüz yeniden kalibre edilmedi (`x ≈ 1 + 1,2·Δkazanma` kuralı uygulanmadı). Kabile Seli/Altın Çağı/Sağlam Surlar için `x` artırılabilir, Kanlı Toprak (%67, kolaylaştırıyor) için ×1,10 düşürülebilir.
+- Belgedeki D1 (6×4), D3 (riskli çiftler) ve D5/D6 matrisleri ölçülmedi. Yalnızca indirgenmiş matris koşturuldu.
+- Kalfa AI kazancı 1,6'ya çıktı; 1b'de kişilikler `gain` çarpanı getirince Kalfa yeniden ölçülmeli.

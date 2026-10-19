@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fetih</title>
+<style>
+:root{--bg:#16120e;--panel:#221c16;--panel2:#2d251d;--line:#4a3d2e;--text:#efe6d6;--muted:#a99b84;--accent:#d9a441;--good:#86b86f;--bad:#e0635c}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column;overflow:hidden}
+header{display:flex;align-items:center;gap:10px;padding:6px 12px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.title{font:800 17px Georgia,serif;color:var(--accent);letter-spacing:1px}
+.res{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+.r{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:3px 8px;cursor:help;white-space:nowrap}
+.r b{font-variant-numeric:tabular-nums}
+.r .inc{font-size:11px;margin-left:3px}
+.pos{color:var(--good)}.neg{color:var(--bad)}.muted{color:var(--muted)}
+main{flex:1;display:flex;min-height:0}
+#mapWrap{flex:1;position:relative;min-width:0;min-height:0;background:#0d1a26;overflow:hidden;touch-action:none}
+#view{display:block;cursor:grab}
+#view.drag{cursor:grabbing}
+.mapctl{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:4px}
+.mapctl button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:rgba(34,28,22,.9);color:var(--text);font-size:17px;cursor:pointer}
+.mapctl button:hover{border-color:var(--accent)}
+.hint{position:absolute;left:10px;bottom:10px;background:rgba(20,16,12,.8);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--muted);pointer-events:none}
+#tip{position:absolute;pointer-events:none;background:rgba(20,16,12,.95);border:1px solid var(--line);border-radius:6px;padding:5px 9px;font-size:12px;display:none;max-width:320px;z-index:5}
+#loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#0d1a26;font:600 18px Georgia,serif;color:var(--accent);z-index:6}
+aside{width:420px;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.tabs{display:flex;border-bottom:1px solid var(--line);background:var(--panel2)}
+.tabs button{flex:1;background:none;border:0;color:var(--muted);padding:9px 2px;cursor:pointer;font:inherit;font-size:13px;border-bottom:2px solid transparent}
+.tabs button.on{color:var(--text);border-bottom-color:var(--accent);background:var(--panel)}
+#panel{flex:1;overflow:auto;padding:12px 14px}
+.foot{padding:10px;border-top:1px solid var(--line);display:flex;gap:8px}
+.btn{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--accent);color:#1b1712;border-color:var(--accent);font-weight:700}
+.btn.danger{background:#7a2a24;border-color:#a8433b}
+.btn.sm{padding:3px 8px;font-size:12px}
+.btn.big{flex:1;padding:10px;font-size:15px}
+.btn.wide{width:100%;margin-top:10px}
+h2{margin:0;font:700 19px Georgia,serif}h3{margin:0 0 10px;font-family:Georgia,serif}h4{margin:16px 0 6px;font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+.rh{display:flex;align-items:center;gap:8px}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block;flex:none;border:1px solid rgba(0,0,0,.4);vertical-align:-1px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.stats>div{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.stats span{display:block;font-size:11px;color:var(--muted)}
+.stats b{font-size:16px}.stats small{display:block;font-size:11px;color:var(--muted)}
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{background:var(--panel2);border-radius:4px;padding:2px 6px;font-size:12px}
+.feat{background:#3a2f1f;border:1px solid #6b5530;border-radius:6px;padding:6px 8px;margin-top:8px;font-size:12.5px}
+.warn{background:#3d1f1b;border:1px solid #7a3a30;border-radius:6px;padding:6px 8px;margin-top:8px;font-size:12.5px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid #3a3025}
+.item small{display:block;color:var(--muted);font-size:11.5px}
+.ok{color:var(--good);font-weight:700}
+.rec{display:flex;align-items:center;gap:8px;margin-top:6px}
+.rec input[type=range]{flex:1}
+input[type=range],input[type=checkbox]{accent-color:var(--accent)}
+select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:3px 6px;font:inherit;font-size:12.5px}
+.bar{height:8px;background:#3a3025;border-radius:4px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px dashed #3a3025;font-size:13px}
+.kv span:first-child{color:var(--muted)}
+.log p{margin:0 0 6px;font-size:13px}
+.log .t{color:var(--muted);font-size:11px;margin-right:4px}
+.good{color:var(--good)}.bad{color:var(--bad)}
+a.lnk{color:inherit;text-decoration:none;border-bottom:1px dotted var(--muted);cursor:pointer}
+.sub{display:flex;gap:4px;margin:12px 0;flex-wrap:wrap}
+.sub button{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:16px;padding:4px 11px;cursor:pointer;font:inherit;font-size:12.5px}
+.sub button.on{background:var(--accent);color:#1b1712;border-color:var(--accent);font-weight:700}
+.card{border:1px solid var(--line);border-radius:8px;padding:9px 10px;background:var(--panel2);display:flex;flex-direction:column;gap:4px}
+.card small{font-size:12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:8px}
+.fundbox{background:#3a2f1f;border:1px solid var(--accent);border-radius:8px;padding:8px 10px;margin:10px 0;font-size:15px}
+.stars{color:var(--accent);letter-spacing:1px}
+.step{display:flex;gap:10px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;background:var(--panel2)}
+.step.cur{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.step.done{opacity:.65}.step.lock{opacity:.5}
+.step .info{flex:1}.step small{display:block;color:var(--muted);font-size:11.5px}
+.lv{font-weight:800;width:28px;height:28px;border-radius:50%;background:#3f3324;color:var(--accent);display:flex;align-items:center;justify-content:center;flex:none;font-size:12px}
+.step.done .lv{background:#3d5530;color:#cfe8bf}
+.tree{display:grid;grid-template-columns:92px repeat(4,1fr);gap:6px 12px}
+.tree .th{font-size:10.5px;color:var(--muted);text-align:center;text-transform:uppercase}
+.tree .brn{font-weight:700;font-size:12px;display:flex;align-items:center}
+.node{border:1px solid var(--line);border-radius:7px;padding:5px 6px;font-size:11.5px;cursor:pointer;background:var(--panel2);position:relative;font-weight:600;line-height:1.25}
+.node small{display:block;font-weight:400;color:var(--muted);font-size:10.5px}
+.node:hover,.node.sel{border-color:var(--accent)}
+.node.sel{box-shadow:0 0 0 2px var(--accent)}
+.node.done{border-color:#5d7f48;background:#26301f}
+.node.avail{border-color:#b98a35}
+.node.lock{opacity:.5}
+.node::before{content:'›';position:absolute;left:-10px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.node.n0::before{content:none}
+.tdet{margin-top:12px;border:1px solid var(--accent);border-radius:8px;padding:10px 12px;background:#2a2219}
+.prog{display:flex;gap:4px;margin:10px 0}
+.prog i{flex:1;height:6px;border-radius:3px;background:#3a3025}
+.prog i.d{background:var(--good)}.prog i.c{background:var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+td,th{padding:4px 5px;border-bottom:1px solid #3a3025;text-align:right;white-space:nowrap}
+td:first-child,th:first-child{text-align:left}
+th{color:var(--muted);font-weight:600}
+.urow{display:grid;grid-template-columns:130px 1fr 30px 34px;align-items:center;gap:8px;margin:5px 0;font-size:13px}
+.switch{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px}
+#modalBg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000;padding:16px}
+#modal{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;width:min(460px,100%);max-height:90vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+#modal.wide{width:min(680px,100%)}
+.row{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:14px}
+.chance{font-size:28px;font-weight:800;text-align:center;margin:8px 0}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#3a2f22;border:1px solid var(--accent);padding:8px 14px;border-radius:6px;display:none;z-index:1001}
+#bars{position:fixed;top:8px;left:50%;transform:translateX(-50%);width:min(640px,calc(100% - 16px));display:flex;flex-direction:column;gap:6px;z-index:1002;pointer-events:none}
+.bar-n{pointer-events:auto;display:flex;align-items:flex-start;gap:8px;background:#3a2f22;border:1px solid var(--accent);border-radius:8px;padding:7px 8px 7px 12px;font-size:12.5px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.bar-n>span{flex:1;min-width:0;overflow-wrap:anywhere}.bar-n.err{background:#3d1f1b;border-color:#a8433b}.bar-n .btn.sm{flex:none}.bar-n span .btn{margin-left:4px}
+.savebox{border-top:1px solid var(--line);margin-top:12px;padding-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ver{font-size:11px;color:var(--muted);text-align:right;margin-top:8px}
+@media (max-width:860px){main{flex-direction:column}aside{width:auto;height:46vh;border-left:0;border-top:1px solid var(--line)}.tree{grid-template-columns:70px repeat(4,minmax(70px,1fr))}}
+</style>
+</head>
+<body>
+<header>
+  <span class="title">⚔ FETİH</span>
+  <div class="res" id="res"></div>
+</header>
+<main>
+  <div id="mapWrap">
+    <canvas id="view"></canvas>
+    <div class="mapctl"><button onclick="zoomBy(1.3)" title="Yakınlaştır">＋</button><button onclick="zoomBy(1/1.3)" title="Uzaklaştır">－</button><button onclick="fitCam()" title="Tüm harita">⤢</button><button onclick="focusSel()" title="Seçili bölgeye git">◎</button></div>
+    <div class="hint">Sol tık: seç · Sağ tık: saldır / taşı · Sürükle: kaydır · Tekerlek: yakınlaştır</div>
+    <div id="tip"></div>
+    <div id="loading">Harita çiziliyor…</div>
+  </div>
+  <aside>
+    <nav class="tabs" id="tabs">
+      <button data-t="bolge">🏰 Bölge</button><button data-t="eko">💰 Ekonomi</button><button data-t="ordu">⚔ Ordu</button><button data-t="tek">📜 Teknoloji</button><button data-t="kayit">📖 Kayıt</button>
+    </nav>
+    <div id="panel"></div>
+    <div class="foot">
+      <button class="btn" onclick="askNew()" title="Yeni oyun">↻</button>
+      <button class="btn" onclick="showHelp()" title="Nasıl oynanır">?</button>
+      <button class="btn primary big" id="endBtn" onclick="endTurn()">Turu Bitir ▶</button>
+    </div>
+  </aside>
+</main>
+<div id="modalBg"><div id="modal"></div></div>
+<div id="toast"></div>
+<div id="bars"></div>
+<script>
+'use strict';
+// ======================= SABİTLER =======================
+const W=1600,H=1100,NEUTRAL=5,BLOCK=-1,GRACE=12,IRON=.2,WOOD=8,SAVE='fetih-save',FUND=260,AIS=[1,2,3,4];
+const GAME_VERSION='0.5.0',SAVE_VER=5,SAVE_OLD=['fetih-save-v4'],SAVE_BAD='fetih-save-bozuk',TEST=/[?&]test\b/.test(location.search);
+const ROM=['','I','II','III','IV','V'];
+const FAC=[
+ {ad:'Beyliğin',col:[232,176,58]},
+ {ad:'Kızıl Hanlık',col:[200,52,42]},
+ {ad:'Mavi Krallık',col:[48,104,200]},
+ {ad:'Yeşil Boylar',col:[36,150,78]},
+ {ad:'Mor Sultanlık',col:[146,70,178]},
+ {ad:'Bağımsız Kabileler',col:[130,122,108]},
+];
+const RES=[
+ {k:'tahil',ad:'Tahıl',e:'🌾',ask:'İKMAL & NÜFUS: Ordu her tur tahıl yer. Tahıl stoğu varken nüfus büyür. Stok biterse kıtlık olur: askerler ölür, nüfus azalır. Yeni tesisler de tahılla kurulur.'},
+ {k:'odun',ad:'Odun',e:'🪵',ask:'KUŞATMA: Surlu bölgeye saldırırken sur seviyesi başına odun harcanır. Okçu ve kuşatma takımı yapımında da gerekir.'},
+ {k:'tas',ad:'Taş',e:'🧱',ask:'SAVUNMA: Sur ve askeri kuruluşlar taşla yapılır.'},
+ {k:'demir',ad:'Demir',e:'⚒️',ask:'SİLAH: Süvari, kuşatma ve yeniçeri demir ister. Saldırıda asker başına 0,2 demir harcanır ve tam donanım saldırıya +%25…%35 ekler.'},
+ {k:'altin',ad:'Altın',e:'🪙',ask:'ASKER ALIMI & MAAŞ: Birlik yetiştirmek ve her tur maaş ödemek için. Hazine boşalırsa moral düşer.'},
+ {k:'bilgi',ad:'Bilgi',e:'📜',ask:'TEKNOLOJİ: Altı daldaki kademeler bilgiyle açılır.'},
+];
+const RM={};RES.forEach(r=>RM[r.k]=r);
+const TER={
+ ova:{ad:'Ova',col:[196,186,118],art:[178,170,104],elev:.1,def:0,y:{tahil:2},slots:3,pop:45},
+ orman:{ad:'Orman',col:[74,116,60],art:[60,94,50],elev:.22,def:.15,y:{odun:2},slots:2,pop:30},
+ dag:{ad:'Dağlık',col:[138,128,118],art:[132,120,102],elev:.62,def:.35,y:{tas:1,demir:1},slots:2,pop:25},
+ tepe:{ad:'Tepelik',col:[164,148,104],art:[154,142,98],elev:.38,def:.2,y:{tas:1,tahil:1},slots:2,pop:35},
+ vadi:{ad:'Nehir Vadisi',col:[126,172,104],art:[110,152,78],elev:.04,def:0,y:{tahil:2,altin:1},slots:3,pop:50},
+ maden:{ad:'Maden Yatağı',col:[116,98,88],art:[134,108,86],elev:.48,def:.1,y:{demir:2},slots:2,pop:30},
+ sira:{ad:'Sıradağlar',col:[170,166,160],art:[138,132,124],elev:1,def:0,y:{},slots:0,pop:0},
+};
+const SAND=[206,192,142];
+const FEAT={
+ gecit:{ad:'Dağ Geçidi',d:'Sıradağlar arasındaki stratejik boğaz. Savunma +%40. Burayı tutan, geçişi kontrol eder.',def:.4},
+ kavsak:{ad:'Ticaret Kavşağı',d:'Yolların kesiştiği nokta. Altın +3/tur, azami nüfus +10.',y:{altin:3}},
+ liman:{ad:'Liman',d:'Deniz ticareti ve balıkçılık. Altın +2, tahıl +2/tur, azami nüfus +10.',y:{altin:2,tahil:2}},
+ harabe:{ad:'Antik Harabe',d:'Eski bir medeniyetin kalıntıları. Bilgi +2/tur.',y:{bilgi:2}},
+ kale:{ad:'Eski Kale',d:'Sağlam temelli eski bir kale. Savunma +%15, azami sur +1.',def:.15},
+ mabet:{ad:'Kutsal Mabet',d:'Elinde tuttukça ordunun morali her tur +2 artar.'},
+ verimli:{ad:'Verimli Topraklar',d:'Tarla ve pazar tesisleri ×1,5 üretir; +1 tesis yuvası; azami nüfus +15.'},
+ damar:{ad:'Zengin Damar',d:'Demir madeni ve taş ocağı tesisleri ×1,6 üretir.'},
+};
+const FIELD={
+ tarla:{ad:'Tarla',e:'🌾',r:'tahil',base:3,fund:100,cost:{tahil:25,odun:5},ask:'Ordu ikmali; her seviye azami nüfusu +6 artırır.',eff:{ova:1.5,vadi:1.6,tepe:1,orman:.6,dag:.4,maden:.4}},
+ kereste:{ad:'Kereste Ormanı',e:'🪵',r:'odun',base:3,fund:100,cost:{tahil:25,altin:5},ask:'Kuşatma, okçu ve inşaat.',eff:{orman:1.7,tepe:1,vadi:.8,ova:.6,dag:.6,maden:.5}},
+ tasocagi:{ad:'Taş Ocağı',e:'🧱',r:'tas',base:3,fund:110,cost:{tahil:30,odun:10},ask:'Sur ve kuruluş inşası.',eff:{dag:1.6,tepe:1.4,maden:1.2,ova:.5,vadi:.5,orman:.6}},
+ demir:{ad:'Demir Madeni',e:'⚒️',r:'demir',base:2.5,fund:150,cost:{tahil:35,odun:15},ask:'Birliklerin silahı, saldırı gücü.',eff:{maden:1.8,dag:1.4,tepe:1,ova:.4,vadi:.4,orman:.5}},
+ pazar:{ad:'Pazar Yeri',e:'🪙',r:'altin',base:3,fund:130,cost:{tahil:30,tas:10},ask:'Birlik alımı ve maaşlar.',eff:{vadi:1.4,ova:1.2,tepe:1,orman:.8,dag:.7,maden:1}},
+ medrese:{ad:'Medrese',e:'📜',r:'bilgi',base:2,fund:160,cost:{tahil:40,tas:15},ask:'Askeri teknoloji araştırması.',eff:{}},
+};
+const LVM=[0,1,2.2,3.6,5.2,7];
+const MIL=[null,
+ {ad:'Karakol',auto:2,lim:6,disc:0,cost:{odun:20,altin:20},tech:0},
+ {ad:'Kışla',auto:3,lim:9,disc:0,cost:{odun:40,tas:25,altin:35},tech:1},
+ {ad:'Talimhane',auto:5,lim:12,disc:.1,cost:{odun:60,tas:50,altin:60,demir:15},tech:2},
+ {ad:'Ordugâh',auto:7,lim:16,disc:.2,cost:{odun:90,tas:80,altin:100,demir:30},tech:3},
+ {ad:'Harbiye',auto:10,lim:22,disc:.3,cost:{tas:130,altin:160,demir:50,bilgi:20},tech:4},
+];
+const UNITS={
+ piy:{ad:'Piyade',e:'🗡️',atk:1,def:1,w:1,up:1,pop:1,mil:1,cost:{altin:3,tahil:2},d:'Ordunun bel kemiği. Dengeli ve ucuz.'},
+ okc:{ad:'Okçu',e:'🏹',atk:.8,def:1.6,w:1,up:1,pop:1,mil:2,cost:{altin:3,tahil:2,odun:2},d:'Savunmada çok güçlü (🛡1,6). Surların arkasında en iyi birlik.'},
+ suv:{ad:'Süvari',e:'🐎',atk:1.7,def:.9,w:2,up:2,pop:1,mil:3,cost:{altin:6,tahil:4,demir:2},d:'Hücum birliği. Ova/vadide +%30, dağ/ormanda -%30 saldırır; köprüsüz nehir geçişinde ayrıca ×0,6.'},
+ kus:{ad:'Kuşatma Takımı',e:'🪨',atk:.6,def:.4,w:2,up:1.5,pop:2,mil:4,cost:{altin:4,odun:8,demir:2},d:'Her takım sur bonusunun %8\'ini kırar (azami %60). Surlu bölgelere karşı vazgeçilmez.'},
+ yen:{ad:'Yeniçeri',e:'⚔️',atk:2.2,def:2,w:3,up:2,pop:1,mil:5,cost:{altin:10,tahil:3,demir:3},d:'Seçkin birlik. Hem saldırıda hem savunmada üstün.'},
+};
+const UK=Object.keys(UNITS);
+const BR=[
+ {id:'sal',ad:'Saldırı',e:'⚔️',d:'Ordunun vuruş gücü.',t:[
+  {ad:'Demircilik',d:'Saldırı +%10. Demir donanım bonusu %25 → %30.'},
+  {ad:'Çelik Dövme',d:'Saldırı toplam +%25. Donanım bonusu %35.'},
+  {ad:'Ağır Süvari',d:'Saldırı toplam +%40. Süvari saldırısı ayrıca +%25. Fetihlerde kayıplar -%15.'},
+  {ad:'Barut',d:'Saldırı toplam +%65.'}]},
+ {id:'sav',ad:'Savunma',e:'🛡️',d:'Bölgelerinin dayanıklılığı.',t:[
+  {ad:'Okçuluk',d:'Tüm bölgelerinin savunması +%10.'},
+  {ad:'Taş İşçiliği',d:'Sur maliyeti -%30; sur seviyesi başına +%10 ek savunma; azami sur 4.'},
+  {ad:'Hendekler',d:'Savunma +%15 daha; azami sur 5.'},
+  {ad:'Burçlar',d:'Savunma +%20 daha; savunmada kayıplar -%25.'}]},
+ {id:'kus',ad:'Kuşatma',e:'🪵',d:'Surları kırma gücü.',t:[
+  {ad:'Koçbaşı',d:'Kuşatma etkinliği %20 → %35.'},
+  {ad:'Kuşatma Kuleleri',d:'Kuşatma etkinliği %55; kuşatma odun gideri -%25.'},
+  {ad:'Mancınık',d:'Kuşatma etkinliği %75.'},
+  {ad:'Topçu',d:'Kuşatma etkinliği %95; surlu bölgelere saldırıda +%10.'}]},
+ {id:'eko',ad:'İkmal & Ekonomi',e:'🌾',d:'Tesisler, nüfus ve ordunun beslenmesi.',t:[
+  {ad:'Sulama',d:'Tarla üretimi +%25, nüfus büyümesi +%30. Tesisler Sv.3\'e çıkabilir.'},
+  {ad:'Loncalar',d:'Tüm kaynak tesisleri +%15. Tesisler Sv.4\'e çıkabilir.'},
+  {ad:'Lojistik',d:'Ordu gideri (tahıl/altın) -%30. Ganimetten ele geçen pay +%10.'},
+  {ad:'Ticaret Yolları',d:'Altın geliri +%30. Tesisler Sv.5\'e çıkabilir.'}]},
+ {id:'ure',ad:'Askeri Üretim',e:'🏭',d:'Askeri kuruluş kademeleri.',t:[
+  {ad:'Talim Usulü',d:'Kademe 2 açılır: Kışla (🏹 Okçu).'},
+  {ad:'Sefer Düzeni',d:'Kademe 3 açılır: Talimhane (🐎 Süvari, maliyet -%10).'},
+  {ad:'Tımar Sistemi',d:'Kademe 4 açılır: Ordugâh (🪨 Kuşatma). Asker gideri -%15.'},
+  {ad:'Harbiye Nizamı',d:'Kademe 5 açılır: Harbiye (⚔️ Yeniçeri). Otomatik üretim +%25.'}]},
+ {id:'str',ad:'Strateji',e:'👁️',d:'Harita, istihbarat ve komuta.',t:[
+  {ad:'Haritacılık',d:'Nehir geçiş cezası ×0,7 → ×0,85. 2 bölge uzağa kadar tahmini asker sayısı görünür.'},
+  {ad:'Casusluk',d:'Tüm düşman asker sayıları, birlik bileşimleri ve kesin zafer şansı görünür.'},
+  {ad:'Yol Ağı',d:'Birlikler kendi topraklarında tek turda istediği bölgeye gider.'},
+  {ad:'Askeri Disiplin',d:'Kazanılan savaşlarda kayıp -%30; azami moral 120.'}]},
+];
+const TCOST=[15,30,60,110];
+const NAME_A=['Kara','Ak','Gök','Demir','Yeşil','Kızıl','Boz','Uzun','Eski','Yeni','Taş','Gün','Ay','Kurt','Alp','Er','Tuz','Bal','Kır','Sarı','Çam','Kartal','Tunç','Altın','Yel','Buz','Kuzgun','Arslan','Sis','Ilgın','Kaya','Doğan','Ulu','Yıldız','Bulut','Koca'];
+const NAME_B=['ova','dere','yurt','kale','köy','tepe','pınar','han','hisar','kent','su','yayla','oba','eli','bük','göl','dağ','burun','çay','sırt','kaya','yazı'];
+
+// ======================= YARDIMCILAR =======================
+const $=s=>document.querySelector(s);
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function makeNoise(rng){const P=256,g=new Float32Array(P*P);for(let i=0;i<g.length;i++)g[i]=rng();const sm=t=>t*t*(3-2*t);
+ return(x,y)=>{const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,i0=((xi%P)+P)%P,j0=((yi%P)+P)%P,i1=(i0+1)%P,j1=(j0+1)%P;
+ const a=g[j0*P+i0],b=g[j0*P+i1],c=g[j1*P+i0],d=g[j1*P+i1],u=sm(xf),v=sm(yf);return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v}}
+function fbm(n,x,y,o){let s=0,a=.5,f=1,t=0;for(let i=0;i<o;i++){s+=a*n(x*f,y*f);t+=a;a*=.5;f*=2}return s/t}
+const rgb=c=>`rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;
+const rgba=(c,a)=>`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${a})`;
+const mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
+const pct=v=>Math.round(v*100)+'%';
+const r1=v=>Math.round(v*10)/10;
+const sgn=v=>{v=r1(v);return(v>=0?'+':'')+v};
+const fl=Math.floor;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function costTxt(c){return Object.entries(c).filter(([,v])=>v).map(([k,v])=>RM[k].e+r1(v)).join(' ')}
+function canPay(c){return Object.entries(c).every(([k,v])=>S.res[k]>=v-1e-9)}
+function pay(c){for(const[k,v]of Object.entries(c))S.res[k]-=v}
+function scaleC(c,m){const o={};for(const k in c)o[k]=Math.round(c[k]*m*10)/10;return o}
+function addY(t,y,m=1){for(const[k,v]of Object.entries(y))t[k]=(t[k]||0)+v*m}
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2400)}
+function segX(ax,ay,bx,by,cx,cy,dx,dy){const ex=bx-ax,ey=by-ay,fx=dx-cx,fy=dy-cy,den=ex*fy-ey*fx;if(Math.abs(den)<1e-9)return null;
+ const t=((cx-ax)*fy-(cy-ay)*fx)/den,u=((cx-ax)*ey-(cy-ay)*ex)/den;return t>=0&&t<=1&&u>=0&&u<=1?[ax+t*ex,ay+t*ey]:null}
+const pkey=(a,b)=>a<b?a*1000+b:b*1000+a;
+
+// ======================= HARİTA ÜRETİMİ =======================
+let MAP=null,S=null,VIS=[],ART=null;const ui={sel:null,tab:'bolge',rtab:'genel',tsel:null,modal:null};
+// Harita ve rölyef üretimi üreteç (generator) olarak yazıldı: senkron sürüm sonuna kadar sürer, async sürüm aşamalar arasında tarayıcıya nefes aldırır.
+function runG(g){let r;while(!(r=g.next()).done);return r.value}
+const frame=()=>new Promise(res=>{let d=0;const f=()=>{if(!d){d=1;setTimeout(res,0)}};requestAnimationFrame(f);setTimeout(f,80)});
+async function runGA(g){let r;while(!(r=g.next()).done){loadMsg(r.value);await frame()}return r.value}
+function genMap(seed){return runG(genMapG(seed))}
+function buildArt(){return runG(buildArtG())}
+function* genMapG(seed){
+ const rng=mulberry32(seed),nB=makeNoise(rng),nC=makeNoise(rng),nE=makeNoise(rng),nF=makeNoise(rng),nR=makeNoise(rng);
+ const N=W*H,landV=new Float32Array(N),LAND=.9;
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const nx=(x-W/2)/(W*.47),ny=(y-H/2)/(H*.45);landV[y*W+x]=Math.sqrt(nx*nx+ny*ny)+(fbm(nC,x/220,y/220,4)-.5)*.6}
+ yield'Bölgeler ayrılıyor…';
+ const sites=[];let tries=0;
+ while(sites.length<80&&tries<80000){tries++;const x=25+rng()*(W-50),y=25+rng()*(H-50);if(landV[(y|0)*W+(x|0)]>LAND-.07)continue;if(sites.some(s=>(s.x-x)**2+(s.y-y)**2<98*98))continue;sites.push({x,y})}
+ // ızgara hızlandırmalı en yakın merkez
+ const CS=80,gw=Math.ceil(W/CS),gh=Math.ceil(H/CS),grid=Array.from({length:gw*gh},()=>[]);
+ sites.forEach((s,i)=>grid[fl(s.y/CS)*gw+fl(s.x/CS)].push(i));
+ const ids=new Int16Array(N).fill(-1);
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x;if(landV[p]>=LAND)continue;
+  const wx=x+(fbm(nE,x/90,y/90,3)-.5)*70,wy=y+(fbm(nF,x/90,y/90,3)-.5)*70,cx=clamp(fl(wx/CS),0,gw-1),cy=clamp(fl(wy/CS),0,gh-1);let best=-1,bd=1e18;
+  for(let r=2;best<0||r<=3;r++){for(let gy=Math.max(0,cy-r);gy<=Math.min(gh-1,cy+r);gy++)for(let gx=Math.max(0,cx-r);gx<=Math.min(gw-1,cx+r);gx++)for(const i of grid[gy*gw+gx]){const dx=sites[i].x-wx,dy=sites[i].y-wy,d=dx*dx+dy*dy;if(d<bd){bd=d;best=i}}if(r>8)break}
+  ids[p]=best}
+ yield'Sınırlar çiziliyor…';
+ let n=sites.length;
+ for(let k=0;k<3;k++){cleanup(ids,n,4500);n=compact(ids,n)}
+ let adj=adjacency(ids,n);const comp=new Int16Array(n).fill(-1);let bestC=-1,bestS=0;
+ for(let s=0;s<n;s++){if(comp[s]>=0)continue;const q=[s];comp[s]=s;let sz=0;while(q.length){const c=q.pop();sz++;for(const j of adj[c])if(comp[j]<0){comp[j]=s;q.push(j)}}if(sz>bestS){bestS=sz;bestC=s}}
+ for(let p=0;p<N;p++)if(ids[p]>=0&&comp[ids[p]]!==bestC)ids[p]=-1;
+ n=compact(ids,n);adj=adjacency(ids,n);
+ const sx=new Float64Array(n),sy=new Float64Array(n),cnt=new Float64Array(n),bb=Array.from({length:n},()=>[W,H,0,0]);
+ for(let p=0;p<N;p++){const id=ids[p];if(id<0)continue;const x=p%W,y=(p/W)|0;sx[id]+=x;sy[id]+=y;cnt[id]++;const b=bb[id];if(x<b[0])b[0]=x;if(y<b[1])b[1]=y;if(x>b[2])b[2]=x;if(y>b[3])b[3]=y}
+ const regions=[];for(let i=0;i<n;i++)regions.push({cx:sx[i]/cnt[i],cy:sy[i]/cnt[i],area:cnt[i],rawAdj:adj[i],bb:bb[i]});
+ // etiket noktası: bölgenin içinde, kenarlardan en uzak noktaya yakın
+ const distB=new Float32Array(N);{const INF=1e9;for(let p=0;p<N;p++)distB[p]=ids[p]<0?0:INF;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x;if(!distB[p])continue;let d=distB[p];if(x>0&&ids[p-1]!==ids[p])d=0;if(y>0&&ids[p-W]!==ids[p])d=0;if(x>0)d=Math.min(d,distB[p-1]+1);if(y>0)d=Math.min(d,distB[p-W]+1);distB[p]=d}
+  for(let y=H-1;y>=0;y--)for(let x=W-1;x>=0;x--){const p=y*W+x;if(!distB[p])continue;let d=distB[p];if(x<W-1&&ids[p+1]!==ids[p])d=0;if(y<H-1&&ids[p+W]!==ids[p])d=0;if(x<W-1)d=Math.min(d,distB[p+1]+1);if(y<H-1)d=Math.min(d,distB[p+W]+1);distB[p]=d}}
+ yield'Dağlar ve nehirler…';
+ const bestL=new Float64Array(n).fill(-1e9);
+ for(let p=0;p<N;p+=3){const id=ids[p];if(id<0)continue;const x=p%W,y=(p/W)|0,r=regions[id];const sc=Math.min(distB[p],40)-Math.hypot(x-r.cx,y-r.cy)*.15;if(sc>bestL[id]){bestL[id]=sc;r.lx=x;r.ly=y}}
+ // sıradağlar
+ const ridge=regions.map(r=>1-Math.abs(2*fbm(nR,r.cx/300,r.cy/300,3)-1));
+ const blk=new Uint8Array(n),target=Math.round(n*.15);
+ const conn=()=>{let s=-1,tot=0;for(let i=0;i<n;i++)if(!blk[i]){tot++;if(s<0)s=i}const seen=new Uint8Array(n),q=[s];seen[s]=1;let c=0;while(q.length){const u=q.pop();c++;for(const v of adj[u])if(!blk[v]&&!seen[v]){seen[v]=1;q.push(v)}}return c===tot};
+ let bc=0;for(const o of regions.map((r,i)=>({i,v:ridge[i]})).sort((a,b)=>b.v-a.v)){if(bc>=target)break;blk[o.i]=1;if(conn())bc++;else blk[o.i]=0}
+ regions.forEach((r,i)=>{r.block=!!blk[i];r.adj=r.block?[]:adj[i].filter(j=>!blk[j])});
+ const play=regions.map((r,i)=>i).filter(i=>!blk[i]);
+ // arazi
+ regions.forEach((r,i)=>{if(blk[i])r.terrain='sira'});
+ const byR=play.slice().sort((a,b)=>ridge[b]-ridge[a]),nDag=Math.round(play.length*.15),nTepe=Math.round(play.length*.15);
+ byR.forEach((i,k)=>{if(k<nDag)regions[i].terrain='dag';else if(k<nDag+nTepe)regions[i].terrain='tepe'});
+ const rest=play.filter(i=>!regions[i].terrain).map(i=>({i,v:fbm(nB,regions[i].cx/260,regions[i].cy/260,3)})).sort((a,b)=>b.v-a.v);
+ rest.forEach((e,k)=>regions[e.i].terrain=k<rest.length*.38?'orman':k<rest.length*.58?'vadi':'ova');
+ const hills=play.filter(i=>regions[i].terrain==='dag'||regions[i].terrain==='tepe');for(let k=0;k<Math.min(5,hills.length);k++)regions[hills[fl(rng()*hills.length)]].terrain='maden';
+ // sınırlar ve kıyı
+ const bP=[],bO=[],coastal=new Uint8Array(n);
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x,id=ids[p];if(id<0)continue;let o=-2;
+  const chk=q=>{const v=ids[q];if(v!==id){if(v>=0)o=v;else if(o===-2)o=-1}};
+  if(x>0)chk(p-1);if(x<W-1)chk(p+1);if(y>0)chk(p-W);if(y<H-1)chk(p+W);
+  if(o!==-2){bP.push(p);bO.push(o)}if(o===-1)coastal[id]=1}
+ // nehirler
+ const rivers=[],srcs=regions.map((r,i)=>i).filter(i=>blk[i]);
+ const inland=regions.map((r,i)=>i).filter(i=>!coastal[i]).sort((a,b)=>ridge[b]-ridge[a]).slice(0,20),pool=srcs.concat(inland);
+ for(let k=0;k<80&&rivers.length<6;k++){const s=regions[pool[fl(rng()*pool.length)]];
+  if(rivers.some(rv=>Math.hypot(rv[0][0]-s.lx,rv[0][1]-s.ly)<170))continue;
+  let x=s.lx,y=s.ly,ang=Math.atan2(y-H/2,x-W/2)+(rng()-.5)*1.4;const pts=[[x,y]];let ok=false;
+  for(let st=0;st<260;st++){const out=Math.atan2(y-H/2,x-W/2);ang+=(rng()-.5)*.55;const dx=Math.cos(ang)+.2*Math.cos(out),dy=Math.sin(ang)+.2*Math.sin(out);ang=Math.atan2(dy,dx);
+   x+=Math.cos(ang)*10;y+=Math.sin(ang)*10;pts.push([x,y]);if(x<0||y<0||x>=W||y>=H)break;if(landV[(y|0)*W+(x|0)]>=LAND){ok=true;break}}
+  if(ok&&pts.length>24&&!rivers.some(rv=>rv.some(a=>pts.some(b=>Math.hypot(a[0]-b[0],a[1]-b[1])<30))))rivers.push(pts)}
+ for(const rv of rivers)for(const[x,y]of rv){const id=ids[(y|0)*W+(x|0)];if(id>=0&&!blk[id]&&['ova','orman','tepe'].includes(regions[id].terrain))regions[id].terrain='vadi'}
+ const rmask=new Uint8Array(N);for(const rv of rivers)for(const[x,y]of rv)for(let dy=-7;dy<=7;dy++)for(let dx=-7;dx<=7;dx++){const xx=(x|0)+dx,yy=(y|0)+dy;if(xx>=0&&yy>=0&&xx<W&&yy<H&&dx*dx+dy*dy<=49)rmask[yy*W+xx]=1}
+ const cross=new Map();
+ rivers.forEach(rv=>{const list=[];
+  for(const a of play)for(const b of regions[a].adj){if(b<a)continue;const A=regions[a],B=regions[b];
+   for(let s=0;s<rv.length-1;s++){const p=segX(A.lx,A.ly,B.lx,B.ly,rv[s][0],rv[s][1],rv[s+1][0],rv[s+1][1]);if(p&&!cross.has(pkey(a,b))){const c={x:p[0],y:p[1],ang:Math.atan2(B.ly-A.ly,B.lx-A.lx),bridge:false};cross.set(pkey(a,b),c);list.push(c);break}}}
+  for(let i=list.length-1;i>0;i--){const j=fl(rng()*(i+1));[list[i],list[j]]=[list[j],list[i]]}
+  list.slice(0,fl(list.length/3)).forEach(c=>c.bridge=true)});
+ // stratejik özellikler
+ const sh=a=>{for(let i=a.length-1;i>0;i--){const j=fl(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+ const put=(key,list,c)=>{let k=0;for(const i of list){if(k>=c)break;if(!regions[i].feat){regions[i].feat=key;k++}}};
+ const ap=artPoints(regions),nb=i=>adj[i].filter(j=>blk[j]).length;
+ const gc=play.filter(i=>ap[i]&&nb(i)>0),g2=play.filter(i=>!gc.includes(i)&&nb(i)>=2).sort((a,b)=>nb(b)-nb(a));
+ put('gecit',gc.concat(g2),clamp(gc.length,3,8));
+ put('kavsak',play.slice().sort((a,b)=>regions[b].adj.length-regions[a].adj.length),4);
+ put('liman',sh(play.filter(i=>coastal[i])),5);
+ put('verimli',sh(play.filter(i=>['ova','vadi'].includes(regions[i].terrain))),5);
+ put('damar',sh(play.filter(i=>['dag','maden','tepe'].includes(regions[i].terrain))),3);
+ put('harabe',sh(play.slice()),3);put('kale',sh(play.slice()),3);put('mabet',sh(play.slice()),2);
+ const used=new Set();for(const r of regions){let nm;do{nm=NAME_A[fl(rng()*NAME_A.length)]+NAME_B[fl(rng()*NAME_B.length)]}while(used.has(nm));used.add(nm);r.name=r.block?NAME_A[fl(rng()*NAME_A.length)]+' Dağları':nm}
+ return{seed,n,ids,regions,bP:Int32Array.from(bP),bO:Int16Array.from(bO),rivers,cross,blk,landV,rmask,LAND,playN:play.length};
+}
+function artPoints(R){const n=R.length,disc=new Int32Array(n).fill(-1),low=new Int32Array(n),ap=new Uint8Array(n);let t=0;
+ const dfs=(u,p)=>{disc[u]=low[u]=t++;let ch=0;for(const v of R[u].adj){if(disc[v]<0){ch++;dfs(v,u);low[u]=Math.min(low[u],low[v]);if(p>=0&&low[v]>=disc[u])ap[u]=1}else if(v!==p)low[u]=Math.min(low[u],disc[v])}if(p<0&&ch>1)ap[u]=1};
+ for(let i=0;i<n;i++)if(!R[i].block&&disc[i]<0)dfs(i,-1);return ap}
+function cleanup(ids,n,minArea){
+ const N=W*H,comp=new Int32Array(N).fill(-1),stack=new Int32Array(N),cs=[];
+ for(let p=0;p<N;p++){if(ids[p]<0||comp[p]>=0)continue;const rid=ids[p],ci=cs.length;let sp=0,size=0,nbr=-1;stack[sp++]=p;comp[p]=ci;
+  const vis=r=>{const id=ids[r];if(id===rid){if(comp[r]<0){comp[r]=ci;stack[sp++]=r}}else if(id>=0&&nbr<0)nbr=id};
+  while(sp){const q=stack[--sp];size++;const x=q%W;if(x>0)vis(q-1);if(x<W-1)vis(q+1);if(q>=W)vis(q-W);if(q<N-W)vis(q+W)}
+  cs.push({rid,size,nbr})}
+ const tot=new Float64Array(n),big=new Int32Array(n).fill(-1);
+ cs.forEach((c,i)=>{tot[c.rid]+=c.size;if(big[c.rid]<0||cs[big[c.rid]].size<c.size)big[c.rid]=i});
+ for(let p=0;p<N;p++){if(ids[p]<0)continue;const ci=comp[p],c=cs[ci];if(big[c.rid]!==ci||tot[c.rid]<minArea)ids[p]=c.nbr}}
+function compact(ids,n){const has=new Uint8Array(n);for(const v of ids)if(v>=0)has[v]=1;const m=new Int16Array(n).fill(-1);let k=0;for(let i=0;i<n;i++)if(has[i])m[i]=k++;for(let p=0;p<ids.length;p++)if(ids[p]>=0)ids[p]=m[ids[p]];return k}
+function adjacency(ids,n){const sh=new Map();const add=(a,b)=>{if(a===b||a<0||b<0)return;const k=pkey(a,b);sh.set(k,(sh.get(k)||0)+1)};
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x;if(x<W-1)add(ids[p],ids[p+1]);if(y<H-1)add(ids[p],ids[p+W])}
+ const adj=Array.from({length:n},()=>[]);for(const[k,v]of sh)if(v>=14){const a=fl(k/1000),b=k%1000;adj[a].push(b);adj[b].push(a)}return adj}
+function bfs(srcs){const d=new Array(MAP.n).fill(99),q=[].concat(srcs);q.forEach(s=>d[s]=0);while(q.length){const c=q.shift();for(const j of MAP.regions[c].adj)if(d[j]===99){d[j]=d[c]+1;q.push(j)}}return d}
+
+// ======================= HARİTA ÇİZİMİ (bütünleşik rölyef) =======================
+// Dağ, orman, tarla, nehir ve yollar ayrı çıkartmalar değil: yükseklik haritasına ve zemin rengine işlenir,
+// hepsi aynı ışıkla gölgelenir. Böylece tek bir yüzeyin parçası gibi görünürler.
+function boxBlur(a,w,h){const t=new Float32Array(a.length);for(let y=0;y<h;y++)for(let x=0;x<w;x++){let s=0,c=0;for(let d=-1;d<=1;d++){const xx=x+d;if(xx>=0&&xx<w){s+=a[y*w+xx];c++}}t[y*w+x]=s/c}
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){let s=0,c=0;for(let d=-1;d<=1;d++){const yy=y+d;if(yy>=0&&yy<h){s+=t[yy*w+x];c++}}a[y*w+x]=s/c}}
+const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)};
+function hash2(x,y,s){let h=(Math.imul(x|0,374761393)+Math.imul(y|0,668265263)+Math.imul(s|0,2246822519))|0;h=Math.imul(h^(h>>>13),1274126177);h^=h>>>16;return(h>>>0)/4294967296}
+// arazi türü başına [dağ, orman, tarla, tepe] ağırlığı
+const TW={sira:[1,.1,0,0],dag:[.8,.22,0,.2],maden:[.5,.1,0,.3],tepe:[.2,.3,.3,1],orman:[0,1,.08,.12],vadi:[0,.22,1,0],ova:[0,.1,.9,.1]};
+function roadList(play,seed){const{regions}=MAP,edges=[];
+ for(const a of play)for(const b of regions[a].adj){if(b<a)continue;const c=MAP.cross.get(pkey(a,b));if(c&&!c.bridge)continue;edges.push({a,b,c,d:Math.hypot(regions[a].lx-regions[b].lx,regions[a].ly-regions[b].ly)})}
+ edges.sort((x,y)=>x.d-y.d);const par=regions.map((r,i)=>i),fd=a=>{while(par[a]!==a){par[a]=par[par[a]];a=par[a]}return a},out=[];
+ for(const e of edges){const ra=fd(e.a),rb=fd(e.b);if(ra!==rb){par[ra]=rb;out.push(e)}else if(e.d<160&&hash2(e.a,e.b,seed&0xffff)<.22)out.push(e)}
+ return out}
+function* buildArtG(){
+ const{ids,landV,regions,blk,LAND,seed}=MAP,N=W*H,rng=mulberry32(seed+12345);
+ const nD=makeNoise(rng),nT=makeNoise(rng),nR=makeNoise(rng),nF=makeNoise(rng),nG=makeNoise(rng),nC=makeNoise(rng),nW=makeNoise(rng),nS=makeNoise(rng);
+ const play=regions.map((r,i)=>i).filter(i=>!blk[i]);
+ // 1) bölge kanalları: yükseklik, renk, dağ, orman, tarla, tepe (8px ızgara, yumuşatılmış → bölge sınırları görünmez)
+ const G=8,gw=fl(W/G)+2,gh=fl(H/G)+2,ch=Array.from({length:8},()=>new Float32Array(gw*gh));
+ for(let gy=0;gy<gh;gy++)for(let gx=0;gx<gw;gx++){const x=Math.min(W-1,gx*G),y=Math.min(H-1,gy*G),id=ids[y*W+x],q=gy*gw+gx;
+  if(id<0){ch[0][q]=-.05;ch[1][q]=SAND[0];ch[2][q]=SAND[1];ch[3][q]=SAND[2];continue}
+  const t=TER[regions[id].terrain],w=TW[regions[id].terrain];ch[0][q]=t.elev;ch[1][q]=t.art[0];ch[2][q]=t.art[1];ch[3][q]=t.art[2];ch[4][q]=w[0];ch[5][q]=w[1];ch[6][q]=w[2];ch[7][q]=w[3]}
+ for(const a of ch)for(let it=0;it<3;it++)boxBlur(a,gw,gh);
+ yield'Rölyef çiziliyor…';
+ const samp=(a,x,y)=>{const fx=x/G,fy=y/G,ix=fl(fx),iy=fl(fy),tx=fx-ix,ty=fy-iy,q=iy*gw+ix;return a[q]*(1-tx)*(1-ty)+a[q+1]*tx*(1-ty)+a[q+gw]*(1-tx)*ty+a[q+gw+1]*tx*ty};
+ // 2) nehir ve yol maskeleri (yüzeye işlenir, üstüne çizilmez)
+ const mk=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.lineCap='round';x.lineJoin='round';x.strokeStyle='#fff';return[c,x]};
+ const[bc,bx]=mk(),[wc,wx]=mk(),[rc,rx]=mk();
+ for(const rv of MAP.rivers){const L=rv.length;for(let k=1;k<L;k++){const w=1.8+4.2*k/L,a=rv[k-1],b=rv[k],pa=rv[Math.max(0,k-2)];
+  for(const[cx,lw]of[[bx,w+11],[wx,w]]){cx.lineWidth=lw;cx.beginPath();cx.moveTo((pa[0]+a[0])/2,(pa[1]+a[1])/2);cx.quadraticCurveTo(a[0],a[1],(a[0]+b[0])/2,(a[1]+b[1])/2);cx.stroke()}}}
+ rx.lineWidth=2.6;
+ for(const e of roadList(play,seed)){const A=regions[e.a],B=regions[e.b],pts=[[A.lx,A.ly]];if(e.c)pts.push([e.c.x,e.c.y]);pts.push([B.lx,B.ly]);const dn=[];
+  for(let i=0;i<pts.length-1;i++){const p0=pts[i],p1=pts[i+1],len=Math.hypot(p1[0]-p0[0],p1[1]-p0[1])||1,n=Math.max(1,Math.round(len/20)),nx=-(p1[1]-p0[1])/len,ny=(p1[0]-p0[0])/len;
+   for(let k=0;k<n;k++){const t=k/n,o=(k===0)?0:(hash2(e.a*77+i*13+k,e.b,seed&0xfff)-.5)*9;dn.push([p0[0]+(p1[0]-p0[0])*t+nx*o,p0[1]+(p1[1]-p0[1])*t+ny*o])}}
+  dn.push(pts[pts.length-1]);rx.beginPath();rx.moveTo(dn[0][0],dn[0][1]);for(let k=1;k<dn.length-1;k++)rx.quadraticCurveTo(dn[k][0],dn[k][1],(dn[k][0]+dn[k+1][0])/2,(dn[k][1]+dn[k+1][1])/2);rx.lineTo(dn[dn.length-1][0],dn[dn.length-1][1]);rx.stroke()}
+ const toMask=(c,passes)=>{const d=c.getContext('2d').getImageData(0,0,W,H).data,m=new Float32Array(N);for(let p=0;p<N;p++)m[p]=d[p*4+3]/255;for(let i=0;i<passes;i++)boxBlur(m,W,H);return m};
+ const bank=toMask(bc,3),water=toMask(wc,1),road=toMask(rc,1);
+ yield'Rölyef çiziliyor… (yükseklik)';
+ // 3) yükseklik alanı: tepeler, sıradağlar (sırt gürültüsü), vadi oyuğu, orman tacı
+ const E=new Float32Array(N),FM=new Float32Array(N),FT=new Float32Array(N);
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x,id=ids[p];if(id<0){E[p]=-.05;continue}
+  const mw=samp(ch[4],x,y),fw=samp(ch[5],x,y),hw=samp(ch[7],x,y);let e=samp(ch[0],x,y)+(fbm(nD,x/60,y/60,3)-.5)*.14;
+  if(hw>.03)e+=hw*fbm(nD,x/36+50,y/36+20,3)*.3;
+  if(mw>.03){const r1=1-Math.abs(2*fbm(nR,x/85,y/85,4)-1),r2=1-Math.abs(2*fbm(nR,x/28+7,y/28+3,3)-1);e+=mw*(Math.pow(r1,1.4)*1.25+Math.pow(r2,2)*.45)}
+  e-=bank[p]*.07+water[p]*.03+road[p]*.012;
+  let fm=0;if(fw>.03){const g=regions[id],dd=Math.hypot(x-g.lx,y-g.ly),dens=fw+(fbm(nF,x/55,y/55,3)-.5)*.9;
+   fm=smooth(.32,.58,dens)*(1-smooth(.62,1,e))*smooth(26,44,dd)*(1-clamp(bank[p]*1.5,0,1))*(1-clamp(road[p]*2,0,1));
+   if(fm>.01){const TS=6,c0=fl(x/TS),r0=fl(y/TS);let d1=1e9,tt=0;
+    for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){const qi=c0+i,qj=r0+j,dx=x-(qi+.2+.6*hash2(qi,qj,11))*TS,dy=y-(qj+.2+.6*hash2(qi,qj,12))*TS,dq=dx*dx+dy*dy;if(dq<d1){d1=dq;tt=hash2(qi,qj,13)}}
+    const crown=1-smooth(0,3.9,Math.sqrt(d1));e+=fm*(crown*.034+(fbm(nC,x/9+40,y/9,2)-.5)*.04+.012);FT[p]=tt*(.4+.6*crown)+.15*crown}}
+  E[p]=e;FM[p]=fm}
+ yield'Rölyef çiziliyor… (boyama)';
+ // 4) boyama: aynı ışık, eğime ve yüksekliğe bağlı renk, doku
+ const can=document.createElement('canvas');can.width=W;can.height=H;const cx=can.getContext('2d'),img=cx.createImageData(W,H),d=img.data;
+ const Lx=-.55,Ly=-.65,Lz=.55,Ll=Math.hypot(Lx,Ly,Lz),K=24;
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x,o=p*4,lv=landV[p],id=ids[p];
+  if(id<0){const dd=clamp((lv-LAND)/.5,0,1),w=.92+.12*fbm(nT,x/40,y/14,2);let c=mix([92,156,172],[16,38,64],Math.sqrt(dd));if(dd<.025)c=mix(c,[200,220,215],(1-dd/.025)*.45);
+   d[o]=c[0]*w;d[o+1]=c[1]*w;d[o+2]=c[2]*w;d[o+3]=255;continue}
+  const e=E[p],xm=Math.max(0,x-1),xp=Math.min(W-1,x+1),ym=Math.max(0,y-1),yp=Math.min(H-1,y+1),q1=y*W+xm,q2=y*W+xp,q3=ym*W+x,q4=yp*W+x;
+  const ex=(ids[q2]<0?e:E[q2])-(ids[q1]<0?e:E[q1]),ey=(ids[q4]<0?e:E[q4])-(ids[q3]<0?e:E[q3]),sl=Math.hypot(ex,ey);
+  const nx=-ex*K,ny=-ey*K,nl=Math.hypot(nx,ny,1),lam=(nx*Lx+ny*Ly+Lz)/(nl*Ll);let sh=.4+.82*Math.max(0,lam);
+  const ao=(E[y*W+clamp(x-5,0,W-1)]+E[y*W+clamp(x+5,0,W-1)]+E[clamp(y-5,0,H-1)*W+x]+E[clamp(y+5,0,H-1)*W+x])/4-e;sh*=1-clamp(ao*2.2,-.08,.08);
+  const mw=samp(ch[4],x,y),hw=samp(ch[7],x,y),tn=fbm(nT,x/9,y/9,2)-.5;
+  let c=[samp(ch[1],x,y)*(1+tn*.16),samp(ch[2],x,y)*(1+tn*.16),samp(ch[3],x,y)*(1+tn*.16)];
+  // kaya: yüksek ve eğimli yerler çıplak taş
+  if(mw>.04||hw>.1){const ra=clamp(smooth(.5,1.15,e)*mw*1.3+smooth(.07,.22,sl)*(mw*.9+hw*.3),0,.95),rn=fbm(nS,x/7,y/16,2)*.6+fbm(nS,x/4+90,y/19,2)*.4;c=mix(c,[104+58*rn,92+50*rn,80+42*rn],ra)}
+  // kar: yüksek zirveler, dik yamaçlarda tutunmaz
+  if(mw>.3){const sn=smooth(1.62,1.95,e+(fbm(nS,x/20,y/20,3)-.5)*.3)*(1-smooth(.12,.34,sl)*.8);if(sn>.01)c=mix(c,[244,247,252],sn)}
+  // orman: gölgelenen taç dokusu, yükseklikle iğne yapraklıya döner
+  const fm=FM[p];if(fm>.01){const tone=fbm(nF,x/110+30,y/110,2)*(1-smooth(.35,.8,e)*.6),fc=mix([30,66,40],[66,104,42],tone),k=.62+.6*FT[p]+.25*fbm(nC,x/14,y/14,2);c=mix(c,[fc[0]*k,fc[1]*k,fc[2]*k],fm*.9)}
+  // tarla: yerleşimin çevresinde, düz arazide, organik parsel yamaları
+  const fdw=samp(ch[6],x,y);
+  if(fdw>.1&&e<.45){const g=regions[id],dd=Math.hypot(x-g.lx,y-g.ly);let dens=fdw+(fbm(nG,x/80,y/80,3)-.5)*.8+.3*smooth(24,44,dd)*(1-smooth(90,160,dd));dens-=smooth(.1,.3,sl)*.8;
+   const fk=smooth(.45,.7,dens)*(1-FM[p])*smooth(22,34,dd)*(1-clamp(bank[p]*1.5,0,1))*(1-clamp(road[p]*2,0,1));
+   if(fk>.02){const th=(fbm(nG,x/260+9,y/260,2)-.5)*3.1,ct=Math.cos(th),sn2=Math.sin(th),wx=x+(fbm(nG,x/28,y/28,2)-.5)*16,wy=y+(fbm(nG,x/28+70,y/28,2)-.5)*16,u=(wx*ct+wy*sn2)/17,v=(-wx*sn2+wy*ct)/32,c0=fl(u),r0=fl(v);
+    let d1=1e9,d2=1e9,bi=0,bj=0;
+    for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){const qi=c0+i,qj=r0+j,du=(u-(qi+.15+.7*hash2(qi,qj,1)))*17,dv=(v-(qj+.15+.7*hash2(qi,qj,2)))*32,dq=du*du+dv*dv;if(dq<d1){d2=d1;d1=dq;bi=qi;bj=qj}else if(dq<d2)d2=dq}
+    const hh=hash2(bi,bj,3),pr=3.4+hash2(bi,bj,5)*2.2,al=hash2(bi,bj,4)*3.1416,st=.9+.12*Math.sin((x*Math.cos(al)+y*Math.sin(al))*6.2832/pr);
+    const cc=hh<.3?[208,184,104]:hh<.52?[126,158,74]:hh<.7?[140,112,80]:hh<.86?[160,168,104]:[104,140,70];
+    const hedge=1-smooth(0,2.2,Math.sqrt(d2)-Math.sqrt(d1));c=mix(c,mix([cc[0]*st,cc[1]*st,cc[2]*st],[64,90,48],hedge*.6),fk*.72)}}
+  // yerleşim: ikonun altındaki çıplak toprak
+  if(!blk[id]){const g=regions[id],dd=Math.hypot(x-g.lx,y-g.ly),rv=(1-smooth(10,24,dd))*.5;if(rv>.01)c=mix(c,[166,146,108],rv)}
+  // yollar
+  const rd=road[p];if(rd>.03)c=mix(c,[178,154,110],clamp(rd*1.4,0,.7));
+  // nehir: ıslak kıyı, akış dokulu su, köpüklü kenar
+  const bk=bank[p],wt=water[p];
+  if(bk>.03)c=mix(c,[88,78,58],clamp(bk*.55,0,.5));
+  if(wt>.03){const flow=fbm(nW,x/18,y/6,2),edge=1-Math.abs(wt-.45)*4;let wcol=mix([46,98,150],[88,150,190],flow*.8);if(edge>0)wcol=mix(wcol,[190,222,236],edge*.35);const a=smooth(.2,.55,wt);c=mix(c,wcol,a);sh=sh+(.98-sh)*a}
+  if(lv>LAND-.022)c=mix(c,SAND,clamp((lv-(LAND-.022))/.022,0,1)*.85);
+  d[o]=c[0]*sh;d[o+1]=c[1]*sh;d[o+2]=c[2]*sh+(1-Math.min(1,sh))*10;d[o+3]=255}
+ cx.putImageData(img,0,0);
+ const A=document.createElement('canvas');A.width=W*2;A.height=H*2;const ac=A.getContext('2d');ac.imageSmoothingEnabled=true;ac.imageSmoothingQuality='high';ac.drawImage(can,0,0,W*2,H*2);ac.scale(2,2);
+ for(const c of MAP.cross.values())if(c.bridge)pBridge(ac,c.x,c.y,c.ang);
+ return A}
+function pBridge(c,x,y,a){c.save();c.translate(x,y);c.rotate(a);c.fillStyle='rgba(20,30,40,.35)';c.fillRect(-11,-3,23,9);
+ c.fillStyle='#b8aa8e';c.fillRect(-11,-4,22,8);c.fillStyle='#8f836c';c.fillRect(-11,2,22,2);c.strokeStyle='rgba(60,50,38,.8)';c.lineWidth=.7;c.strokeRect(-11,-4,22,8);
+ c.strokeStyle='#d8ccb0';c.beginPath();c.moveTo(-11,-3);c.lineTo(11,-3);c.stroke();c.restore()}
+
+// ---- Yerleşim ve özellik ikonları (ekranda, her karede) ----
+function house(c,x,y,k,roof){const w=8*k,h=5.5*k;c.fillStyle='#e6d6b2';c.fillRect(x-w/2,y-h,w,h);c.fillStyle='#bba984';c.fillRect(x+w*.15,y-h,w*.35,h);
+ c.fillStyle=roof;c.beginPath();c.moveTo(x-w/2-1*k,y-h);c.lineTo(x,y-h-5*k);c.lineTo(x+w/2+1*k,y-h);c.fill();c.fillStyle='rgba(0,0,0,.25)';c.beginPath();c.moveTo(x,y-h-5*k);c.lineTo(x+w/2+1*k,y-h);c.lineTo(x,y-h);c.fill();
+ c.fillStyle='#4a3a2a';c.fillRect(x-w*.15,y-h*.55,w*.22,h*.55);c.strokeStyle='rgba(40,30,20,.6)';c.lineWidth=.6;c.strokeRect(x-w/2,y-h,w,h)}
+function iVillage(c,x,y,k,fort){c.fillStyle='rgba(0,0,0,.25)';c.beginPath();c.ellipse(x+2*k,y+2*k,15*k,4.5*k,0,0,7);c.fill();
+ house(c,x-7*k,y-1*k,k,'#9a3c24');house(c,x+6*k,y-2*k,k,'#8a4a2a');house(c,x-.5*k,y+3*k,k,'#a5482a');
+ if(fort)wall(c,x,y+5*k,k,fort)}
+function wall(c,x,y,k,lv){const w=(14+lv*3)*k;c.fillStyle='#a49a8a';c.fillRect(x-w,y-3*k,w*2,4*k);c.fillStyle='#7a7064';c.fillRect(x-w,y,w*2,1.2*k);
+ c.fillStyle='#a49a8a';for(let t=-w;t<w;t+=4*k)c.fillRect(x+t,y-5*k,2*k,2*k);c.strokeStyle='rgba(40,34,28,.7)';c.lineWidth=.7;c.strokeRect(x-w,y-3*k,w*2,4*k)}
+function tower(c,x,y,k,w,h){c.fillStyle='#cfc5b2';c.fillRect(x-w/2,y-h,w,h);c.fillStyle='#9d9381';c.fillRect(x+w*.1,y-h,w*.4,h);
+ c.fillStyle='#cfc5b2';for(let t=0;t<3;t++)c.fillRect(x-w/2+t*w*.4,y-h-2.2*k,w*.22,2.2*k);c.strokeStyle='#3d362d';c.lineWidth=.8;c.strokeRect(x-w/2,y-h,w,h)}
+function flag(c,x,y,k,col){c.strokeStyle='#2c241c';c.lineWidth=1*k;c.beginPath();c.moveTo(x,y);c.lineTo(x,y-9*k);c.stroke();c.fillStyle=rgb(col);c.beginPath();c.moveTo(x,y-9*k);c.lineTo(x+8*k,y-7*k);c.lineTo(x,y-5*k);c.fill();c.strokeStyle='rgba(0,0,0,.5)';c.lineWidth=.5;c.stroke()}
+function iCastle(c,x,y,k,col,fort){c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x+2*k,y+3*k,19*k,5*k,0,0,7);c.fill();
+ tower(c,x-12*k,y+2*k,k,7*k,15*k);tower(c,x+12*k,y+2*k,k,7*k,15*k);
+ c.fillStyle='#bfb5a2';c.fillRect(x-9*k,y-8*k,18*k,10*k);c.strokeStyle='#3d362d';c.lineWidth=.8;c.strokeRect(x-9*k,y-8*k,18*k,10*k);
+ tower(c,x,y-4*k,k,9*k,16*k);c.fillStyle='#3a2c20';c.beginPath();c.arc(x,y+2*k,3*k,Math.PI,0);c.lineTo(x+3*k,y+2*k);c.lineTo(x-3*k,y+2*k);c.fill();
+ flag(c,x,y-22*k,k,col);if(fort>1)wall(c,x,y+6*k,k,fort)}
+function iFort(c,x,y,k,col,fort){c.fillStyle='rgba(0,0,0,.28)';c.beginPath();c.ellipse(x+2*k,y+3*k,16*k,4.5*k,0,0,7);c.fill();
+ tower(c,x-8*k,y+2*k,k,7*k,12*k);tower(c,x+8*k,y+2*k,k,7*k,12*k);c.fillStyle='#bfb5a2';c.fillRect(x-5*k,y-6*k,10*k,8*k);c.strokeStyle='#3d362d';c.lineWidth=.8;c.strokeRect(x-5*k,y-6*k,10*k,8*k);
+ if(col)flag(c,x+8*k,y-12*k,k,col);wall(c,x,y+5*k,k,fort)}
+function iFeat(c,f,x,y,k){c.fillStyle='rgba(22,17,12,.72)';c.beginPath();c.arc(x,y,8.5*k,0,7);c.fill();c.strokeStyle='rgba(217,164,65,.8)';c.lineWidth=1;c.stroke();
+ c.lineWidth=1.2*k;c.lineCap='round';
+ if(f==='gecit'){c.fillStyle='#b8b0a4';c.beginPath();c.moveTo(x-6*k,y+4*k);c.lineTo(x-2.5*k,y-5*k);c.lineTo(x-.8*k,y+4*k);c.fill();c.beginPath();c.moveTo(x+.8*k,y+4*k);c.lineTo(x+2.5*k,y-5*k);c.lineTo(x+6*k,y+4*k);c.fill();c.strokeStyle='#e9c46a';c.beginPath();c.moveTo(x,y+5*k);c.lineTo(x,y-3*k);c.stroke()}
+ else if(f==='kavsak'){c.strokeStyle='#c9a26b';c.beginPath();c.moveTo(x,y+5*k);c.lineTo(x,y-5*k);c.stroke();c.fillStyle='#e0c08a';c.fillRect(x-5*k,y-4*k,6*k,2.4*k);c.fillRect(x-1*k,y-.5*k,6*k,2.4*k)}
+ else if(f==='liman'){c.fillStyle='#7a5230';c.beginPath();c.moveTo(x-6*k,y+2*k);c.lineTo(x+6*k,y+2*k);c.lineTo(x+4*k,y+5*k);c.lineTo(x-4*k,y+5*k);c.fill();c.strokeStyle='#d8cdb8';c.beginPath();c.moveTo(x,y+2*k);c.lineTo(x,y-6*k);c.stroke();c.fillStyle='#f2ebdc';c.beginPath();c.moveTo(x+.5*k,y-6*k);c.lineTo(x+5*k,y+1*k);c.lineTo(x+.5*k,y+1*k);c.fill()}
+ else if(f==='harabe'){c.fillStyle='#e2d6bb';c.fillRect(x-5*k,y-4*k,2.4*k,9*k);c.fillRect(x+2.5*k,y-1*k,2.4*k,6*k);c.fillRect(x-6*k,y+4*k,12*k,1.5*k);c.fillRect(x-2*k,y-5*k,4*k,1.5*k)}
+ else if(f==='kale'){c.fillStyle='#a49a8a';c.beginPath();c.moveTo(x-4*k,y+5*k);c.lineTo(x-4*k,y-4*k);c.lineTo(x-2*k,y-6*k);c.lineTo(x,y-3*k);c.lineTo(x+2*k,y-6*k);c.lineTo(x+4*k,y-2*k);c.lineTo(x+4*k,y+5*k);c.fill();c.fillStyle='#3a2c20';c.fillRect(x-1*k,y+1*k,2*k,4*k)}
+ else if(f==='mabet'){c.fillStyle='#f0e8d6';c.beginPath();c.moveTo(x-6*k,y-2*k);c.lineTo(x,y-6*k);c.lineTo(x+6*k,y-2*k);c.fill();for(let t=-1;t<=1;t++)c.fillRect(x+t*3.5*k-.8*k,y-2*k,1.6*k,6*k);c.fillRect(x-6*k,y+4*k,12*k,1.4*k)}
+ else if(f==='verimli'){c.strokeStyle='#e8c95a';for(let t=-1;t<=1;t++){c.beginPath();c.moveTo(x,y+5*k);c.quadraticCurveTo(x+t*2*k,y,x+t*4*k,y-5*k);c.stroke()}c.fillStyle='#e8c95a';for(let t=-1;t<=1;t++){c.beginPath();c.ellipse(x+t*4*k,y-5*k,1.4*k,2.6*k,t*.4,0,7);c.fill()}}
+ else if(f==='damar'){c.fillStyle='#6fd3e6';c.beginPath();c.moveTo(x,y-6*k);c.lineTo(x+5*k,y-1*k);c.lineTo(x,y+6*k);c.lineTo(x-5*k,y-1*k);c.fill();c.fillStyle='#bff1fa';c.beginPath();c.moveTo(x,y-6*k);c.lineTo(x-5*k,y-1*k);c.lineTo(x,y-1*k);c.fill()}}
+function iBadge(c,x,y,k,r,i,sel){const w=26*k,h=19*k,col=FAC[r.owner].col;c.beginPath();c.moveTo(x-w/2,y-h/2);c.lineTo(x+w/2,y-h/2);c.lineTo(x+w/2,y+h*.1);c.quadraticCurveTo(x+w/2,y+h*.5,x,y+h*.62);c.quadraticCurveTo(x-w/2,y+h*.5,x-w/2,y+h*.1);c.closePath();
+ c.fillStyle=rgb(col);c.fill();c.lineWidth=sel?2.4:1.4;c.strokeStyle=sel?'#fff':'rgba(20,14,8,.85)';c.stroke();
+ c.fillStyle='rgba(255,255,255,.18)';c.fillRect(x-w/2+1.5,y-h/2+1.5,w-3,h*.28);
+ c.font=`700 ${Math.round(11*k)}px system-ui,sans-serif`;c.fillStyle='#fff';c.strokeStyle='rgba(0,0,0,.55)';c.lineWidth=2.5;const t=vis(i).txt;c.strokeText(t,x,y+1);c.fillText(t,x,y+1)}
+
+// ======================= BİRLİKLER =======================
+const Z=()=>({piy:0,okc:0,suv:0,kus:0,yen:0});
+const sumU=c=>UK.reduce((s,k)=>s+(c[k]||0),0);
+function sync(r){r.troops=sumU(r.u);r.ready=sumU(r.rd)}
+function addU(r,c,ready){for(const k of UK){r.u[k]+=c[k]||0;if(ready)r.rd[k]+=c[k]||0}sync(r)}
+function remU(r,c,fromReady){for(const k of UK){const v=Math.min(r.u[k],c[k]||0);r.u[k]-=v;if(fromReady)r.rd[k]=Math.max(0,r.rd[k]-v);r.rd[k]=Math.min(r.rd[k],r.u[k])}sync(r)}
+function takeProp(c,n){const tot=sumU(c),o=Z();if(tot<=0)return o;const m=Math.min(n,tot);for(const k of UK)o[k]=fl((c[k]||0)*m/tot);let rem=m-sumU(o);for(const k of UK.slice().sort((a,b)=>(c[b]||0)-(c[a]||0)))while(rem>0&&o[k]<(c[k]||0)){o[k]++;rem--}return o}
+function scaleU(c,f){const o=Z();for(const k of UK)o[k]=Math.round((c[k]||0)*f);return o}
+function compTxt(c){return UK.filter(k=>c[k]).map(k=>`<span title="${UNITS[k].ad}">${UNITS[k].e}${c[k]}</span>`).join(' ')||'—'}
+function terrMod(k,to){const t=MAP.regions[to].terrain;if(k==='suv'){if(t==='ova'||t==='vadi')return 1.3;if(t==='dag'||t==='orman'||t==='maden')return .7}return 1}
+function uAtk(k,from,to,o){let v=UNITS[k].atk*terrMod(k,to)*(o===0&&k==='suv'&&S.tech.sal>=3?1.25:1);if(k==='suv'&&from!=null){const c=crossAt(from,to);if(c&&!c.bridge)v*=.6}return v}
+function rawAtk(c,from,to,o){return UK.reduce((s,k)=>s+(c[k]||0)*uAtk(k,from,to,o),0)}
+function rawDef(c){return UK.reduce((s,k)=>s+(c[k]||0)*UNITS[k].def,0)}
+const unitSiege=c=>Math.min(.6,((c&&c.kus)||0)*.08);
+function unitCost(i,k){const d=MIL[S.regions[i].mil]?MIL[S.regions[i].mil].disc:0;return scaleC(UNITS[k].cost,1-d)}
+function aiMix(n){const t=S.turn,o=Z();for(let q=0;q<n;q++){const x=Math.random();o[t>34&&x<.08?'yen':t>24&&x<.15?'kus':t>16&&x<.3?'suv':t>8&&x<.55?'okc':'piy']++}return o}
+function knownDef(to){const t=S.regions[to];if(mil().spy||!t.troops)return t.u;return scaleU(t.u,est(t.troops)/t.troops)}
+
+// ======================= OYUN DURUMU =======================
+function newGame(seed){MAP=genMap(seed);ART=buildArt();initGame(seed)}
+async function newGameAsync(seed){loadMsg('Harita kuruluyor…');await frame();const M=await runGA(genMapG(seed));MAP=M;ART=null;initGame(seed);ART=await runGA(buildArtG())}
+function initGame(seed){
+ const rng=mulberry32(seed^0x9e3779b9),G=MAP.regions;
+ S={ver:SAVE_VER,seed,turn:1,morale:70,phase:'kurulus',fund:FUND,res:{tahil:70,odun:50,tas:40,demir:30,altin:60,bilgi:5},
+  tech:{sal:0,sav:0,kus:0,eko:0,ure:0,str:0},log:[],over:null,
+  regions:G.map(g=>({owner:g.block?BLOCK:NEUTRAL,u:Z(),rd:Z(),troops:0,ready:0,fort:0,capital:false,rec:0,base:0,fields:[],mil:0,auto:true,autoU:'piy',pop:0}))};
+ const play=G.map((g,i)=>i).filter(i=>!G[i].block);
+ let cand=play.filter(i=>['ova','vadi'].includes(G[i].terrain)&&G[i].adj.length>=3&&G[i].feat!=='gecit');if(!cand.length)cand=play;
+ const starts=[cand[fl(rng()*cand.length)]],dists=[bfs(starts[0])];
+ for(let k=1;k<=AIS.length;k++){let best=-1,bv=-1;for(const i of play){if(starts.includes(i)||G[i].adj.length<2)continue;const v=Math.min(...dists.map(d=>d[i]))+rng()*.5;if(v>bv){bv=v;best=i}}starts.push(best);dists.push(bfs(best))}
+ starts.forEach((i,f)=>{const r=S.regions[i];r.owner=f;r.capital=true;r.fort=1;addU(r,f===0?{piy:15}:{piy:14,okc:4},true);if(f===0)r.mil=1});
+ S.regions.forEach((r,i)=>{if(r.owner===BLOCK)return;r.pop=maxPop(i)*(r.owner===0?.7:.65);if(r.owner!==NEUTRAL)return;const g=G[i];
+  const t=Math.min(28,3+Math.round(dists[0][i]*1.3)+fl(rng()*5)+(g.feat?3:0)+(g.feat==='gecit'?5:0));r.base=t;addU(r,{piy:t-Math.round(t*.3),okc:Math.round(t*.3)},true);r.fort=g.feat==='kale'?2:rng()<.2?1:0});
+ ui.sel=starts[0];ui.rtab='genel';ui.tab='bolge';
+ log(`${FAC[0].ad} ${G[starts[0]].name} bölgesinde kuruluyor.`,'good');
+}
+function log(m,c=''){S.log.push({t:S.turn,m,c});if(S.log.length>300)S.log.shift()}
+// ======================= KAYIT =======================
+// Depolama: localStorage yoksa/engelliyse oyun bellekte sürer. Kayıt gecikmeli (debounce) yazılır, sekme gizlenince/kapanınca hemen yazılır.
+const ST={ok:false,rd:false,quota:false,bad:null};// ok: yazılabilir, rd: okunabilir
+function stGet(k){if(!ST.rd)return null;try{return localStorage.getItem(k)}catch(e){return null}}
+function stSet(k,v){if(!ST.ok)return false;try{localStorage.setItem(k,v);return true}catch(e){if(!ST.quota){ST.quota=true;note('st','⚠ Kayıt yapılamadı: tarayıcı depolama alanı dolu ya da engelli. İlerleme kaydedilmiyor olabilir. ('+(e&&e.name||e)+')')}return false}}
+function stDel(k){if(!ST.ok)return;try{localStorage.removeItem(k)}catch(e){}}
+function storeCheck(){ST.rd=ST.ok=false;if(TEST)return false;try{localStorage.getItem(SAVE);ST.rd=true;const k='fetih-deneme';localStorage.setItem(k,'1');ST.ok=localStorage.getItem(k)==='1';localStorage.removeItem(k)}catch(e){ST.ok=false}return ST.ok}
+let saveT=0;
+function save(){if(!saveT&&S)saveT=setTimeout(saveNow,400)}
+function saveNow(){clearTimeout(saveT);saveT=0;if(!S||!ST.ok)return false;S.ver=SAVE_VER;const ok=stSet(SAVE,JSON.stringify(S));if(ok&&ST.quota){ST.quota=false;const b=$('#bar-st');if(b)b.remove()}return ok}
+addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow()});addEventListener('pagehide',saveNow);
+// Göçler: MIG[v] v sürümündeki kaydı v+1'e çevirir. Yeni alan eklerken SAVE_VER'i artır ve buraya bir adım ekle.
+const MIG={
+ 4:s=>s, // v4→v5: biçim aynı, yalnızca sürüm alanı eklendi
+};
+function migrate(s){let v=s.ver==null?4:+s.ver;if(!(v>=4))throw Error('Bilinmeyen kayıt sürümü: '+s.ver);if(v>SAVE_VER)throw Error(`Kayıt daha yeni bir oyun sürümünden (v${v}, bu oyun v${SAVE_VER})`);
+ while(v<SAVE_VER){if(!MIG[v])throw Error('Göç adımı yok: v'+v);s=MIG[v](s)||s;v++;s.ver=v}return s}
+function validSave(s){const R=s&&s.regions;if(!s||typeof s!=='object'||typeof s.seed!=='number'||!Array.isArray(R)||!R.length||typeof s.turn!=='number'||!s.res||!s.tech||!Array.isArray(s.log))return'Eksik ya da hatalı alanlar';
+ if(!R.every(r=>r&&r.u&&r.rd&&Array.isArray(r.fields)&&typeof r.owner==='number'))return'Bölge verisi bozuk';return''}
+function parseSave(raw){let s;try{s=JSON.parse(raw)}catch(e){throw Error('JSON okunamadı ('+e.message+')')}s=migrate(s);const v=validSave(s);if(v)throw Error(v);return s}
+// Kaydı uygula: haritayı yeniden üret, bölge sayısını doğrula. Başarısızsa mevcut oyuna dokunmaz.
+function checkMap(M,s){if(M.n!==s.regions.length)throw Error(`Harita uyuşmuyor (${M.n}≠${s.regions.length} bölge)`)}
+function setS(M,s){MAP=M;S=s;ui.sel=capIdx()??0;ui.tab='bolge';ui.rtab='genel';ui.tsel=null}
+function adoptSave(s){const M=genMap(s.seed);checkMap(M,s);setS(M,s);ART=buildArt()}
+async function adoptSaveAsync(s){const M=await runGA(genMapG(s.seed));checkMap(M,s);ART=null;setS(M,s);ART=await runGA(buildArtG())}
+// Açılış: kayıt anahtarı, yoksa eski anahtarlar. Dönüş: {s,key} | {bad,raw,why} | null
+function readSave(){for(const k of[SAVE].concat(SAVE_OLD)){const raw=stGet(k);if(raw==null)continue;try{return{s:parseSave(raw),key:k}}catch(e){return{bad:true,raw,key:k,why:e.message}}}return null}
+function load(){const r=readSave();if(!r||r.bad)return false;try{adoptSave(r.s);return true}catch(e){return false}}
+function backupBad(r){ST.bad=r;r.backed=stSet(SAVE_BAD,r.raw);if(r.backed)stDel(r.key)}// yedeklenemezse ham kayıt yerinde bırakılır
+function showBad(){const r=ST.bad;modal(`<h3>⚠ Kayıtlı oyun okunamadı</h3><p>Kayıtlı oyun okunamadı. Yeni oyun başlatıldı. ${r.backed?`Ham kayıt yedeklendi (<code>${SAVE_BAD}</code>).`:'<b>Ham kayıt tarayıcıya yedeklenemedi</b>; aşağıdan kopyalayıp sakla.'}</p>
+ <p class=muted style="font-size:12.5px">Neden: ${esc(r.why)} · Boyut: ${r.raw.length} karakter</p>
+ <div class=row><button class=btn onclick="copyText(ST.bad.raw,'Ham kayıt panoya kopyalandı.')">📋 Yedeği kopyala</button><button class="btn primary" onclick="closeModal();showHelp()">Tamam</button></div>`,'bozuk')}
+// Dışa/içe aktarma: "FETIH:" + base64(UTF-8 JSON)
+function b64e(t){const b=new TextEncoder().encode(t);let s='';for(let i=0;i<b.length;i+=8192)s+=String.fromCharCode.apply(null,b.subarray(i,i+8192));return btoa(s)}
+function b64d(t){return new TextDecoder().decode(Uint8Array.from(atob(t),c=>c.charCodeAt(0)))}
+function exportSave(){S.ver=SAVE_VER;return'FETIH:'+b64e(JSON.stringify(S))}
+async function importSave(text){text=String(text||'').trim();if(!text)throw Error('Metin boş');let raw=text;
+ if(/^FETIH:/.test(text))try{raw=b64d(text.slice(6).replace(/\s+/g,''))}catch(e){throw Error('Kodlama bozuk (base64 çözülemedi)')}
+ else if(text[0]!=='{')throw Error('Bu bir Fetih kaydına benzemiyor');
+ const s=parseSave(raw);if(boot.busy)throw Error('Yükleme sürüyor, biraz bekle');await boot(()=>adoptSaveAsync(s));saveNow();return true}
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function copyText(t,msg){const ok=()=>toast(msg||'Panoya kopyalandı.'),fb=()=>{modal(`<h3>Elle kopyala</h3><p class=muted>Pano erişimi yok. Metni seçip kopyala.</p><textarea id=cpTa readonly style="width:100%;height:160px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;font:11px monospace">${esc(t)}</textarea><div class=row><button class="btn primary" onclick="closeModal()">Kapat</button></div>`,'copy');const a=$('#cpTa');a.focus();a.select()};
+ try{if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(ok,()=>{if(legacyCopy(t))ok();else fb()});else if(legacyCopy(t))ok();else fb()}catch(e){fb()}}
+function legacyCopy(t){try{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;left:-9999px';document.body.appendChild(a);a.select();const ok=document.execCommand('copy');a.remove();return ok}catch(e){return false}}
+function showImport(){modal(`<h3>📥 Kayıt yükle</h3><p class=muted style="font-size:12.5px">“Kaydı kopyala” ile aldığın metni yapıştır. Mevcut oyunun yerini alır.</p><textarea id=impTa style="width:100%;height:130px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;font:11px monospace" placeholder="FETIH:…"></textarea><p id=impErr class=bad style="font-size:12.5px;margin:6px 0 0"></p>
+ <div class=row><button class=btn onclick="showHelp()">Vazgeç</button><button class="btn primary" onclick="doImport()">Yükle</button></div>`,'imp')}
+async function doImport(){const t=$('#impTa').value;try{await importSave(t);closeModal();centerOn(ui.sel,Math.max(minZ(),1));refresh();toast('Kayıt yüklendi.');if(S.phase==='kurulus')showSetup();if(S.over)afterModal()}catch(e){const el=$('#impErr');if(el)el.textContent='Yüklenemedi: '+e.message}}
+// ======================= HATA / UYARI ŞERİTLERİ =======================
+const ERR={list:[],seen:new Map(),closed:false};
+function note(id,html,kind){let b=$('#bar-'+id);if(!b){b=document.createElement('div');b.id='bar-'+id;b.className='bar-n '+(kind||'');$('#bars').appendChild(b)}b.innerHTML=`<span>${html}</span><button class="btn sm" onclick="this.parentNode.remove()" title="Kapat">✕</button>`;return b}
+function errReport(){return`Fetih ${GAME_VERSION} · kayıt v${SAVE_VER}\n${navigator.userAgent}\nAdres: ${location.href.split('?')[0]}\nTur: ${S?S.turn:'-'} · Tohum: ${S?S.seed:'-'} · Aşama: ${S?S.phase:'-'}\n\n`+ERR.list.map(e=>`[${e.n}×] ${e.m}\n${e.st||''}`).join('\n\n')}
+function onErr(m,st){m=String(m||'Bilinmeyen hata').slice(0,300);const k=m+'|'+(st||'').split('\n')[1];let e=ERR.seen.get(k);
+ if(e){e.n++;const c=$('#errN');if(c&&$('#bar-err'))c.textContent=` (×${e.n})`;return}
+ e={m,st:String(st||'').slice(0,1500),n:1};ERR.seen.set(k,e);ERR.list.push(e);if(ERR.list.length>20)ERR.list.shift();
+ note('err',`⚠ <b>Bir hata oluştu.</b> Oyun devam ediyor. <span class=muted>${esc(m)}<span id=errN></span> · v${GAME_VERSION}</span> <button class="btn sm" onclick="copyText(errReport(),'Hata raporu panoya kopyalandı.')">📋 Hatayı kopyala</button>`,'err')}
+addEventListener('error',e=>{if(e.target&&e.target!==window)return;onErr(e.message,e.error&&e.error.stack)});
+addEventListener('unhandledrejection',e=>{const r=e.reason;onErr('Promise: '+(r&&r.message||r),r&&r.stack)});
+const capIdx=()=>{const i=S.regions.findIndex(r=>r.owner===0&&r.capital);return i<0?null:i};
+const own=()=>S.regions.map((r,i)=>i).filter(i=>S.regions[i].owner===0);
+
+// ======================= ASKERİ HESAPLAR =======================
+function mil(){const t=S.tech,s=t.sal,v=t.sav,k=t.kus,e=t.eko,u=t.ure,g=t.str;return{
+ atk:[0,.1,.25,.4,.65][s],equip:s>=2?.35:s>=1?.3:.25,conqLoss:s>=3?.85:1,
+ def:(v>=1?.1:0)+(v>=3?.15:0)+(v>=4?.2:0),fortPer:.25+(v>=2?.1:0),maxFort:v>=3?5:v>=2?4:3,defLoss:v>=4?.75:1,surDisc:v>=2?.7:1,
+ siege:[.2,.35,.55,.75,.95][k],woodMult:k>=2?.75:1,fortAtk:k>=4?.1:0,
+ tarla:e>=1?1.25:1,growth:e>=1?1.3:1,fieldMult:e>=2?1.15:1,maxField:e>=4?5:e>=2?4:e>=1?3:2,upkeep:(e>=3?.7:1)*(u>=3?.85:1),altinMult:e>=4?1.3:1,
+ autoMult:u>=4?1.25:1,loot:e>=3?.1:0,
+ river:g>=1?.85:.7,sight:g>=1?2:1,spy:g>=2,roads:g>=3,lossMult:g>=4?.7:1,maxMorale:g>=4?120:100,moraleRec:3}}
+const moraleMult=m=>.5+m/200;
+const aiB=()=>Math.min(.5,.03*fl(S.turn/4));
+function crossAt(a,b){return MAP.cross.get(pkey(a,b))}
+function riverF(o,a,b){const c=crossAt(a,b);if(!c||c.bridge)return 1;return o===0?mil().river:.7}
+function atkParts(o,n,from,to){const p=[];if(o===0){const M=mil(),cov=n>0?Math.min(1,S.res.demir/(n*IRON)):1;
+  if(M.atk)p.push(['⚔️ Saldırı teknolojisi',M.atk]);p.push([`⚒️ Silah donanımı (%${Math.round(cov*100)})`,cov*M.equip]);if(S.regions[to].fort&&M.fortAtk)p.push(['🪵 Topçu',M.fortAtk])}
+ else if(o!==NEUTRAL&&aiB())p.push(['Düşman teknolojisi',aiB()]);return p}
+function atkMult(o,n,from,to){let m=1+atkParts(o,n,from,to).reduce((s,x)=>s+x[1],0);if(o===0)m*=moraleMult(S.morale);return m*riverF(o,from,to)}
+function siegeOf(o,fort,A){if(!fort)return 0;let b;if(o===0){const M=mil();b=M.siege*Math.min(1,S.res.odun/(fort*WOOD*M.woodMult))}else b=S.turn>15?.35:.15;return Math.min(.95,b+unitSiege(A))}
+function defParts(i,siege){const r=S.regions[i],g=MAP.regions[i],p=[];if(TER[g.terrain].def)p.push(['Arazi ('+TER[g.terrain].ad+')',TER[g.terrain].def]);
+ if(g.feat&&FEAT[g.feat].def)p.push([FEAT[g.feat].ad,FEAT[g.feat].def]);if(r.capital)p.push(['★ Başkent',.2]);
+ const fp=r.owner===0?mil().fortPer:.25;if(r.fort)p.push([`🧱 Sur ×${r.fort}`+(siege?` (kuşatma %${Math.round(siege*100)} kırdı)`:''),r.fort*fp*(1-siege)]);
+ if(r.owner===0&&mil().def)p.push(['🛡️ Savunma teknolojisi',mil().def]);if(r.owner>0&&r.owner<NEUTRAL&&aiB())p.push(['Düşman teknolojisi',aiB()]);return p}
+function defMult(i,siege){const r=S.regions[i];let d=1+defParts(i,siege).reduce((s,x)=>s+x[1],0);if(r.owner===0)d*=moraleMult(S.morale);return d}
+function odds(a,d){if(d<=0)return 1;let w=0;const K=24;for(let i=0;i<K;i++)for(let j=0;j<K;j++)if(a*(.85+.3*(i+.5)/K)>d*(.85+.3*(j+.5)/K))w++;return w/(K*K)}
+function est(t){return t<=3?t:Math.max(5,Math.round(t/5)*5)}
+function computeVision(){const o=own();VIS=o.length?bfs(o):new Array(MAP.n).fill(99)}
+function vis(i){const r=S.regions[i];if(r.owner===0||mil().spy)return{v:r.troops,txt:''+r.troops,exact:true};if(VIS[i]<=mil().sight){const e=est(r.troops);return{v:e,txt:'~'+e,exact:false}}return{v:null,txt:'?',exact:false}}
+
+function resolve(ao,from,to,A){
+ const R=S.regions,F=R[from],T=R[to],n=sumU(A),siege=siegeOf(ao,T.fort,A),am=atkMult(ao,n,from,to);
+ if(ao===0){const M=mil();S.res.demir-=Math.min(S.res.demir,n*IRON);if(T.fort)S.res.odun-=Math.min(S.res.odun,T.fort*WOOD*M.woodMult)}
+ const aP=rawAtk(A,from,to,ao)*am,dP=rawDef(T.u)*defMult(to,siege);remU(F,A,true);
+ const ra=aP*(.85+Math.random()*.3),rd=dP*(.85+Math.random()*.3),dt=T.troops,D=Object.assign(Z(),T.u);
+ if(ra>rd){let fr=rd>0?Math.sqrt(1-(rd/ra)**2):1;if(ao===0){const M=mil();fr=1-(1-fr)*M.lossMult*M.conqLoss}const SV=scaleU(A,fr);if(sumU(SV)<1)SV[UK.find(k=>A[k])]=1;
+  if(ao===0)S.morale=Math.min(mil().maxMorale,S.morale+5);const loot=conquer(to,ao,SV,fr);return{win:true,sent:n,surv:sumU(SV),lost:n-sumU(SV),dLost:dt,SV,loot}}
+ let fr=Math.sqrt(1-(ra/rd)**2);if(T.owner===0){const M=mil();fr=1-(1-fr)*M.lossMult*M.defLoss}const DS=scaleU(D,fr);if(sumU(DS)<1)DS[UK.find(k=>D[k])||'piy']=1;
+ const back=Z();for(const k of UK)back[k]=fl((A[k]||0)*.2);addU(F,back,false);
+ T.u=DS;for(const k of UK)T.rd[k]=Math.min(T.rd[k],DS[k]);sync(T);
+ if(ao===0)S.morale=Math.max(0,S.morale-6);if(T.owner===0)S.morale=Math.min(mil().maxMorale,S.morale+2);
+ return{win:false,sent:n,back:sumU(back),lost:n-sumU(back),dLost:dt-sumU(DS)}}
+function conquer(i,o,comp,fr){
+ const r=S.regions[i],old=r.owner,g=MAP.regions[i],store=o===0?lootStore(i):null;let loot=null;r.owner=o;r.u=Object.assign(Z(),comp);r.rd=Z();sync(r);r.fort=Math.max(0,r.fort-1);r.pop*=.7;
+ if(r.mil>1)r.mil--;r.fields.forEach(f=>{if(f.lv>1)f.lv--});
+ if(o===0){r.auto=true;const rate=lootRate(fr==null?.7:fr);loot={store,rate,got:{},lost:{}};for(const k in store){loot.got[k]=store[k]*rate;loot.lost[k]=store[k]-loot.got[k];S.res[k]+=loot.got[k]}}
+ if(old===0)S.morale=Math.max(0,S.morale-6);
+ if(r.capital){r.capital=false;if(old!==NEUTRAL){const rest=S.regions.map((x,k)=>k).filter(k=>S.regions[k].owner===old);
+  if(rest.length){const c=rest.sort((a,b)=>S.regions[b].troops-S.regions[a].troops)[0];S.regions[c].capital=true;
+   if(old===0){S.morale=Math.max(0,S.morale-20);log(`Başkentin ${g.name} düştü! Yeni başkent: ${MAP.regions[c].name}. Moral -20.`,'bad')}
+   else log(`${FAC[old].ad} başkenti ${g.name}'i kaybetti; yeni başkent ${MAP.regions[c].name}.`)}}}
+ if(old>0&&old<NEUTRAL&&!S.regions.some(x=>x.owner===old))log(`${FAC[old].ad} yıkıldı!`,'good');
+ return loot}
+
+// ======================= EKONOMİ & NÜFUS =======================
+function maxPop(i){const g=MAP.regions[i],r=S.regions[i];let m=TER[g.terrain].pop+(r.capital?25:0)+(g.feat==='liman'||g.feat==='kavsak'?10:0)+(g.feat==='verimli'?15:0);for(const f of r.fields)if(f.t==='tarla')m+=6*f.lv;return m}
+const popFloor=i=>Math.ceil(maxPop(i)*.25);
+const draftable=i=>Math.max(0,fl(S.regions[i].pop-popFloor(i)));
+const workforce=i=>clamp(S.regions[i].pop/(maxPop(i)*.5),.4,1);
+function slots(i){const g=MAP.regions[i],r=S.regions[i];return TER[g.terrain].slots+(r.capital?1:0)+(g.feat==='verimli'?1:0)}
+function fieldEff(i,t){const g=MAP.regions[i],F=FIELD[t];let e=F.eff[g.terrain]||1;if(g.feat==='verimli'&&(t==='tarla'||t==='pazar'))e*=1.5;if(g.feat==='damar'&&(t==='demir'||t==='tasocagi'))e*=1.6;return e}
+function fieldOut(i,f,lv=f.lv){const F=FIELD[f.t],M=mil();let v=F.base*LVM[lv]*fieldEff(i,f.t)*M.fieldMult*(S.regions[i].owner===0?workforce(i):1);if(F.r==='tahil')v*=M.tarla;if(F.r==='altin')v*=M.altinMult;return v}
+function prodParts(i){const g=MAP.regions[i],r=S.regions[i],p=[],am=mil().altinMult;
+ for(const[k,v]of Object.entries(TER[g.terrain].y))p.push([TER[g.terrain].ad,k,k==='altin'?v*am:v]);
+ if(g.feat&&FEAT[g.feat].y)for(const[k,v]of Object.entries(FEAT[g.feat].y))p.push([FEAT[g.feat].ad,k,k==='altin'?v*am:v]);
+ if(r.capital)for(const[k,v]of Object.entries({tahil:2,altin:3,demir:2,bilgi:3}))p.push(['★ Başkent',k,k==='altin'?v*am:v]);
+ r.fields.forEach(f=>p.push([`${FIELD[f.t].e} ${FIELD[f.t].ad} Sv.${f.lv}`,FIELD[f.t].r,fieldOut(i,f)]));return p}
+function production(i){const y={};prodParts(i).forEach(([,k,v])=>y[k]=(y[k]||0)+v);return y}
+function economy(){const gross={tahil:0,odun:0,tas:0,demir:0,altin:0,bilgi:0};let troops=0,uw=0,pop=0,mpop=0;
+ own().forEach(i=>{const r=S.regions[i];addY(gross,production(i));troops+=r.troops;pop+=r.pop;mpop+=maxPop(i);uw+=UK.reduce((s,k)=>s+r.u[k]*UNITS[k].up,0)});
+ const M=mil(),up={tahil:uw*.15*M.upkeep,altin:uw*.1*M.upkeep},net={};for(const k in gross)net[k]=gross[k]-(up[k]||0);
+ return{gross,up,net,troops,pop,mpop}}
+// Ganimet: fethedilen bölgenin stoğu (üretim + garnizon sandığı). Yalnızca bir kısmı ele geçer, kalanı yangın ve yağmada zayi olur.
+function lootStore(i,tr){const r=S.regions[i],g=MAP.regions[i],y=production(i),t=tr==null?r.troops:tr,s={};
+ for(const k of['tahil','odun','tas','demir','altin'])s[k]=(y[k]||0)*8;
+ s.tahil+=t*1.2;s.altin+=8+t*.9;s.demir+=t*.25;s.bilgi=8+(y.bilgi||0)*6+(g.feat==='harabe'?6:0);
+ if(r.capital)for(const k in s)s[k]*=1.5;return s}
+const lootRate=fr=>clamp(.3+.3*fr+mil().loot,.25,.75);
+const lootLine=(st,rate)=>Object.entries(st).filter(([k,v])=>v*rate>=.5).map(([k,v])=>RM[k].e+Math.round(v*rate)).join(' ')||'—';
+function lootHtml(L){if(!L)return'';const ks=Object.keys(L.store).filter(k=>L.store[k]>=.5);
+ return`<h4>💰 Ganimet · bölge stokunun %${Math.round(L.rate*100)}'i ele geçti</h4><table><tr><th>Kaynak</th><th>Bölge stoku</th><th>Alınan</th><th>Zayi</th></tr>${ks.map(k=>`<tr><td>${RM[k].e} ${RM[k].ad}</td><td>${Math.round(L.store[k])}</td><td class=pos>+${Math.round(L.got[k])}</td><td class=neg>-${Math.round(L.lost[k])}</td></tr>`).join('')}</table><p class=muted style="font-size:12px;margin:6px 0 0">Kalan kısım savaşta yangın, yağma ve bozulmayla zayi oldu. Ne kadar az kayıp verirsen o kadar çok kurtarırsın.</p>`}
+function popGrowth(i){const r=S.regions[i],mx=maxPop(i);return Math.max(0,Math.min(mx-r.pop,(mx-r.pop)*.08*(r.owner===0?mil().growth:1)+.5))}
+const fieldCount=()=>own().reduce((s,i)=>s+S.regions[i].fields.length,0);
+function newFieldCost(t){return scaleC(FIELD[t].cost,1+.2*fieldCount())}
+function upFieldCost(f){return scaleC(FIELD[f.t].cost,Math.pow(f.lv+1,1.7))}
+function fieldReq(lv){return lv<=2?null:lv===3?['eko',1]:lv===4?['eko',2]:['eko',4]}
+function surCost(i){const lv=S.regions[i].fort+1;return{tas:Math.round(20*lv*mil().surDisc),odun:10}}
+function maxFort(i){return mil().maxFort+(MAP.regions[i].feat==='kale'?1:0)}
+function autoType(i){const r=S.regions[i],k=r.autoU;return UNITS[k]&&r.mil>=UNITS[k].mil?k:'piy'}
+function recLeft(i){const r=S.regions[i];return r.mil?MIL[r.mil].lim-r.rec:0}
+function maxAfford(c){return fl(Math.min(...Object.entries(c).filter(([,v])=>v>0).map(([k,v])=>S.res[k]/v)))}
+function autoRate(i){const r=S.regions[i];return r.mil?fl(MIL[r.mil].auto*mil().autoMult/UNITS[autoType(i)].w):0}
+function canRecruit(i,k){const U=UNITS[k];return Math.max(0,Math.min(fl(recLeft(i)/U.w),maxAfford(unitCost(i,k)),fl(draftable(i)/U.pop)))}
+const techName=(b,k)=>BR.find(x=>x.id===b).t[k-1].ad;
+
+// ======================= OYUNCU EYLEMLERİ =======================
+function buyStart(t){const c=capIdx();if(S.phase!=='kurulus'||S.fund<FIELD[t].fund||S.regions[c].fields.length>=slots(c))return;S.fund-=FIELD[t].fund;S.regions[c].fields.push({t,lv:1});refresh()}
+function unbuyStart(k){const c=capIdx(),f=S.regions[c].fields[k];if(S.phase!=='kurulus'||!f)return;S.fund+=FIELD[f.t].fund;S.regions[c].fields.splice(k,1);refresh()}
+function finishSetup(){const c=capIdx();if(!S.regions[c].fields.length)return;S.res.altin+=S.fund;
+ log(`Kuruluş tamamlandı: ${S.regions[c].fields.map(f=>FIELD[f.t].ad).join(', ')}.${S.fund?` Kalan ${S.fund} akçe hazineye aktarıldı.`:''} Barış dönemi: rakipler ${GRACE}. yıla kadar sana saldırmaz.`,'good');
+ S.fund=0;S.phase='oyun';closeModal();ui.tab='bolge';ui.rtab='tesis';refresh()}
+function buildField(i,t){const c=newFieldCost(t),r=S.regions[i];if(r.owner!==0||r.fields.length>=slots(i)||!canPay(c))return;pay(c);r.fields.push({t,lv:1});log(`${MAP.regions[i].name}: ${FIELD[t].ad} kuruldu.`);refresh()}
+function upgradeField(i,k){const r=S.regions[i],f=r.fields[k];if(!f||r.owner!==0||f.lv>=mil().maxField)return;const c=upFieldCost(f);if(!canPay(c))return;pay(c);f.lv++;log(`${MAP.regions[i].name}: ${FIELD[f.t].ad} Sv.${f.lv} oldu.`);refresh()}
+function upgradeMil(i){const r=S.regions[i],nx=r.mil+1;if(r.owner!==0||nx>5||S.tech.ure<MIL[nx].tech||!canPay(MIL[nx].cost))return;pay(MIL[nx].cost);r.mil=nx;log(`${MAP.regions[i].name}: ${MIL[nx].ad} kuruldu (kademe ${nx}).`,'good');refresh()}
+function toggleAuto(i){const r=S.regions[i];r.auto=!r.auto;refresh()}
+function setAutoU(i,k){S.regions[i].autoU=k;refresh()}
+function buildSur(i){const r=S.regions[i],c=surCost(i);if(r.owner!==0||r.fort>=maxFort(i)||!canPay(c))return;pay(c);r.fort++;log(`${MAP.regions[i].name}: sur seviyesi ${r.fort}.`);refresh()}
+function recruit(i,k,n){const r=S.regions[i],U=UNITS[k],c=unitCost(i,k);if(r.owner!==0||!r.mil||r.mil<U.mil)return;n=Math.min(n,canRecruit(i,k));if(n<1)return;
+ for(const q in c)S.res[q]-=c[q]*n;addU(r,{[k]:n},false);r.rec+=n*U.w;r.pop-=n*U.pop;log(`${MAP.regions[i].name}: ${n} ${U.ad} toplandı.`);refresh()}
+function research(b,k){if(S.tech[b]!==k||S.res.bilgi<TCOST[k])return;S.res.bilgi-=TCOST[k];S.tech[b]++;const B=BR.find(x=>x.id===b);
+ log(`Teknoloji: ${B.t[k].ad} (${B.ad} ${ROM[k+1]}) geliştirildi.`,'good');if(k<3){ui.tsel=b+(k+1);toast(`🔓 ${B.t[k+1].ad} artık araştırılabilir`)}refresh()}
+function canMove(from,to){if(from===to||S.regions[to].owner!==0||S.regions[from].owner!==0)return false;if(MAP.regions[from].adj.includes(to))return true;if(!mil().roads)return false;
+ const seen=new Set([from]),q=[from];while(q.length){const c=q.shift();for(const j of MAP.regions[c].adj){if(seen.has(j)||S.regions[j].owner!==0)continue;if(j===to)return true;seen.add(j);q.push(j)}}return false}
+function canAttack(from,to){return S.phase==='oyun'&&S.regions[from].owner===0&&S.regions[to].owner>0&&MAP.regions[from].adj.includes(to)}
+
+function previewAtk(from,to,A){const t=S.regions[to],M=mil(),n=sumU(A),siege=siegeOf(0,t.fort,A),am=atkMult(0,n,from,to),K=knownDef(to),dm=defMult(to,siege),aP=rawAtk(A,from,to,0)*am,dP=rawDef(K)*dm;
+ return{n,am,dm,aP,dP,ch:n?odds(aP,dP):0,siege,iron:Math.min(S.res.demir,n*IRON),ironNeed:n*IRON,wood:t.fort?Math.min(S.res.odun,t.fort*WOOD*M.woodMult):0,woodNeed:t.fort*WOOD*M.woodMult}}
+function chanceCol(c){return c>=.7?'var(--good)':c>=.4?'var(--accent)':'var(--bad)'}
+function crossTag(a,b){const c=crossAt(a,b);return c?(c.bridge?' 🌉':' 🌊'):''}
+let ACT=null;
+function picker(av){return UK.filter(k=>av[k]>0).map(k=>`<div class=urow><span title="${UNITS[k].d}">${UNITS[k].e} ${UNITS[k].ad}</span><input type=range id=pk${k} min=0 max=${av[k]} value=${av[k]} oninput="updPick()"><b id=pk${k}v>${av[k]}</b><small class=muted>/${av[k]}</small></div>`).join('')}
+function pickComp(){const c=Z();for(const k of UK){const el=$('#pk'+k);if(el){c[k]=+el.value;$('#pk'+k+'v').textContent=el.value}}return c}
+function updPick(){if(ACT.type==='atk')updAtk();else{const c=pickComp();$('#mvb').disabled=!sumU(c);$('#mn').textContent=sumU(c)}}
+function openAttack(from,to){const r=S.regions[from];if(S.over)return;if(S.phase!=='oyun'){toast('Önce kuruluşu tamamla.');return}if(r.ready<1){toast('Bu bölgede bu tur hazır asker yok.');return}
+ const tg=MAP.regions[to];ACT={type:'atk',from,to};
+ modal(`<h3>⚔️ ${MAP.regions[from].name} → ${tg.name}</h3>
+ <div class=muted>${FAC[S.regions[to].owner].ad} · ${TER[tg.terrain].ad}${tg.feat?' · '+FEAT[tg.feat].ad:''}</div>
+ <h4>Gönderilecek birlikler (toplam <b id=an></b>)</h4>${picker(r.rd)}
+ <div id=ap></div><div class=row><button class=btn onclick="closeModal()">Vazgeç</button><button class="btn primary" id=atb onclick="doAttack()">Saldır!</button></div>`,'atk');updAtk()}
+function updAtk(){const{from,to}=ACT,A=pickComp(),n=sumU(A);$('#an').textContent=n;$('#atb').disabled=!n;if(!n){$('#ap').innerHTML='<p class=muted>En az bir birlik seç.</p>';return}
+ const p=previewAtk(from,to,A),M=mil(),c=crossAt(from,to),T=S.regions[to];
+ $('#ap').innerHTML=`<div class=chance style="color:${chanceCol(p.ch)}">%${Math.round(p.ch*100)} <small style="font-size:13px;color:var(--muted)">kazanma şansı${M.spy?'':' (tahmini)'}</small></div>
+ <div class=kv><span>Saldırı gücü</span><span>${r1(rawAtk(A,from,to,0))} × ${p.am.toFixed(2)} = <b>${Math.round(p.aP)}</b></span></div>
+ <div class=kv><span>Savunma gücü</span><span>${r1(rawDef(knownDef(to)))} × ${p.dm.toFixed(2)} = <b>${Math.round(p.dP)}</b></span></div>
+ <h4>Birliklerin gücü</h4>${UK.filter(k=>A[k]).map(k=>{const v=uAtk(k,from,to,0)/UNITS[k].atk;return`<div class=kv><span>${UNITS[k].e} ${A[k]} ${UNITS[k].ad}${Math.abs(v-1)>.01?` <span class="${v>1?'good':'bad'}">(arazi/nehir ×${r1(v)})</span>`:''}</span><span>${r1(A[k]*uAtk(k,from,to,0))}</span></div>`}).join('')}
+ <div class=kv><span>Düşman birlikleri</span><span>${M.spy?compTxt(T.u):'~'+est(T.troops)+' (bileşim bilinmiyor)'}</span></div>
+ <h4>Saldırı çarpanı</h4>${atkParts(0,n,from,to).map(([k,v])=>`<div class=kv><span>${k}</span><span>+${pct(v)}</span></div>`).join('')}
+ <div class=kv><span>🔥 Moral</span><span>×${moraleMult(S.morale).toFixed(2)}</span></div>
+ ${c?`<div class=kv><span>${c.bridge?'🌉 Köprüden geçiş':'🌊 Köprüsüz nehir geçişi'}</span><span class="${c.bridge?'':'bad'}">${c.bridge?'ceza yok':'×'+M.river+(A.suv?' (süvari ayrıca ×0,6)':'')}</span></div>`:''}
+ <div class=kv><span>⚒️ Harcanacak demir</span><span>${fl(p.iron)}/${Math.ceil(p.ironNeed)}</span></div>
+ ${T.fort?`<div class=kv><span>🪵 Kuşatma</span><span>${fl(p.wood)}/${Math.ceil(p.woodNeed)} odun${A.kus?` + ${A.kus} kuşatma takımı`:''} → surun %${Math.round(p.siege*100)}'i kırılır</span></div>`:''}
+ <div class=kv><span>💰 Olası ganimet</span><span>${lootLine(lootStore(to,M.spy?T.troops:est(T.troops)),lootRate(.7))}</span></div>
+ <h4>Savunma çarpanı</h4>${defParts(to,p.siege).map(([k,v])=>`<div class=kv><span>${k}</span><span>+${pct(v)}</span></div>`).join('')||'<p class=muted>Ek savunma yok.</p>'}
+ ${M.spy?'':'<p class=muted style="font-size:12px">Düşman sayısı tahminidir. Strateji II (Casusluk) kesin bilgi verir.</p>'}`}
+function doAttack(){const{from,to}=ACT,A=pickComp();if(!sumU(A))return;const tn=MAP.regions[to].name,prevOwner=S.regions[to].owner,wasCap=S.regions[to].capital;const res=resolve(0,from,to,A);
+ if(res.win){log(`${tn} fethedildi! (${res.lost} kayıp) Ganimet: ${lootLine(res.loot.got,1)} (zayi %${Math.round((1-res.loot.rate)*100)})`,'good');ui.sel=to;ui.rtab='genel'}else log(`${tn} saldırısı püskürtüldü. ${res.lost} asker kaybedildi.`,'bad');
+ checkEnd();refresh();
+ modal(`<h3>${res.win?'🏆 Zafer!':'💀 Yenilgi'}</h3><p>${res.win?`<b>${tn}</b> artık senin. ${res.sent} askerden <b>${res.surv}</b> tanesi bölgeye yerleşti (${compTxt(res.SV)}). Düşman kaybı: ${res.dLost}.<br><span class=good>Moral +5</span>${wasCap?`<br><b>${FAC[prevOwner].ad} başkentini kaybetti!</b>`:''}<br><small class=muted>Savaşta bölgenin nüfusu, kuruluşu ve tesisleri zarar gördü.</small>`
+ :`Saldırı püskürtüldü. ${res.sent} askerden ${res.back} tanesi geri çekildi. Düşman ${res.dLost} asker kaybetti.<br><span class=bad>Moral -6</span>`}</p>
+ ${res.win?lootHtml(res.loot):''}<div class=row><button class="btn primary" onclick="closeModal();afterModal()">Tamam</button></div>`,'res')}
+function openMove(from,to){const r=S.regions[from];if(r.ready<1){toast('Bu bölgede bu tur hazır asker yok.');return}ACT={type:'mov',from,to};
+ modal(`<h3>➜ ${MAP.regions[from].name} → ${MAP.regions[to].name}</h3><h4>Taşınacak birlikler (toplam <b id=mn>${r.ready}</b>)</h4>${picker(r.rd)}
+ <p class=muted style="font-size:12px">Taşınan birlikler bu tur tekrar hareket edemez.</p>
+ <div class=row><button class=btn onclick="closeModal()">Vazgeç</button><button class="btn primary" id=mvb onclick="doMove()">Taşı</button></div>`,'mov')}
+function doMove(){const{from,to}=ACT,A=pickComp();if(!sumU(A))return;remU(S.regions[from],A,true);addU(S.regions[to],A,false);closeModal();ui.sel=to;refresh()}
+
+// ======================= TUR SONU & YAPAY ZEKA =======================
+function endTurn(){if(S.over)return;if(S.phase!=='oyun'){toast('Önce kuruluşu tamamla.');return}
+ const ev=[],e=economy(),M=mil();for(const k in e.net)S.res[k]+=e.net[k];let ok=true,famine=false;
+ if(S.res.tahil<0){S.res.tahil=0;ok=false;famine=true;let lost=0;S.regions.forEach(r=>{if(r.owner===0&&r.troops>0){const l=Math.ceil(r.troops*.08);remU(r,takeProp(r.u,l),false);lost+=l}});S.morale-=10;ev.push({m:`Kıtlık! Ordu aç kaldı: ${lost} asker öldü, nüfus azalıyor, moral -10.`,c:'bad'})}
+ if(S.res.altin<0){S.res.altin=0;ok=false;S.morale-=8;ev.push({m:'Hazine boş! Maaşlar ödenemedi, moral -8.',c:'bad'})}
+ let made=0,noPop=0;own().forEach(i=>{const r=S.regions[i];if(!r.mil||!r.auto)return;const ut=autoType(i),U=UNITS[ut],c=unitCost(i,ut),n=Math.min(autoRate(i),maxAfford(c),fl(draftable(i)/U.pop));
+  if(n<autoRate(i)&&draftable(i)<U.pop*autoRate(i))noPop++;if(n>0){for(const k in c)S.res[k]-=c[k]*n;addU(r,{[ut]:n},false);r.pop-=n*U.pop;made+=n}});
+ if(made)log(`Askeri kuruluşlar ${made} birlik yetiştirdi.${noPop?` (${noPop} bölgede nüfus yetersiz)`:''}`);
+ S.regions.forEach((r,i)=>{if(r.owner===BLOCK)return;if(r.owner===0&&famine)r.pop*=.95;else r.pop+=popGrowth(i)});
+ const mabet=own().filter(i=>MAP.regions[i].feat==='mabet').length;
+ if(ok)S.morale=Math.min(M.maxMorale,S.morale+M.moraleRec+mabet*2);S.morale=Math.max(0,S.morale);
+ for(const f of AIS)aiTurn(f,ev);
+ S.regions.forEach(r=>{if(r.owner===NEUTRAL&&S.turn%3===0&&r.troops<r.base*1.5)addU(r,{piy:1},false)});
+ S.turn++;S.regions.forEach(r=>{if(r.u){r.rd=Object.assign(Z(),r.u);sync(r)}r.rec=0});
+ if(S.turn===GRACE)ev.push({m:'Barış dönemi sona erdi. Rakipler artık sana saldırabilir!',c:'bad'});
+ ev.forEach(x=>log(x.m,x.c));checkEnd();refresh();saveNow();
+ if(S.over)return afterModal();
+ if(ev.length)modal(`<h3>📯 Yıl ${S.turn} raporu</h3>${ev.map(x=>`<p class=${x.c}>${x.m}</p>`).join('')}<div class=row><button class="btn primary" onclick="closeModal()">Tamam</button></div>`,'rep')}
+function aiTurn(f,ev){const R=S.regions,G=MAP.regions;let mine=[];R.forEach((r,i)=>{if(r.owner===f)mine.push(i)});if(!mine.length)return;
+ const front=mine.filter(i=>G[i].adj.some(j=>R[j].owner!==f));let cap=mine.find(i=>R[i].capital);if(cap==null){cap=mine[0];R[cap].capital=true}
+ const gain=Math.round(1+Math.min(mine.length,12)*.5+Math.max(0,mine.length-12)*.25+S.turn*.02),half=Math.ceil(gain/2);addU(R[cap],aiMix(half),false);
+ for(let k=0;k<gain-half;k++){const t=front.length?front[fl(Math.random()*front.length)]:cap;addU(R[t],aiMix(1),false)}
+ if(Math.random()<.15&&front.length){const t=front[fl(Math.random()*front.length)];if(R[t].fort<2)R[t].fort++}
+ for(const i of mine.slice().sort((a,b)=>R[b].ready-R[a].ready)){const r=R[i];if(r.owner!==f||r.ready<4)continue;let best=null;
+  for(const j of G[i].adj){const t=R[j];if(t.owner===f||(t.owner===0&&S.turn<GRACE))continue;
+   const n=r.ready-Math.max(1,fl(r.ready*.2));if(n<3)continue;const A=takeProp(r.rd,n);
+   const dP=rawDef(t.u)*defMult(j,siegeOf(f,t.fort,A)),ratio=dP>0?rawAtk(A,i,j,f)*atkMult(f,n,i,j)/dP:99,need=t.owner===0?1.5:1.3;
+   if(ratio>=need){const sc=ratio+(t.owner===0?.4:0)+(t.capital?.6:0)+(G[j].feat?.3:0);if(!best||sc>best.sc)best={j,A,sc}}}
+  if(best){const t=R[best.j],prev=t.owner,wasCap=t.capital,tn=G[best.j].name;const res=resolve(f,i,best.j,best.A);
+   if(prev===0)ev.push(res.win?{m:`${FAC[f].ad}, ${tn} bölgeni ele geçirdi!${wasCap?' Başkentin düştü!':''}`,c:'bad'}:{m:`${FAC[f].ad} ${tn} bölgene ${res.sent} askerle saldırdı ama püskürtüldü. Düşman ${res.lost} asker kaybetti.`,c:'good'});
+   else if(res.win&&wasCap)ev.push({m:`${FAC[f].ad}, ${FAC[prev].ad} başkenti ${tn}'i ele geçirdi.`,c:''})}}
+ mine=[];R.forEach((r,i)=>{if(r.owner===f)mine.push(i)});const dist=new Map(),q=[];
+ for(const i of mine)if(G[i].adj.some(j=>R[j].owner!==f)){dist.set(i,0);q.push(i)}
+ while(q.length){const c=q.shift();for(const j of G[c].adj)if(R[j].owner===f&&!dist.has(j)){dist.set(j,dist.get(c)+1);q.push(j)}}
+ for(const i of mine){const d=dist.get(i);if(!d)continue;const r=R[i],n=r.troops-(r.capital?Math.ceil(r.troops*.3):1);if(n<=0)continue;
+  const nx=G[i].adj.find(j=>R[j].owner===f&&dist.get(j)<d);if(nx!=null){const mv=takeProp(r.u,n);remU(r,mv,false);addU(R[nx],mv,false)}}}
+function checkEnd(){if(S.over)return;const c={};S.regions.forEach(r=>c[r.owner]=(c[r.owner]||0)+1);const mine=c[0]||0;
+ if(!mine)S.over='lose';else if(!AIS.some(f=>c[f])||mine>=Math.ceil(MAP.playN*.75))S.over='win';if(S.over)save()}
+function afterModal(){if(!S.over)return;const c=own().length;
+ modal(S.over==='win'?`<h3>👑 Hükümdarlık Kuruldu!</h3><p>${S.turn} yılda ${c}/${MAP.playN} bölgeyi yönetir oldun. Rakiplerin diz çöktü.</p><div class=row><button class="btn primary" onclick="startNew()">Yeni Oyun</button></div>`
+ :`<h3>🏴 Beylik Yıkıldı</h3><p>${S.turn}. yılda son toprağını da kaybettin.</p><div class=row><button class="btn primary" onclick="startNew()">Yeni Oyun</button></div>`,'over')}
+
+// ======================= KATMAN: SAHİPLİK =======================
+const OVL=document.createElement('canvas');OVL.width=W;OVL.height=H;const octx=OVL.getContext('2d');let ovImg=null;
+function hatchFlags(){const f=new Uint8Array(MAP.n),s=ui.sel;if(s==null||S.regions[s].owner!==0||S.regions[s].ready<1||S.phase!=='oyun')return f;
+ for(let j=0;j<MAP.n;j++){if(canAttack(s,j))f[j]=1;else if(canMove(s,j))f[j]=2}return f}
+function drawOverlay(){if(!ovImg)ovImg=octx.createImageData(W,H);const d=ovImg.data;d.fill(0);
+ const{ids,blk,n,bP,bO}=MAP,R=S.regions,hf=hatchFlags(),sel=ui.sel,tint=[];
+ for(let i=0;i<n;i++)tint.push(blk[i]||R[i].owner===NEUTRAL?null:FAC[R[i].owner].col);
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x,id=ids[p];if(id<0||blk[id])continue;const o=p*4;let c=tint[id],a=c?58:0;
+  if(hf[id]&&((x+y)>>3)&1){c=hf[id]===1?[255,60,40]:[255,240,200];a=hf[id]===1?52:40}
+  if(id===sel){c=[255,250,225];a=hf[id]?a:60}
+  if(a){d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=a}}
+ const put=(o,c,a)=>{d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=a};
+ for(let k=0;k<bP.length;k++){const p=bP[k],id=ids[p];if(blk[id])continue;const ot=bO[k],o=p*4,t=tint[id];
+  if(id===sel||(ot>=0&&ot===sel&&!blk[ot])){put(o,[255,246,215],255);continue}
+  if(ot<0||blk[ot]){if(t)put(o,t,210);continue}
+  if(R[ot].owner!==R[id].owner){if(t)put(o,t,240);else put(o,[45,36,26],170)}else put(o,[30,24,18,],60)}
+ octx.putImageData(ovImg,0,0)}
+
+// ======================= KAMERA & GÖRÜNÜM =======================
+const view=$('#view'),vctx=view.getContext('2d');const cam={x:0,y:0,z:1};let VW=1,VH=1,DPR=1,pend=false;
+function minZ(){return Math.min(VW/W,VH/H)}
+function clampCam(){cam.z=clamp(cam.z,minZ(),3.2);const vw=VW/cam.z,vh=VH/cam.z;
+ cam.x=vw>=W?(W-vw)/2:clamp(cam.x,-30,W-vw+30);cam.y=vh>=H?(H-vh)/2:clamp(cam.y,-30,H-vh+30)}
+function resize(){const wr=$('#mapWrap');VW=wr.clientWidth;VH=wr.clientHeight;DPR=window.devicePixelRatio||1;view.width=VW*DPR;view.height=VH*DPR;view.style.width=VW+'px';view.style.height=VH+'px';clampCam();req()}
+function fitCam(){cam.z=minZ();cam.x=(W-VW/cam.z)/2;cam.y=(H-VH/cam.z)/2;req()}
+function zoomAt(f,sx,sy){const wx=cam.x+sx/cam.z,wy=cam.y+sy/cam.z;cam.z=clamp(cam.z*f,minZ(),3.2);cam.x=wx-sx/cam.z;cam.y=wy-sy/cam.z;clampCam();req()}
+function zoomBy(f){zoomAt(f,VW/2,VH/2)}
+function centerOn(i,z){const g=MAP.regions[i];if(z)cam.z=clamp(z,minZ(),3.2);cam.x=g.lx-VW/2/cam.z;cam.y=g.ly-VH/2/cam.z;clampCam();req()}
+function focusSel(){if(ui.sel!=null)centerOn(ui.sel,Math.max(cam.z,1.2))}
+function req(){if(!pend){pend=true;requestAnimationFrame(()=>{pend=false;render()})}}
+function render(){if(!ART)return;const c=vctx;c.setTransform(DPR,0,0,DPR,0,0);c.fillStyle='#0d1a26';c.fillRect(0,0,VW,VH);
+ c.save();c.scale(cam.z,cam.z);c.translate(-cam.x,-cam.y);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(ART,0,0,W,H);c.drawImage(OVL,0,0);c.restore();
+ drawIcons(c)}
+function drawIcons(c){const z=cam.z,k=clamp(z*1.05,.5,1.55),showName=z>.85;c.textAlign='center';c.textBaseline='middle';
+ const order=MAP.regions.map((g,i)=>i).filter(i=>!MAP.regions[i].block).sort((a,b)=>MAP.regions[a].ly-MAP.regions[b].ly);
+ for(const i of order){const g=MAP.regions[i],r=S.regions[i],sx=(g.lx-cam.x)*z,sy=(g.ly-cam.y)*z;if(sx<-70||sy<-70||sx>VW+70||sy>VH+70)continue;
+  if(r.capital)iCastle(c,sx,sy-6*k,k,FAC[r.owner].col,r.fort);else if(r.fort>=2)iFort(c,sx,sy-4*k,k,r.owner===NEUTRAL?null:FAC[r.owner].col,r.fort);else iVillage(c,sx,sy-3*k,k,r.fort);
+  if(g.feat)iFeat(c,g.feat,sx-24*k,sy-6*k,k);
+  iBadge(c,sx,sy+17*k,k,r,i,i===ui.sel);
+  if(r.owner===0&&r.mil){c.font=`700 ${Math.round(9*k)}px system-ui`;c.fillStyle='#ffe7a6';c.strokeStyle='rgba(0,0,0,.7)';c.lineWidth=2.5;c.strokeText('⚑'+r.mil,sx+19*k,sy+17*k);c.fillText('⚑'+r.mil,sx+19*k,sy+17*k)}
+  if(showName||r.capital||i===ui.sel){const fs=Math.round(12*clamp(k,.8,1.3));c.font=`700 ${fs}px Georgia,serif`;c.lineWidth=3.2;c.strokeStyle='rgba(18,12,6,.85)';c.strokeText(g.name,sx,sy-30*k);c.fillStyle=r.owner===0?'#ffe2a0':'#fff6e4';c.fillText(g.name,sx,sy-30*k)}}}
+// --- giriş: sürükle, tekerlek, dokunma ---
+const ptrs=new Map();let drag=null,pinch=null;
+function regionAtScreen(sx,sy){const x=fl(cam.x+sx/cam.z),y=fl(cam.y+sy/cam.z);if(x<0||y<0||x>=W||y>=H)return -1;return MAP.ids[y*W+x]}
+function local(e){const b=view.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top]}
+view.addEventListener('pointerdown',e=>{view.setPointerCapture(e.pointerId);const[x,y]=local(e);ptrs.set(e.pointerId,{x,y});
+ if(ptrs.size===1)drag={sx:x,sy:y,cx:cam.x,cy:cam.y,moved:false,btn:e.button};
+ else if(ptrs.size===2){const a=[...ptrs.values()];pinch={d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),z:cam.z};drag=null}});
+view.addEventListener('pointermove',e=>{const[x,y]=local(e);if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x,y});
+ if(pinch&&ptrs.size===2){const a=[...ptrs.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),mx=(a[0].x+a[1].x)/2,my=(a[0].y+a[1].y)/2;zoomAt(pinch.z*d/pinch.d/cam.z,mx,my);return}
+ if(drag&&drag.btn===0){const dx=x-drag.sx,dy=y-drag.sy;if(!drag.moved&&Math.hypot(dx,dy)>5){drag.moved=true;view.classList.add('drag')}
+  if(drag.moved){cam.x=drag.cx-dx/cam.z;cam.y=drag.cy-dy/cam.z;clampCam();req();$('#tip').style.display='none';return}}
+ hover(x,y)});
+view.addEventListener('pointerup',e=>{const[x,y]=local(e);ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;view.classList.remove('drag');
+ if(drag&&!drag.moved&&drag.btn===0){const i=regionAtScreen(x,y);ui.sel=i<0?null:i;ui.tab='bolge';if(i>=0&&S.regions[i].owner!==0)ui.rtab='genel';refresh()}drag=null});
+view.addEventListener('pointercancel',e=>{ptrs.delete(e.pointerId);drag=null;pinch=null});
+view.addEventListener('wheel',e=>{e.preventDefault();const[x,y]=local(e);zoomAt(Math.pow(1.0015,-e.deltaY),x,y)},{passive:false});
+view.addEventListener('contextmenu',e=>{e.preventDefault();const[x,y]=local(e),i=regionAtScreen(x,y),s=ui.sel;if(i<0||s==null||s===i||S.over)return;
+ if(canAttack(s,i))openAttack(s,i);else if(canMove(s,i))openMove(s,i);else{ui.sel=i;ui.tab='bolge';refresh()}});
+view.addEventListener('dblclick',e=>{const[x,y]=local(e),i=regionAtScreen(x,y);if(i>=0)centerOn(i,Math.max(cam.z*1.6,1.3))});
+view.addEventListener('pointerleave',()=>$('#tip').style.display='none');
+function hover(x,y){const t=$('#tip'),i=regionAtScreen(x,y);if(i<0||!S){t.style.display='none';return}const r=S.regions[i],g=MAP.regions[i];
+ let h;if(g.block)h=`<b>${g.name}</b><br>🏔️ Geçilmez sıradağlar`;
+ else{h=`<b>${g.name}</b> · ${FAC[r.owner].ad}<br>${TER[g.terrain].ad} · asker ${vis(i).txt} · nüfus ${fl(r.pop)}`;if(g.feat)h+=`<br>${FEAT[g.feat].ad}`;
+  const s=ui.sel;if(s!=null&&canAttack(s,i)&&S.regions[s].ready>0){const ch=previewAtk(s,i,S.regions[s].rd).ch;h+=`<br><span style="color:${chanceCol(ch)}">⚔ saldırı şansı %${Math.round(ch*100)}</span>${crossTag(s,i)} · <span class=muted>sağ tık: saldır</span>`}
+  else if(s!=null&&canMove(s,i)&&S.regions[s].ready>0)h+='<br>➜ <span class=muted>sağ tık: asker taşı</span>'}
+ t.innerHTML=h;t.style.display='block';t.style.left=Math.min(x+14,VW-260)+'px';t.style.top=(y+14)+'px'}
+
+// ======================= PANEL =======================
+function modal(h,kind,wide){$('#modal').innerHTML=h;$('#modal').classList.toggle('wide',!!wide);$('#modalBg').style.display='flex';ui.modal=kind||'x'}
+function closeModal(){$('#modalBg').style.display='none';ui.modal=null}
+function regLink(i){const r=S.regions[i];return`<a class=lnk onclick="selectRegion(${i})"><span class=dot style="background:${rgb(FAC[r.owner].col)}"></span> ${MAP.regions[i].name}</a>`}
+function selectRegion(i,rtab){ui.sel=i;ui.tab='bolge';if(rtab)ui.rtab=rtab;else if(S.regions[i].owner!==0)ui.rtab='genel';centerOn(i);refresh()}
+function setTab(t){ui.tab=t;renderPanel()}
+function setRTab(t){ui.rtab=t;renderPanel()}
+function renderHeader(){const e=economy();
+ $('#res').innerHTML=`<span class=r title="Tur">📅 Yıl <b>${S.turn}</b></span>`+RES.map(r=>{const v=e.net[r.k];return`<span class=r title="${r.ad}: ${r.ask}&#10;&#10;Üretim ${sgn(e.gross[r.k])}${e.up[r.k]?' · Ordu gideri -'+r1(e.up[r.k]):''}">${r.e} <b>${fl(S.res[r.k])}</b><span class="inc ${v<0?'neg':'pos'}">${sgn(v)}</span></span>`}).join('')
+ +`<span class=r title="Nüfus: askerler nüfustan çıkar. Nüfus tahıl stoğu varken büyür; çok asker almak işgücünü ve üretimi düşürür.">👥 <b>${fl(e.pop)}</b>/${fl(e.mpop)}</span><span class=r title="Moral: tüm saldırı ve savunma gücünü çarpar (×${moraleMult(S.morale).toFixed(2)}).">🔥 <b class="${S.morale<50?'neg':''}">${Math.round(S.morale)}</b></span><span class=r title="Toplam asker">🛡 <b>${e.troops}</b></span>`;
+ $('#endBtn').disabled=!!S.over||S.phase!=='oyun'}
+function renderPanel(){document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===ui.tab));const p=$('#panel'),st=p.scrollTop,same=p.dataset.t===ui.tab+ui.rtab+ui.sel;
+ p.innerHTML=({bolge:pRegion,eko:pEco,ordu:pArmy,tek:pTech,kayit:pLog})[ui.tab]();p.dataset.t=ui.tab+ui.rtab+ui.sel;if(same)p.scrollTop=st}
+function refresh(){computeVision();drawOverlay();req();renderHeader();renderPanel();if(ui.modal==='setup')showSetup();save()}
+
+// --- Bölge sekmesi ---
+function pRegion(){const i=ui.sel;let h='';
+ if(i==null){const o=own();return`<p class=muted style="margin-top:0">Haritadan bir bölge seç. Kendi bölgen seçiliyken komşu bölgeye <b>sağ tıklayarak</b> saldırabilir ya da asker taşıyabilirsin.</p><h4>Bölgelerin (${o.length})</h4>`+o.map(k=>`<div class=item><div>${regLink(k)}<small>${TER[MAP.regions[k].terrain].ad} · nüfus ${fl(S.regions[k].pop)}</small></div><span>🛡 ${S.regions[k].troops}</span></div>`).join('')}
+ const g=MAP.regions[i],r=S.regions[i];
+ if(g.block)return`<h2>🏔️ ${g.name}</h2><p class=muted>Geçilmez sıradağlar. Ordular bu dağları aşamaz. Çevresindeki geçitleri tutan, bölgenin kapısını tutar.</p>`;
+ const mine=r.owner===0,mx=maxPop(i);
+ h+=`<div class=rh><span class=dot style="background:${rgb(FAC[r.owner].col)}"></span><h2>${g.name}${r.capital?' ★':''}</h2></div><div class=muted>${TER[g.terrain].ad} · ${FAC[r.owner].ad}</div>
+ ${g.feat?`<div class=feat><b>${FEAT[g.feat].ad}</b> — ${FEAT[g.feat].d}</div>`:''}
+ <div class=stats><div><span>Asker</span><b>${vis(i).txt}</b>${mine?`<small>hazır ${r.ready}</small>`:''}</div><div><span>Nüfus</span><b>${fl(r.pop)}</b><small>/ ${mx}${mine?` · +${r1(popGrowth(i))}/tur`:''}</small></div><div><span>Savunma</span><b>×${defMult(i,0).toFixed(2)}</b><small>sur ${r.fort}</small></div></div>`;
+ if(mine){const tabs=[['genel','Genel'],['tesis',`Tesisler ${r.fields.length}/${slots(i)}`],['asker','Asker'],['sur','Savunma']];
+  h+=`<div class=sub>${tabs.map(([k,a])=>`<button class="${ui.rtab===k?'on':''}" onclick="setRTab('${k}')">${a}</button>`).join('')}</div>`;
+  h+=({genel:rgGenel,tesis:rgTesis,asker:rgAsker,sur:rgSur})[ui.rtab](i)}
+ else h+=rgGenel(i);
+ return h}
+function rgGenel(i){const g=MAP.regions[i],r=S.regions[i],mine=r.owner===0;let h=`<div class=kv style="margin-top:8px"><span>Birlikler</span><span>${mine||mil().spy?compTxt(r.u):'bileşim bilinmiyor'}</span></div>`;
+ if(mine){const wf=workforce(i);h+=`<div class=kv><span>👥 İşgücü</span><span class="${wf<1?'bad':''}">%${Math.round(wf*100)} (tesis üretimi)</span></div><div class=kv><span>Askere alınabilir nüfus</span><span>${draftable(i)}</span></div>`;
+  if(wf<1)h+=`<div class=warn>Nüfus azami değerin yarısının altında. Tesisler tam kapasite çalışmıyor. Asker almayı yavaşlat ya da tahıl stoğunu koru ki nüfus büyüsün.</div>`}
+ const parts=mine?prodParts(i):prodParts(i).filter(p=>!p[0].startsWith('★'));
+ h+=`<h4>${mine?'Üretim / tur':'Ele geçirirsen üretir'}</h4><table>${parts.map(([s,k,v])=>`<tr><td>${s}</td><td>${RM[k].e} ${RM[k].ad}</td><td class=pos>${sgn(v)}</td></tr>`).join('')||'<tr><td class=muted>Üretim yok</td></tr>'}</table>`;
+ h+=`<h4>Savunma çarpanı</h4>${defParts(i,0).map(([k,v])=>`<div class=kv><span>${k}</span><span>+${pct(v)}</span></div>`).join('')||'<p class=muted style="margin:0">Ek savunma yok.</p>'}`;
+ if(!mine){const tr=vis(i).v,st=lootStore(i,tr==null?8:tr);h+=`<h4>💰 Ele geçirirsen ganimet</h4><div class=kv><span>Bölge stoku</span><span>${lootLine(st,1)}</span></div><div class=kv><span>Tahmini ele geçecek</span><span class=pos>${lootLine(st,lootRate(.7))}</span></div><p class=muted style="font-size:12px;margin:4px 0 0">Stokun yalnızca %${Math.round(lootRate(0)*100)}–${Math.round(lootRate(1)*100)}'i ele geçer, kalanı yangın ve yağmada zayi olur. Az kayıpla kazanırsan daha çok kurtarırsın.</p>`}
+ h+=`<h4>Komşular</h4>`;
+ for(const j of g.adj){const rj=S.regions[j],c=crossAt(i,j);let act='';
+  if(mine&&rj.owner!==0){const p=previewAtk(i,j,r.rd);act=`<button class="btn sm" ${r.ready<1||S.over||S.phase!=='oyun'?'disabled':''} onclick="openAttack(${i},${j})">⚔️ <span style="color:${chanceCol(p.ch)}">%${Math.round(p.ch*100)}</span></button>`}
+  else if(mine&&rj.owner===0)act=`<button class="btn sm" ${r.ready<1?'disabled':''} onclick="openMove(${i},${j})">➜ Taşı</button>`;
+  else if(!mine&&rj.owner===0)act=`<button class="btn sm" ${rj.ready<1||S.over||S.phase!=='oyun'?'disabled':''} onclick="openAttack(${j},${i})">⚔️ Buradan (${rj.ready})</button>`;
+  h+=`<div class=item><div>${regLink(j)}<small>${TER[MAP.regions[j].terrain].ad}${MAP.regions[j].feat?' · '+FEAT[MAP.regions[j].feat].ad:''} · asker ${vis(j).txt}${rj.fort?' · sur '+rj.fort:''}${c?(c.bridge?' · 🌉 köprü':' · 🌊 nehir'):''}</small></div>${act}</div>`}
+ const mtn=g.rawAdj.filter(k=>MAP.blk[k]);if(mtn.length)h+=`<p class=muted style="font-size:12px">🏔️ Sıradağlarla komşu: ${mtn.map(k=>MAP.regions[k].name).join(', ')}</p>`;
+ return h}
+function rgTesis(i){const r=S.regions[i],M=mil(),sl=slots(i);
+ let h=`<p class=muted style="font-size:12.5px;margin-top:0">Tesisler ağırlıkla 🌾 tahılla kurulur ve geliştirilir. Üretim bölgenin işgücüne bağlıdır (şu an %${Math.round(workforce(i)*100)}). Azami seviye <b>Sv.${M.maxField}</b>.</p>`;
+ if(!r.fields.length)h+='<p class=muted>Bu bölgede henüz tesis yok.</p>';
+ r.fields.forEach((f,k)=>{const F=FIELD[f.t];let act;
+  if(f.lv>=5)act='<span class=ok>Azami</span>';else if(f.lv>=M.maxField){const q=fieldReq(f.lv+1);act=`<small class=muted>🔒 ${techName(q[0],q[1])}</small>`}
+  else{const c=upFieldCost(f);act=`<button class="btn sm ${canPay(c)?'primary':''}" ${canPay(c)?'':'disabled'} onclick="upgradeField(${i},${k})">⬆ ${costTxt(c)}</button>`}
+  h+=`<div class=card style="margin-bottom:8px"><div class=rh style="justify-content:space-between"><span>${F.e} <b>${F.ad}</b> <span class=stars>${'★'.repeat(f.lv)}${'☆'.repeat(5-f.lv)}</span></span>${act}</div>
+  <small>${RM[F.r].e} Şimdi <b>+${r1(fieldOut(i,f))}</b>/tur${f.lv<5?` → Sv.${f.lv+1}: <b class=pos>+${r1(fieldOut(i,f,f.lv+1))}</b>`:''} · verim ${pct(fieldEff(i,f.t))}</small><small class=muted>⚔ ${F.ask}</small></div>`});
+ h+=`<h4>Yeni tesis kur (${r.fields.length}/${sl})</h4>`;
+ if(r.fields.length>=sl)h+='<p class=muted>Tüm yuvalar dolu. Mevcut tesisleri geliştir.</p>';
+ else for(const[k,F]of Object.entries(FIELD)){const c=newFieldCost(k),eff=fieldEff(i,k);
+  h+=`<div class=item><div>${F.e} <b>${F.ad}</b><small>${RM[F.r].e} +${r1(fieldOut(i,{t:k,lv:1}))}/tur · <span class="${eff>=1.3?'good':eff<.8?'bad':''}">verim ${pct(eff)}</span></small></div><button class="btn sm" ${canPay(c)?'':'disabled'} onclick="buildField(${i},'${k}')">${costTxt(c)}</button></div>`}
+ return h}
+function rgAsker(i){const r=S.regions[i],M=mil();
+ let h=`<p class=muted style="font-size:12.5px;margin-top:0">Birlikler bölgenin <b>nüfusundan</b> çıkar. Nüfusun en az %25'i yerinde kalmalıdır. Askere alınabilir nüfus: <b>${draftable(i)}</b>. Kuruluş kademeleri üretimi hızlandırır ve yeni birlik türleri açar.</p>`;
+ for(let k=1;k<=5;k++){const m=MIL[k],done=r.mil>=k,cur=r.mil===k,next=r.mil+1===k,techOk=S.tech.ure>=m.tech,nu=UK.filter(q=>UNITS[q].mil===k);let right='';
+  if(cur)right='<span class=ok>Mevcut</span>';else if(done)right='<span class=ok>✓</span>';
+  else if(next)right=techOk?`<button class="btn sm ${canPay(m.cost)?'primary':''}" ${canPay(m.cost)?'':'disabled'} onclick="upgradeMil(${i})">${r.mil?'⬆':'🏗'} ${costTxt(m.cost)}</button>`:`<small class=muted>🔒 ${techName('ure',m.tech)}</small>`;
+  h+=`<div class="step ${cur?'cur':done?'done':next&&techOk?'':'lock'}"><div class=lv>${ROM[k]}</div><div class=info><b>${m.ad}</b> <span style="font-size:12px">· ${nu.map(q=>UNITS[q].e+' '+UNITS[q].ad).join(', ')}</span><small>+${fl(m.auto*M.autoMult)} puan/tur · kapasite ${m.lim}${m.disc?` · maliyet -%${m.disc*100}`:''}</small></div>${right}</div>`}
+ if(!r.mil)return h+'<p class=muted>Bu bölgede birlik yetiştirmek için önce Karakol kur.</p>';
+ const at=autoType(i),left=recLeft(i);
+ h+=`<h4>Otomatik üretim</h4><div class=rec><label class=switch><input type=checkbox ${r.auto?'checked':''} onchange="toggleAuto(${i})"> Her tur</label><b>${autoRate(i)}</b>
+ <select onchange="setAutoU(${i},this.value)">${UK.filter(k=>r.mil>=UNITS[k].mil).map(k=>`<option value=${k} ${k===at?'selected':''}>${UNITS[k].e} ${UNITS[k].ad}</option>`).join('')}</select></div>
+ <small class=muted>Tanesi ${costTxt(unitCost(i,at))} + ${UNITS[at].pop} nüfus. Nüfus ya da kaynak yetmezse üretim durur.</small>
+ <h4>Birlik topla · kalan kapasite ${left}</h4>`;
+ for(const k of UK){const U=UNITS[k],un=r.mil>=U.mil,c=unitCost(i,k),mx=un?canRecruit(i,k):0;
+  h+=`<div class=card style="margin-top:6px;${un?'':'opacity:.5'}"><div class=rh style="justify-content:space-between"><span>${U.e} <b>${U.ad}</b> <small class=muted>⚔${U.atk} 🛡${U.def} · ${U.w} puan</small></span><span class=muted style="font-size:12px">${r.u[k]?'burada '+r.u[k]:''}</span></div>
+  <small class=muted>${U.d}</small><small>${costTxt(c)} · 👥${U.pop} · bakım ×${U.up}</small>
+  ${!un?`<small class=muted>🔒 ${MIL[U.mil].ad} gerekli</small>`:mx>0?`<div class=rec><input type=range id=rc${k} min=1 max=${mx} value=${mx} oninput="$('#rv${k}').textContent=this.value"><b id=rv${k} style="min-width:24px">${mx}</b><button class="btn primary sm" onclick="recruit(${i},'${k}',+$('#rc${k}').value)">Topla</button></div>`:`<small class=muted>${left<U.w?'Bu turun kapasitesi doldu.':draftable(i)<U.pop?'Askere alınabilir nüfus yok.':'Yetersiz kaynak.'}</small>`}</div>`}
+ return h}
+function rgSur(i){const r=S.regions[i],M=mil(),mx=maxFort(i);
+ let h=`<p class=muted style="font-size:12.5px;margin-top:0">Surlar taşla yapılır. Her seviye <b>+${pct(M.fortPer)}</b> savunma verir. Düşman kuşatma araçları ve odunla bu bonusun bir kısmını kırabilir.</p>`;
+ for(let k=1;k<=Math.max(5,mx);k++){const done=r.fort>=k,next=r.fort+1===k,avail=k<=mx;let right='';
+  if(done)right='<span class=ok>✓</span>';else if(next&&avail){const c=surCost(i);right=`<button class="btn sm ${canPay(c)?'primary':''}" ${canPay(c)?'':'disabled'} onclick="buildSur(${i})">🧱 ${costTxt(c)}</button>`}
+  else if(!avail)right=`<small class=muted>🔒 ${k<=4?techName('sav',2):techName('sav',3)}</small>`;
+  h+=`<div class="step ${done?'done':next&&avail?'cur':'lock'}"><div class=lv>${k}</div><div class=info><b>Sur seviyesi ${k}</b><small>Toplam sur bonusu +${pct(k*M.fortPer)}</small></div>${right}</div>`}
+ h+=`<h4>Savunma çarpanı</h4>${defParts(i,0).map(([k,v])=>`<div class=kv><span>${k}</span><span>+${pct(v)}</span></div>`).join('')}<div class=kv><span>🔥 Moral</span><span>×${moraleMult(S.morale).toFixed(2)}</span></div><div class=kv><span>Toplam</span><b>×${defMult(i,0).toFixed(2)}</b></div>`;
+ return h}
+
+// --- Teknoloji sekmesi ---
+function techState(b,k){return S.tech[b]>k?'done':S.tech[b]===k?'avail':'lock'}
+function selTech(id){ui.tsel=id;renderPanel()}
+function pTech(){if(!ui.tsel){const b=BR.find(b=>S.tech[b.id]<4);ui.tsel=b?b.id+S.tech[b.id]:'sal0'}
+ let h=`<p class=muted style="margin-top:0">📜 Bilgi: <b style="color:var(--text)">${fl(S.res.bilgi)}</b> (${sgn(economy().net.bilgi)}/tur). Her dalda bir kademeyi açınca sonraki aktif olur. Ayrıntı için tıkla.</p>
+ <div class=tree><div></div>${[1,2,3,4].map(k=>`<div class=th>Kademe ${ROM[k]}</div>`).join('')}`;
+ BR.forEach(b=>{h+=`<div class=brn>${b.e} ${b.ad}</div>`;b.t.forEach((t,k)=>{const st=techState(b.id,k);
+  h+=`<div class="node ${st} n${k} ${ui.tsel===b.id+k?'sel':''}" onclick="selTech('${b.id}${k}')">${st==='done'?'✓ ':st==='lock'?'🔒 ':''}${t.ad}<small>${st==='done'?'Açıldı':st==='avail'&&S.res.bilgi>=TCOST[k]?'<span class=good>📜'+TCOST[k]+' hazır</span>':'📜'+TCOST[k]}</small></div>`})});
+ h+='</div>';
+ const b=ui.tsel.slice(0,3),k=+ui.tsel.slice(3),B=BR.find(x=>x.id===b),t=B.t[k],st=techState(b,k),e=economy().net.bilgi;
+ h+=`<div class=tdet><div class=rh><span style="font-size:26px">${B.e}</span><div><b style="font-size:16px">${t.ad}</b><div class=muted style="font-size:12px">${B.ad} · Kademe ${ROM[k+1]}</div></div></div>
+ <div class=prog>${[0,1,2,3].map(q=>`<i class="${S.tech[b]>q?'d':q===k?'c':''}"></i>`).join('')}</div>
+ <p style="margin:0 0 8px">${t.d}</p>
+ <div class=kv><span>Gereksinim</span><span>${k?`${S.tech[b]>=k?'✓':'✗'} ${B.t[k-1].ad}`:'Yok'}</span></div>
+ <div class=kv><span>Açtığı</span><span>${k<3?B.t[k+1].ad:'Dalın sonu'}</span></div>
+ <div class=kv><span>Maliyet</span><b>📜 ${TCOST[k]}</b></div>`;
+ if(st==='done')h+='<button class="btn wide" disabled>✓ Araştırıldı</button>';
+ else if(st==='lock')h+=`<button class="btn wide" disabled>🔒 Önce ${B.t[S.tech[b]].ad}</button>`;
+ else{const ok=S.res.bilgi>=TCOST[k],eta=e>0?Math.ceil((TCOST[k]-S.res.bilgi)/e):null;h+=`<button class="btn wide ${ok?'primary':''}" ${ok?'':'disabled'} onclick="research('${b}',${k})">${ok?'📜 Araştır':`Yetersiz bilgi${eta?` · ~${eta} tur`:''}`}</button>`}
+ return h+'</div>'}
+
+// --- Ekonomi sekmesi ---
+function pEco(){const e=economy(),o=own(),M=mil();
+ let h=`<table><tr><th>Kaynak</th><th>Stok</th><th>Üretim</th><th>Ordu</th><th>Net</th></tr>${RES.map(r=>`<tr><td title="${r.ask}">${r.e} ${r.ad}</td><td>${fl(S.res[r.k])}</td><td class=pos>${sgn(e.gross[r.k])}</td><td class=neg>${e.up[r.k]?'-'+r1(e.up[r.k]):''}</td><td class="${e.net[r.k]<0?'neg':'pos'}"><b>${sgn(e.net[r.k])}</b></td></tr>`).join('')}</table>
+ <h4>👥 Nüfus</h4><div class=kv><span>Toplam nüfus</span><span>${fl(e.pop)} / ${fl(e.mpop)}</span></div><div class=kv><span>Büyüme</span><span>${S.res.tahil>0||e.net.tahil>=0?'+'+r1(o.reduce((s,i)=>s+popGrowth(i),0))+'/tur':'<span class=bad>Kıtlıkta nüfus azalır</span>'}</span></div>
+ <p class=muted style="font-size:12px;margin:4px 0 0">Nüfus tahıl stoğu varken büyür. Tarlalar azami nüfusu artırır. Asker almak nüfusu, nüfusun düşmesi de işgücünü ve üretimi azaltır.</p>
+ <h4>Bölgeler</h4><div style="overflow:auto"><table><tr><th>Bölge</th><th>👥</th>${RES.map(r=>`<th>${r.e}</th>`).join('')}<th>Tesis</th></tr>`;
+ o.forEach(i=>{const y=production(i),wf=workforce(i);h+=`<tr><td><a class=lnk onclick="selectRegion(${i},'tesis')">${MAP.regions[i].name}${S.regions[i].capital?' ★':''}</a></td><td class="${wf<1?'neg':''}">${fl(S.regions[i].pop)}</td>${RES.map(r=>`<td>${y[r.k]?r1(y[r.k]):'<span class=muted>·</span>'}</td>`).join('')}<td>${S.regions[i].fields.length}/${slots(i)}</td></tr>`});
+ h+='</table></div><h4>Geliştirilebilir tesisler</h4>';let any=false;
+ o.forEach(i=>S.regions[i].fields.forEach((f,k)=>{if(f.lv>=M.maxField)return;any=true;const F=FIELD[f.t],c=upFieldCost(f);
+  h+=`<div class=item><div>${F.e} <b>${F.ad}</b> <span class=stars>${'★'.repeat(f.lv)}</span><small>${MAP.regions[i].name} · ${RM[F.r].e} +${r1(fieldOut(i,f))} → +${r1(fieldOut(i,f,f.lv+1))}</small></div><button class="btn sm" ${canPay(c)?'':'disabled'} onclick="upgradeField(${i},${k})">⬆ ${costTxt(c)}</button></div>`}));
+ if(!any)h+='<p class=muted>Geliştirilebilir tesis yok. Yeni tesis kurmak için bir bölgenin Tesisler sekmesine git.</p>';
+ const empty=o.filter(i=>S.regions[i].fields.length<slots(i));if(empty.length)h+=`<h4>Boş tesis yuvası olan bölgeler</h4>`+empty.map(i=>`<div class=item><div>${regLink(i)}<small>${slots(i)-S.regions[i].fields.length} boş yuva · ${TER[MAP.regions[i].terrain].ad}</small></div><button class="btn sm" onclick="selectRegion(${i},'tesis')">🏗 Kur</button></div>`).join('');
+ return h}
+
+// --- Ordu sekmesi ---
+function pArmy(){const e=economy(),M=mil(),mm=moraleMult(S.morale),o=own(),tot=Z();o.forEach(i=>UK.forEach(k=>tot[k]+=S.regions[i].u[k]));
+ const totAuto=o.reduce((s,i)=>s+(S.regions[i].auto?autoRate(i):0),0);
+ const pow=[0,...AIS].map(f=>({f,reg:S.regions.filter(r=>r.owner===f).length,tr:S.regions.filter(r=>r.owner===f).reduce((s,r)=>s+r.troops,0)}));const maxT=Math.max(1,...pow.map(p=>p.tr));
+ const turnsT=e.net.tahil<0?fl(S.res.tahil/-e.net.tahil):null,turnsA=e.net.altin<0?fl(S.res.altin/-e.net.altin):null;
+ let h=`<div class=stats style="margin-top:0"><div><span>Toplam asker</span><b>${e.troops}</b></div><div><span>Oto. üretim</span><b>+${totAuto}</b><small>birlik/tur</small></div><div><span>Moral</span><b>${Math.round(S.morale)}</b><small>×${mm.toFixed(2)}</small></div></div>
+ ${turnsT!=null?`<div class=warn>🌾 Tahıl ${turnsT} tur sonra bitecek, sonra kıtlık başlar!</div>`:''}${turnsA!=null?`<div class=warn>🪙 Hazine ${turnsA} tur sonra boşalacak!</div>`:''}
+ <h4>Birlikler</h4><table><tr><th>Birlik</th><th>⚔</th><th>🛡</th><th>Puan</th><th>👥</th><th>Açan</th><th>Sende</th></tr>${UK.map(k=>{const U=UNITS[k];return`<tr><td title="${U.d}">${U.e} ${U.ad}</td><td>${U.atk}</td><td>${U.def}</td><td>${U.w}</td><td>${U.pop}</td><td>${MIL[U.mil].ad}</td><td><b>${tot[k]}</b></td></tr>`}).join('')}</table>
+ <p class=muted style="font-size:12px;margin:6px 0 0">🐎 Süvari ova/vadide güçlü, dağ/orman ve köprüsüz nehirde zayıf. 🪨 Kuşatma surları kırar. 🏹 Okçu savunmada güçlü.</p>
+ <h4>Askeri kuruluşlar</h4>`;
+ const ms=o.filter(i=>S.regions[i].mil);
+ h+=ms.length?`<table><tr><th>Bölge</th><th>Kuruluş</th><th>👥</th><th>Üretim</th><th>Oto</th></tr>${ms.map(i=>{const r=S.regions[i];return`<tr><td><a class=lnk onclick="selectRegion(${i},'asker')">${MAP.regions[i].name}</a></td><td>${MIL[r.mil].ad}</td><td class="${draftable(i)<3?'neg':''}">${draftable(i)}</td><td>+${autoRate(i)} ${UNITS[autoType(i)].e}</td><td><input type=checkbox ${r.auto?'checked':''} onchange="toggleAuto(${i})"></td></tr>`}).join('')}</table>`:'<p class=muted>Hiç askeri kuruluşun yok.</p>';
+ h+=`<h4>Savaş çarpanları</h4><div class=kv><span>⚔️ Saldırı teknolojisi</span><span>+${pct(M.atk)}</span></div><div class=kv><span>⚒️ Demir donanımı</span><span>+${pct(M.equip)} (stok ${fl(S.res.demir/IRON)} askere yeter)</span></div>
+ <div class=kv><span>🛡️ Savunma teknolojisi</span><span>+${pct(M.def)}</span></div><div class=kv><span>🧱 Sur seviyesi başı</span><span>+${pct(M.fortPer)} (azami ${M.maxFort})</span></div>
+ <div class=kv><span>🪵 Kuşatma etkinliği</span><span>${pct(M.siege)}</span></div><div class=kv><span>🌊 Köprüsüz nehir</span><span>×${M.river}</span></div>
+ <div class=kv><span>👁️ Görüş</span><span>${M.spy?'Kesin bilgi':M.sight+' bölge, tahmini'}</span></div><div class=kv><span>Hareket</span><span>${M.roads?'Yol ağı':'Sadece komşu'}</span></div>
+ <h4>Güç dengesi</h4>${pow.map(p=>`<div class=kv><span><span class=dot style="background:${rgb(FAC[p.f].col)}"></span> ${FAC[p.f].ad}</span><span>${p.reg} bölge · ${p.f===0||M.spy?p.tr:'?'} asker</span></div>${p.f===0||M.spy?`<div class=bar><i style="width:${p.tr/maxT*100}%;background:${rgb(FAC[p.f].col)}"></i></div>`:''}`).join('')}`;
+ return h}
+function pLog(){return'<div class=log>'+S.log.slice().reverse().map(l=>`<p class=${l.c}><span class=t>Yıl ${l.t}</span>${l.m}</p>`).join('')+'</div>'}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
+
+// ======================= KURULUŞ / YARDIM / BAŞLANGIÇ =======================
+function showSetup(){const cap=capIdx(),g=MAP.regions[cap],fs=S.regions[cap].fields,sl=slots(cap);
+ let h=`<h3>👑 Beyliğin Kuruluşu</h3><p style="margin-top:0">Beyliğin <b>${g.name}</b> bölgesinde kuruluyor (${TER[g.terrain].ad}${g.feat?' · '+FEAT[g.feat].ad:''}). Sana <b>${FUND} akçelik kuruluş hazinesi</b> verildi. Bununla başkentine <b>kaynak tesisi</b> satın al. Bütçe genelde bir veya iki tesise yeter.</p>
+ <p class=muted style="font-size:12.5px">Tesislerin verimi araziye göre değişir. Sonradan her bölgede 🌾 tahılla yeni tesisler kurabilirsin.</p>
+ <div class=fundbox>💰 Kalan hazine: <b>${S.fund}</b> akçe &nbsp;·&nbsp; Tesis yuvası: ${fs.length}/${sl}</div><div class=cards>`;
+ for(const[k,F]of Object.entries(FIELD)){const eff=fieldEff(cap,k),out=fieldOut(cap,{t:k,lv:1}),ok=S.fund>=F.fund&&fs.length<sl;
+  h+=`<div class=card><div>${F.e} <b>${F.ad}</b></div><small>${RM[F.r].e} ${RM[F.r].ad} <b>+${r1(out)}</b>/tur</small><small class="${eff>=1.3?'good':eff<.8?'bad':'muted'}">Verim: ${pct(eff)}</small><small class=muted>⚔ ${F.ask}</small><button class="btn sm ${ok?'primary':''}" ${ok?'':'disabled'} onclick="buyStart('${k}')">💰 ${F.fund} akçe</button></div>`}
+ h+='</div>';
+ if(fs.length)h+='<h4>Satın aldıkların</h4>'+fs.map((f,k)=>`<div class=item><div>${FIELD[f.t].e} <b>${FIELD[f.t].ad}</b><small>${RM[FIELD[f.t].r].e} +${r1(fieldOut(cap,f))}/tur</small></div><button class="btn sm" onclick="unbuyStart(${k})">✕ Geri al</button></div>`).join('');
+ h+=`<div class=row><span class=muted style="flex:1;font-size:12px">Kalan akçe altın olarak hazineye aktarılır.</span><button class="btn primary" ${fs.length?'':'disabled'} onclick="finishSetup()">Kuruluşu Tamamla ▶</button></div>`;
+ modal(h,'setup',true)}
+function showHelp(){modal(`<h3>⚔ Fetih: Nasıl oynanır?</h3>
+<p><b>Harita:</b> Sürükleyerek kaydır, tekerlekle yakınlaştır. Sol tık bölge seçer, sağ tık seçili bölgenden saldırır ya da asker taşır. Çift tık yakınlaştırır. Tüm yönetim sağdaki panelde.</p>
+<p><b>Ekonomi:</b> Tesisler kaynak üretir ve tahılla kurulup geliştirilir. Üretim bölgenin <b>işgücüne</b>, yani nüfusuna bağlıdır.</p>
+<p><b>Nüfus ve ordu:</b> Askerler nüfustan çıkar. Nüfus tahıl stoğu varken büyür. Çok asker almak işgücünü ve üretimi düşürür. Birlikler altın, tahıl, demir ve odun ister. Ordu her tur tahıl ve altın tüketir.</p>
+<p><b>Birlikler:</b> 🗡️ Piyade, 🏹 Okçu, 🐎 Süvari, 🪨 Kuşatma, ⚔️ Yeniçeri. Her askeri kuruluş kademesi yeni bir tür açar.</p>
+<p><b>Arazi:</b> Sıradağlar geçilmezdir. Geçitler +%40 savunma verir. Köprüsüz nehir geçişi saldırıyı ×0,7'ye düşürür, süvariyi daha da fazla. Dağ ve ormanda savunma güçlüdür, süvari zayıftır.</p>
+<p><b>Ganimet:</b> Fethettiğin bölgenin stokundan yalnızca bir pay (%30–70) ele geçer. Kalanı yangın ve yağmada zayi olur. Kayıpsız kazanmak daha çok ganimet kurtarır.</p>
+<p><b>Hedef:</b> 4 rakibi yık ya da haritanın %75'ini al. İlk ${GRACE} yıl rakipler sana saldırmaz.</p>
+<div class=savebox><b style="font-size:12.5px">💾 Kayıt</b><span class=muted style="font-size:12px;flex:1">${ST.ok?'Oyun bu tarayıcıya otomatik kaydedilir.':'Tarayıcı kaydı kapalı.'}</span><button class="btn sm" onclick="copyText(exportSave(),'Kayıt panoya kopyalandı.')">📋 Kaydı kopyala</button><button class="btn sm" onclick="showImport()">📥 Kayıt yükle</button></div>
+<div class=row><button class="btn primary" onclick="closeModal();if(S.phase==='kurulus')showSetup()">Başla</button></div><div class=ver>Fetih v${GAME_VERSION} · kayıt v${SAVE_VER}</div>`,'help')}
+function askNew(){modal(`<h3>Yeni oyun?</h3><p>Mevcut oyunun silinir ve yeni bir harita oluşturulur.</p><div class=row><button class=btn onclick="closeModal()">Vazgeç</button><button class="btn danger" onclick="startNew()">Yeni Oyun</button></div>`,'ask')}
+function loadMsg(m){const l=$('#loading');if(l)l.textContent=m}
+async function boot(fn){if(boot.busy)return;boot.busy=true;$('#loading').style.display='flex';loadMsg('Harita kuruluyor…');await frame();try{return await fn()}finally{$('#loading').style.display='none';boot.busy=false}}
+function freshStart(){resize();centerOn(capIdx(),Math.max(minZ(),1));refresh();saveNow()}
+function startNew(){if(boot.busy)return;closeModal();boot(async()=>{await newGameAsync(fl(Math.random()*1e9));freshStart();showHelp()})}
+window.addEventListener('resize',resize);
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&ui.modal&&!['setup','over','bozuk'].includes(ui.modal))closeModal()});
+async function start(){if(!storeCheck())note('st','⚠ Tarayıcı kaydı kapalı: ilerleme kaydedilmeyecek.'+(ST.rd?' (Var olan kayıt okunabiliyor ama üzerine yazılamıyor.)':''),'warn');
+ await boot(async()=>{resize();const r=readSave();let ok=false;
+  if(r&&!r.bad){try{await adoptSaveAsync(r.s);ok=true;if(r.key!==SAVE&&saveNow())stDel(r.key)}catch(e){r.bad=true;r.why=e.message}}
+  if(r&&r.bad)backupBad(r);
+  if(ok){centerOn(ui.sel??0,Math.max(minZ(),1));refresh();if(S.phase==='kurulus')showSetup();if(S.over)afterModal()}
+  else{await newGameAsync(fl(Math.random()*1e9));freshStart();if(ST.bad)showBad();else showHelp()}})}
+if(!TEST)start();
+</script>
+</body>
+</html>
