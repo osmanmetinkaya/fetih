@@ -1,0 +1,239 @@
+{
+ "note": "Faz 0 öncesi index.html (değişiklik yapılmadan) ile ölçüldü. seedRandom:true → Math.random tohumlu, sonuçlar deterministik; aynı oyun mantığında birebir tekrarlanmalı.",
+ "summary": {
+  "n": 12,
+  "win": 9,
+  "lose": 3,
+  "winRate": 0.75,
+  "avgEnd": 68.3,
+  "avgWinEnd": 70.7,
+  "minWinEnd": 50,
+  "maxWinEnd": 95,
+  "avgT50": 60.1,
+  "avgFamine": 0,
+  "avgActs": 10.6,
+  "errors": 0,
+  "fatal": null,
+  "ms": 11341,
+  "opts": {
+   "seeds": [
+    11,
+    22,
+    33,
+    44,
+    55,
+    66,
+    77,
+    88,
+    99,
+    111,
+    123,
+    234
+   ],
+   "maxTurns": 140,
+   "seedRandom": true,
+   "fast": true,
+   "bot": {
+    "wStart": {
+     "tarla": 1.6,
+     "pazar": 1.5,
+     "medrese": 2
+    },
+    "wNew": {
+     "medrese": 1.4,
+     "pazar": 1.2,
+     "tarla": 1.3
+    },
+    "techMax": 4,
+    "upTahil": 80,
+    "newTahil": 60,
+    "milAltin": 60,
+    "milFrontOwn": 4,
+    "suvAt": 3,
+    "surMax": 2,
+    "surTas": 60,
+    "resMul": 4,
+    "resAdd": 20,
+    "okcMil": 2,
+    "okcP": 0.3,
+    "popKeep": 0.5,
+    "minReady": 4,
+    "atkCh": 0.75
+   }
+  }
+ },
+ "rows": [
+  {
+   "seed": 11,
+   "end": 57,
+   "over": "lose",
+   "own": 0,
+   "playN": 54,
+   "t25": 41,
+   "t50": null,
+   "t75": null,
+   "famine": 0,
+   "acts": 10.91,
+   "errors": []
+  },
+  {
+   "seed": 22,
+   "end": 57,
+   "over": "win",
+   "own": 48,
+   "playN": 59,
+   "t25": 24,
+   "t50": 45,
+   "t75": 57,
+   "famine": 0,
+   "acts": 13.67,
+   "errors": []
+  },
+  {
+   "seed": 33,
+   "end": 95,
+   "over": "win",
+   "own": 45,
+   "playN": 58,
+   "t25": 69,
+   "t50": 88,
+   "t75": 95,
+   "famine": 0,
+   "acts": 10.07,
+   "errors": []
+  },
+  {
+   "seed": 44,
+   "end": 61,
+   "over": "win",
+   "own": 45,
+   "playN": 56,
+   "t25": 31,
+   "t50": 51,
+   "t75": 61,
+   "famine": 0,
+   "acts": 8.77,
+   "errors": []
+  },
+  {
+   "seed": 55,
+   "end": 62,
+   "over": "lose",
+   "own": 0,
+   "playN": 54,
+   "t25": null,
+   "t50": null,
+   "t75": null,
+   "famine": 0,
+   "acts": 9.5,
+   "errors": []
+  },
+  {
+   "seed": 66,
+   "end": 64,
+   "over": "win",
+   "own": 45,
+   "playN": 59,
+   "t25": 30,
+   "t50": 50,
+   "t75": 64,
+   "famine": 0,
+   "acts": 13.56,
+   "errors": []
+  },
+  {
+   "seed": 77,
+   "end": 86,
+   "over": "win",
+   "own": 39,
+   "playN": 50,
+   "t25": 22,
+   "t50": 57,
+   "t75": 86,
+   "famine": 0,
+   "acts": 10.8,
+   "errors": []
+  },
+  {
+   "seed": 88,
+   "end": 68,
+   "over": "win",
+   "own": 45,
+   "playN": 59,
+   "t25": 27,
+   "t50": 64,
+   "t75": 68,
+   "famine": 0,
+   "acts": 11.46,
+   "errors": []
+  },
+  {
+   "seed": 99,
+   "end": 65,
+   "over": "lose",
+   "own": 0,
+   "playN": 53,
+   "t25": 38,
+   "t50": null,
+   "t75": null,
+   "famine": 0,
+   "acts": 6.75,
+   "errors": []
+  },
+  {
+   "seed": 111,
+   "end": 71,
+   "over": "win",
+   "own": 47,
+   "playN": 59,
+   "t25": 57,
+   "t50": 67,
+   "t75": 71,
+   "famine": 0,
+   "acts": 9.39,
+   "errors": []
+  },
+  {
+   "seed": 123,
+   "end": 84,
+   "over": "win",
+   "own": 48,
+   "playN": 64,
+   "t25": 44,
+   "t50": 75,
+   "t75": 84,
+   "famine": 0,
+   "acts": 11.55,
+   "errors": []
+  },
+  {
+   "seed": 234,
+   "end": 50,
+   "over": "win",
+   "own": 39,
+   "playN": 51,
+   "t25": 23,
+   "t50": 44,
+   "t75": 50,
+   "famine": 0,
+   "acts": 11.08,
+   "errors": []
+  }
+ ],
+ "unseeded": [
+  {
+   "winRate": 1,
+   "avgWinEnd": 64.5,
+   "minWinEnd": 39,
+   "maxWinEnd": 102
+  },
+  {
+   "winRate": 1,
+   "avgWinEnd": 68,
+   "minWinEnd": 48,
+   "maxWinEnd": 93
+  }
+ ],
+ "when": "2026-10-19T06:51:03.322Z",
+ "gameVersion": "öncesi (sürüm alanı yok, kayıt v4)"
+}

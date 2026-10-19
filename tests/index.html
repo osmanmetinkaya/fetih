@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fetih · Bot Simülasyonu</title>
+<style>
+body{margin:0;padding:16px;background:#16120e;color:#efe6d6;font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+h1{font:800 20px Georgia,serif;color:#d9a441;margin:0 0 10px}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+input{background:#2d251d;color:inherit;border:1px solid #4a3d2e;border-radius:6px;padding:5px 8px;font:inherit}
+button{background:#d9a441;color:#1b1712;border:0;border-radius:6px;padding:6px 12px;font:inherit;font-weight:700;cursor:pointer}
+#simProg{color:#a99b84;margin:6px 0}
+table{border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+td,th{padding:4px 8px;border-bottom:1px solid #3a3025;text-align:right}th{color:#a99b84}
+tr.win td:nth-child(3){color:#86b86f}tr.lose td:nth-child(3){color:#e0635c}
+.sum{background:#221c16;border:1px solid #4a3d2e;border-radius:8px;padding:8px 10px}.bad{color:#e0635c;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<h1>⚔ Fetih · Bot Simülasyonu</h1>
+<div class="ctl">
+ <label>Tohumlar <input id="seeds" size="40" value="11,22,33,44,55,66,77,88,99,111,123,234"></label>
+ <label>Azami tur <input id="maxT" size="4" value="140"></label>
+ <label><input type="checkbox" id="seedR" checked> Math.random tohumlu</label>
+ <button id="go">Çalıştır</button>
+</div>
+<div id="simProg">Hazır. <code>await runSim({seeds:[11,22],maxTurns:140})</code> ile de çalıştırılabilir.</div>
+<div id="simOut"></div>
+<script src="sim.js"></script>
+<script>
+document.getElementById('go').onclick=()=>runSim({seeds:document.getElementById('seeds').value.split(/[ ,]+/).filter(Boolean).map(Number),maxTurns:+document.getElementById('maxT').value||140,seedRandom:document.getElementById('seedR').checked});
+if(/[?&]auto\b/.test(location.search))runSim();
+</script>
+</body>
+</html>

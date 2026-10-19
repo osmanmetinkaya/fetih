@@ -108,6 +108,11 @@ th{color:var(--muted);font-weight:600}
 .row{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:14px}
 .chance{font-size:28px;font-weight:800;text-align:center;margin:8px 0}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#3a2f22;border:1px solid var(--accent);padding:8px 14px;border-radius:6px;display:none;z-index:1001}
+#bars{position:fixed;top:8px;left:50%;transform:translateX(-50%);width:min(640px,calc(100% - 16px));display:flex;flex-direction:column;gap:6px;z-index:1002;pointer-events:none}
+.bar-n{pointer-events:auto;display:flex;align-items:flex-start;gap:8px;background:#3a2f22;border:1px solid var(--accent);border-radius:8px;padding:7px 8px 7px 12px;font-size:12.5px;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.bar-n>span{flex:1;min-width:0;overflow-wrap:anywhere}.bar-n.err{background:#3d1f1b;border-color:#a8433b}.bar-n .btn.sm{flex:none}.bar-n span .btn{margin-left:4px}
+.savebox{border-top:1px solid var(--line);margin-top:12px;padding-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ver{font-size:11px;color:var(--muted);text-align:right;margin-top:8px}
 @media (max-width:860px){main{flex-direction:column}aside{width:auto;height:46vh;border-left:0;border-top:1px solid var(--line)}.tree{grid-template-columns:70px repeat(4,minmax(70px,1fr))}}
 </style>
 </head>
@@ -138,10 +143,12 @@ th{color:var(--muted);font-weight:600}
 </main>
 <div id="modalBg"><div id="modal"></div></div>
 <div id="toast"></div>
+<div id="bars"></div>
 <script>
 'use strict';
 // ======================= SABİTLER =======================
-const W=1600,H=1100,NEUTRAL=5,BLOCK=-1,GRACE=12,IRON=.2,WOOD=8,SAVE='fetih-save-v4',FUND=260,AIS=[1,2,3,4];
+const W=1600,H=1100,NEUTRAL=5,BLOCK=-1,GRACE=12,IRON=.2,WOOD=8,SAVE='fetih-save',FUND=260,AIS=[1,2,3,4];
+const GAME_VERSION='0.5.0',SAVE_VER=5,SAVE_OLD=['fetih-save-v4'],SAVE_BAD='fetih-save-bozuk',TEST=/[?&]test\b/.test(location.search);
 const ROM=['','I','II','III','IV','V'];
 const FAC=[
  {ad:'Beyliğin',col:[232,176,58]},
@@ -267,10 +274,17 @@ const pkey=(a,b)=>a<b?a*1000+b:b*1000+a;
 
 // ======================= HARİTA ÜRETİMİ =======================
 let MAP=null,S=null,VIS=[],ART=null;const ui={sel:null,tab:'bolge',rtab:'genel',tsel:null,modal:null};
-function genMap(seed){
+// Harita ve rölyef üretimi üreteç (generator) olarak yazıldı: senkron sürüm sonuna kadar sürer, async sürüm aşamalar arasında tarayıcıya nefes aldırır.
+function runG(g){let r;while(!(r=g.next()).done);return r.value}
+const frame=()=>new Promise(res=>{let d=0;const f=()=>{if(!d){d=1;setTimeout(res,0)}};requestAnimationFrame(f);setTimeout(f,80)});
+async function runGA(g){let r;while(!(r=g.next()).done){loadMsg(r.value);await frame()}return r.value}
+function genMap(seed){return runG(genMapG(seed))}
+function buildArt(){return runG(buildArtG())}
+function* genMapG(seed){
  const rng=mulberry32(seed),nB=makeNoise(rng),nC=makeNoise(rng),nE=makeNoise(rng),nF=makeNoise(rng),nR=makeNoise(rng);
  const N=W*H,landV=new Float32Array(N),LAND=.9;
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const nx=(x-W/2)/(W*.47),ny=(y-H/2)/(H*.45);landV[y*W+x]=Math.sqrt(nx*nx+ny*ny)+(fbm(nC,x/220,y/220,4)-.5)*.6}
+ yield'Bölgeler ayrılıyor…';
  const sites=[];let tries=0;
  while(sites.length<80&&tries<80000){tries++;const x=25+rng()*(W-50),y=25+rng()*(H-50);if(landV[(y|0)*W+(x|0)]>LAND-.07)continue;if(sites.some(s=>(s.x-x)**2+(s.y-y)**2<98*98))continue;sites.push({x,y})}
  // ızgara hızlandırmalı en yakın merkez
@@ -281,6 +295,7 @@ function genMap(seed){
   const wx=x+(fbm(nE,x/90,y/90,3)-.5)*70,wy=y+(fbm(nF,x/90,y/90,3)-.5)*70,cx=clamp(fl(wx/CS),0,gw-1),cy=clamp(fl(wy/CS),0,gh-1);let best=-1,bd=1e18;
   for(let r=2;best<0||r<=3;r++){for(let gy=Math.max(0,cy-r);gy<=Math.min(gh-1,cy+r);gy++)for(let gx=Math.max(0,cx-r);gx<=Math.min(gw-1,cx+r);gx++)for(const i of grid[gy*gw+gx]){const dx=sites[i].x-wx,dy=sites[i].y-wy,d=dx*dx+dy*dy;if(d<bd){bd=d;best=i}}if(r>8)break}
   ids[p]=best}
+ yield'Sınırlar çiziliyor…';
  let n=sites.length;
  for(let k=0;k<3;k++){cleanup(ids,n,4500);n=compact(ids,n)}
  let adj=adjacency(ids,n);const comp=new Int16Array(n).fill(-1);let bestC=-1,bestS=0;
@@ -294,6 +309,7 @@ function genMap(seed){
  const distB=new Float32Array(N);{const INF=1e9;for(let p=0;p<N;p++)distB[p]=ids[p]<0?0:INF;
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x;if(!distB[p])continue;let d=distB[p];if(x>0&&ids[p-1]!==ids[p])d=0;if(y>0&&ids[p-W]!==ids[p])d=0;if(x>0)d=Math.min(d,distB[p-1]+1);if(y>0)d=Math.min(d,distB[p-W]+1);distB[p]=d}
   for(let y=H-1;y>=0;y--)for(let x=W-1;x>=0;x--){const p=y*W+x;if(!distB[p])continue;let d=distB[p];if(x<W-1&&ids[p+1]!==ids[p])d=0;if(y<H-1&&ids[p+W]!==ids[p])d=0;if(x<W-1)d=Math.min(d,distB[p+1]+1);if(y<H-1)d=Math.min(d,distB[p+W]+1);distB[p]=d}}
+ yield'Dağlar ve nehirler…';
  const bestL=new Float64Array(n).fill(-1e9);
  for(let p=0;p<N;p+=3){const id=ids[p];if(id<0)continue;const x=p%W,y=(p/W)|0,r=regions[id];const sc=Math.min(distB[p],40)-Math.hypot(x-r.cx,y-r.cy)*.15;if(sc>bestL[id]){bestL[id]=sc;r.lx=x;r.ly=y}}
  // sıradağlar
@@ -379,7 +395,7 @@ function roadList(play,seed){const{regions}=MAP,edges=[];
  edges.sort((x,y)=>x.d-y.d);const par=regions.map((r,i)=>i),fd=a=>{while(par[a]!==a){par[a]=par[par[a]];a=par[a]}return a},out=[];
  for(const e of edges){const ra=fd(e.a),rb=fd(e.b);if(ra!==rb){par[ra]=rb;out.push(e)}else if(e.d<160&&hash2(e.a,e.b,seed&0xffff)<.22)out.push(e)}
  return out}
-function buildArt(){
+function* buildArtG(){
  const{ids,landV,regions,blk,LAND,seed}=MAP,N=W*H,rng=mulberry32(seed+12345);
  const nD=makeNoise(rng),nT=makeNoise(rng),nR=makeNoise(rng),nF=makeNoise(rng),nG=makeNoise(rng),nC=makeNoise(rng),nW=makeNoise(rng),nS=makeNoise(rng);
  const play=regions.map((r,i)=>i).filter(i=>!blk[i]);
@@ -389,6 +405,7 @@ function buildArt(){
   if(id<0){ch[0][q]=-.05;ch[1][q]=SAND[0];ch[2][q]=SAND[1];ch[3][q]=SAND[2];continue}
   const t=TER[regions[id].terrain],w=TW[regions[id].terrain];ch[0][q]=t.elev;ch[1][q]=t.art[0];ch[2][q]=t.art[1];ch[3][q]=t.art[2];ch[4][q]=w[0];ch[5][q]=w[1];ch[6][q]=w[2];ch[7][q]=w[3]}
  for(const a of ch)for(let it=0;it<3;it++)boxBlur(a,gw,gh);
+ yield'Rölyef çiziliyor…';
  const samp=(a,x,y)=>{const fx=x/G,fy=y/G,ix=fl(fx),iy=fl(fy),tx=fx-ix,ty=fy-iy,q=iy*gw+ix;return a[q]*(1-tx)*(1-ty)+a[q+1]*tx*(1-ty)+a[q+gw]*(1-tx)*ty+a[q+gw+1]*tx*ty};
  // 2) nehir ve yol maskeleri (yüzeye işlenir, üstüne çizilmez)
  const mk=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.lineCap='round';x.lineJoin='round';x.strokeStyle='#fff';return[c,x]};
@@ -402,6 +419,7 @@ function buildArt(){
   dn.push(pts[pts.length-1]);rx.beginPath();rx.moveTo(dn[0][0],dn[0][1]);for(let k=1;k<dn.length-1;k++)rx.quadraticCurveTo(dn[k][0],dn[k][1],(dn[k][0]+dn[k+1][0])/2,(dn[k][1]+dn[k+1][1])/2);rx.lineTo(dn[dn.length-1][0],dn[dn.length-1][1]);rx.stroke()}
  const toMask=(c,passes)=>{const d=c.getContext('2d').getImageData(0,0,W,H).data,m=new Float32Array(N);for(let p=0;p<N;p++)m[p]=d[p*4+3]/255;for(let i=0;i<passes;i++)boxBlur(m,W,H);return m};
  const bank=toMask(bc,3),water=toMask(wc,1),road=toMask(rc,1);
+ yield'Rölyef çiziliyor… (yükseklik)';
  // 3) yükseklik alanı: tepeler, sıradağlar (sırt gürültüsü), vadi oyuğu, orman tacı
  const E=new Float32Array(N),FM=new Float32Array(N),FT=new Float32Array(N);
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x,id=ids[p];if(id<0){E[p]=-.05;continue}
@@ -415,6 +433,7 @@ function buildArt(){
     for(let j=-1;j<=1;j++)for(let i=-1;i<=1;i++){const qi=c0+i,qj=r0+j,dx=x-(qi+.2+.6*hash2(qi,qj,11))*TS,dy=y-(qj+.2+.6*hash2(qi,qj,12))*TS,dq=dx*dx+dy*dy;if(dq<d1){d1=dq;tt=hash2(qi,qj,13)}}
     const crown=1-smooth(0,3.9,Math.sqrt(d1));e+=fm*(crown*.034+(fbm(nC,x/9+40,y/9,2)-.5)*.04+.012);FT[p]=tt*(.4+.6*crown)+.15*crown}}
   E[p]=e;FM[p]=fm}
+ yield'Rölyef çiziliyor… (boyama)';
  // 4) boyama: aynı ışık, eğime ve yüksekliğe bağlı renk, doku
  const can=document.createElement('canvas');can.width=W;can.height=H;const cx=can.getContext('2d'),img=cx.createImageData(W,H),d=img.data;
  const Lx=-.55,Ly=-.65,Lz=.55,Ll=Math.hypot(Lx,Ly,Lz),K=24;
@@ -515,9 +534,11 @@ function aiMix(n){const t=S.turn,o=Z();for(let q=0;q<n;q++){const x=Math.random(
 function knownDef(to){const t=S.regions[to];if(mil().spy||!t.troops)return t.u;return scaleU(t.u,est(t.troops)/t.troops)}
 
 // ======================= OYUN DURUMU =======================
-function newGame(seed){
- MAP=genMap(seed);ART=buildArt();const rng=mulberry32(seed^0x9e3779b9),G=MAP.regions;
- S={seed,turn:1,morale:70,phase:'kurulus',fund:FUND,res:{tahil:70,odun:50,tas:40,demir:30,altin:60,bilgi:5},
+function newGame(seed){MAP=genMap(seed);ART=buildArt();initGame(seed)}
+async function newGameAsync(seed){loadMsg('Harita kuruluyor…');await frame();const M=await runGA(genMapG(seed));MAP=M;ART=null;initGame(seed);ART=await runGA(buildArtG())}
+function initGame(seed){
+ const rng=mulberry32(seed^0x9e3779b9),G=MAP.regions;
+ S={ver:SAVE_VER,seed,turn:1,morale:70,phase:'kurulus',fund:FUND,res:{tahil:70,odun:50,tas:40,demir:30,altin:60,bilgi:5},
   tech:{sal:0,sav:0,kus:0,eko:0,ure:0,str:0},log:[],over:null,
   regions:G.map(g=>({owner:g.block?BLOCK:NEUTRAL,u:Z(),rd:Z(),troops:0,ready:0,fort:0,capital:false,rec:0,base:0,fields:[],mil:0,auto:true,autoU:'piy',pop:0}))};
  const play=G.map((g,i)=>i).filter(i=>!G[i].block);
@@ -531,8 +552,63 @@ function newGame(seed){
  log(`${FAC[0].ad} ${G[starts[0]].name} bölgesinde kuruluyor.`,'good');
 }
 function log(m,c=''){S.log.push({t:S.turn,m,c});if(S.log.length>300)S.log.shift()}
-function save(){try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}}
-function load(){try{const s=JSON.parse(localStorage.getItem(SAVE));if(s&&s.seed!=null&&s.regions&&s.regions[0].u){MAP=genMap(s.seed);if(MAP.n!==s.regions.length)return false;ART=buildArt();S=s;ui.sel=capIdx();return true}}catch(e){}return false}
+// ======================= KAYIT =======================
+// Depolama: localStorage yoksa/engelliyse oyun bellekte sürer. Kayıt gecikmeli (debounce) yazılır, sekme gizlenince/kapanınca hemen yazılır.
+const ST={ok:false,rd:false,quota:false,bad:null};// ok: yazılabilir, rd: okunabilir
+function stGet(k){if(!ST.rd)return null;try{return localStorage.getItem(k)}catch(e){return null}}
+function stSet(k,v){if(!ST.ok)return false;try{localStorage.setItem(k,v);return true}catch(e){if(!ST.quota){ST.quota=true;note('st','⚠ Kayıt yapılamadı: tarayıcı depolama alanı dolu ya da engelli. İlerleme kaydedilmiyor olabilir. ('+(e&&e.name||e)+')')}return false}}
+function stDel(k){if(!ST.ok)return;try{localStorage.removeItem(k)}catch(e){}}
+function storeCheck(){ST.rd=ST.ok=false;if(TEST)return false;try{localStorage.getItem(SAVE);ST.rd=true;const k='fetih-deneme';localStorage.setItem(k,'1');ST.ok=localStorage.getItem(k)==='1';localStorage.removeItem(k)}catch(e){ST.ok=false}return ST.ok}
+let saveT=0;
+function save(){if(!saveT&&S)saveT=setTimeout(saveNow,400)}
+function saveNow(){clearTimeout(saveT);saveT=0;if(!S||!ST.ok)return false;S.ver=SAVE_VER;const ok=stSet(SAVE,JSON.stringify(S));if(ok&&ST.quota){ST.quota=false;const b=$('#bar-st');if(b)b.remove()}return ok}
+addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow()});addEventListener('pagehide',saveNow);
+// Göçler: MIG[v] v sürümündeki kaydı v+1'e çevirir. Yeni alan eklerken SAVE_VER'i artır ve buraya bir adım ekle.
+const MIG={
+ 4:s=>s, // v4→v5: biçim aynı, yalnızca sürüm alanı eklendi
+};
+function migrate(s){let v=s.ver==null?4:+s.ver;if(!(v>=4))throw Error('Bilinmeyen kayıt sürümü: '+s.ver);if(v>SAVE_VER)throw Error(`Kayıt daha yeni bir oyun sürümünden (v${v}, bu oyun v${SAVE_VER})`);
+ while(v<SAVE_VER){if(!MIG[v])throw Error('Göç adımı yok: v'+v);s=MIG[v](s)||s;v++;s.ver=v}return s}
+function validSave(s){const R=s&&s.regions;if(!s||typeof s!=='object'||typeof s.seed!=='number'||!Array.isArray(R)||!R.length||typeof s.turn!=='number'||!s.res||!s.tech||!Array.isArray(s.log))return'Eksik ya da hatalı alanlar';
+ if(!R.every(r=>r&&r.u&&r.rd&&Array.isArray(r.fields)&&typeof r.owner==='number'))return'Bölge verisi bozuk';return''}
+function parseSave(raw){let s;try{s=JSON.parse(raw)}catch(e){throw Error('JSON okunamadı ('+e.message+')')}s=migrate(s);const v=validSave(s);if(v)throw Error(v);return s}
+// Kaydı uygula: haritayı yeniden üret, bölge sayısını doğrula. Başarısızsa mevcut oyuna dokunmaz.
+function checkMap(M,s){if(M.n!==s.regions.length)throw Error(`Harita uyuşmuyor (${M.n}≠${s.regions.length} bölge)`)}
+function setS(M,s){MAP=M;S=s;ui.sel=capIdx()??0;ui.tab='bolge';ui.rtab='genel';ui.tsel=null}
+function adoptSave(s){const M=genMap(s.seed);checkMap(M,s);setS(M,s);ART=buildArt()}
+async function adoptSaveAsync(s){const M=await runGA(genMapG(s.seed));checkMap(M,s);ART=null;setS(M,s);ART=await runGA(buildArtG())}
+// Açılış: kayıt anahtarı, yoksa eski anahtarlar. Dönüş: {s,key} | {bad,raw,why} | null
+function readSave(){for(const k of[SAVE].concat(SAVE_OLD)){const raw=stGet(k);if(raw==null)continue;try{return{s:parseSave(raw),key:k}}catch(e){return{bad:true,raw,key:k,why:e.message}}}return null}
+function load(){const r=readSave();if(!r||r.bad)return false;try{adoptSave(r.s);return true}catch(e){return false}}
+function backupBad(r){ST.bad=r;r.backed=stSet(SAVE_BAD,r.raw);if(r.backed)stDel(r.key)}// yedeklenemezse ham kayıt yerinde bırakılır
+function showBad(){const r=ST.bad;modal(`<h3>⚠ Kayıtlı oyun okunamadı</h3><p>Kayıtlı oyun okunamadı. Yeni oyun başlatıldı. ${r.backed?`Ham kayıt yedeklendi (<code>${SAVE_BAD}</code>).`:'<b>Ham kayıt tarayıcıya yedeklenemedi</b>; aşağıdan kopyalayıp sakla.'}</p>
+ <p class=muted style="font-size:12.5px">Neden: ${esc(r.why)} · Boyut: ${r.raw.length} karakter</p>
+ <div class=row><button class=btn onclick="copyText(ST.bad.raw,'Ham kayıt panoya kopyalandı.')">📋 Yedeği kopyala</button><button class="btn primary" onclick="closeModal();showHelp()">Tamam</button></div>`,'bozuk')}
+// Dışa/içe aktarma: "FETIH:" + base64(UTF-8 JSON)
+function b64e(t){const b=new TextEncoder().encode(t);let s='';for(let i=0;i<b.length;i+=8192)s+=String.fromCharCode.apply(null,b.subarray(i,i+8192));return btoa(s)}
+function b64d(t){return new TextDecoder().decode(Uint8Array.from(atob(t),c=>c.charCodeAt(0)))}
+function exportSave(){S.ver=SAVE_VER;return'FETIH:'+b64e(JSON.stringify(S))}
+async function importSave(text){text=String(text||'').trim();if(!text)throw Error('Metin boş');let raw=text;
+ if(/^FETIH:/.test(text))try{raw=b64d(text.slice(6).replace(/\s+/g,''))}catch(e){throw Error('Kodlama bozuk (base64 çözülemedi)')}
+ else if(text[0]!=='{')throw Error('Bu bir Fetih kaydına benzemiyor');
+ const s=parseSave(raw);if(boot.busy)throw Error('Yükleme sürüyor, biraz bekle');await boot(()=>adoptSaveAsync(s));saveNow();return true}
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function copyText(t,msg){const ok=()=>toast(msg||'Panoya kopyalandı.'),fb=()=>{modal(`<h3>Elle kopyala</h3><p class=muted>Pano erişimi yok. Metni seçip kopyala.</p><textarea id=cpTa readonly style="width:100%;height:160px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;font:11px monospace">${esc(t)}</textarea><div class=row><button class="btn primary" onclick="closeModal()">Kapat</button></div>`,'copy');const a=$('#cpTa');a.focus();a.select()};
+ try{if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(ok,()=>{if(legacyCopy(t))ok();else fb()});else if(legacyCopy(t))ok();else fb()}catch(e){fb()}}
+function legacyCopy(t){try{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;left:-9999px';document.body.appendChild(a);a.select();const ok=document.execCommand('copy');a.remove();return ok}catch(e){return false}}
+function showImport(){modal(`<h3>📥 Kayıt yükle</h3><p class=muted style="font-size:12.5px">“Kaydı kopyala” ile aldığın metni yapıştır. Mevcut oyunun yerini alır.</p><textarea id=impTa style="width:100%;height:130px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;font:11px monospace" placeholder="FETIH:…"></textarea><p id=impErr class=bad style="font-size:12.5px;margin:6px 0 0"></p>
+ <div class=row><button class=btn onclick="showHelp()">Vazgeç</button><button class="btn primary" onclick="doImport()">Yükle</button></div>`,'imp')}
+async function doImport(){const t=$('#impTa').value;try{await importSave(t);closeModal();centerOn(ui.sel,Math.max(minZ(),1));refresh();toast('Kayıt yüklendi.');if(S.phase==='kurulus')showSetup();if(S.over)afterModal()}catch(e){const el=$('#impErr');if(el)el.textContent='Yüklenemedi: '+e.message}}
+// ======================= HATA / UYARI ŞERİTLERİ =======================
+const ERR={list:[],seen:new Map(),closed:false};
+function note(id,html,kind){let b=$('#bar-'+id);if(!b){b=document.createElement('div');b.id='bar-'+id;b.className='bar-n '+(kind||'');$('#bars').appendChild(b)}b.innerHTML=`<span>${html}</span><button class="btn sm" onclick="this.parentNode.remove()" title="Kapat">✕</button>`;return b}
+function errReport(){return`Fetih ${GAME_VERSION} · kayıt v${SAVE_VER}\n${navigator.userAgent}\nAdres: ${location.href.split('?')[0]}\nTur: ${S?S.turn:'-'} · Tohum: ${S?S.seed:'-'} · Aşama: ${S?S.phase:'-'}\n\n`+ERR.list.map(e=>`[${e.n}×] ${e.m}\n${e.st||''}`).join('\n\n')}
+function onErr(m,st){m=String(m||'Bilinmeyen hata').slice(0,300);const k=m+'|'+(st||'').split('\n')[1];let e=ERR.seen.get(k);
+ if(e){e.n++;const c=$('#errN');if(c&&$('#bar-err'))c.textContent=` (×${e.n})`;return}
+ e={m,st:String(st||'').slice(0,1500),n:1};ERR.seen.set(k,e);ERR.list.push(e);if(ERR.list.length>20)ERR.list.shift();
+ note('err',`⚠ <b>Bir hata oluştu.</b> Oyun devam ediyor. <span class=muted>${esc(m)}<span id=errN></span> · v${GAME_VERSION}</span> <button class="btn sm" onclick="copyText(errReport(),'Hata raporu panoya kopyalandı.')">📋 Hatayı kopyala</button>`,'err')}
+addEventListener('error',e=>{if(e.target&&e.target!==window)return;onErr(e.message,e.error&&e.error.stack)});
+addEventListener('unhandledrejection',e=>{const r=e.reason;onErr('Promise: '+(r&&r.message||r),r&&r.stack)});
 const capIdx=()=>{const i=S.regions.findIndex(r=>r.owner===0&&r.capital);return i<0?null:i};
 const own=()=>S.regions.map((r,i)=>i).filter(i=>S.regions[i].owner===0);
 
@@ -704,7 +780,7 @@ function endTurn(){if(S.over)return;if(S.phase!=='oyun'){toast('Önce kuruluşu 
  S.regions.forEach(r=>{if(r.owner===NEUTRAL&&S.turn%3===0&&r.troops<r.base*1.5)addU(r,{piy:1},false)});
  S.turn++;S.regions.forEach(r=>{if(r.u){r.rd=Object.assign(Z(),r.u);sync(r)}r.rec=0});
  if(S.turn===GRACE)ev.push({m:'Barış dönemi sona erdi. Rakipler artık sana saldırabilir!',c:'bad'});
- ev.forEach(x=>log(x.m,x.c));checkEnd();refresh();
+ ev.forEach(x=>log(x.m,x.c));checkEnd();refresh();saveNow();
  if(S.over)return afterModal();
  if(ev.length)modal(`<h3>📯 Yıl ${S.turn} raporu</h3>${ev.map(x=>`<p class=${x.c}>${x.m}</p>`).join('')}<div class=row><button class="btn primary" onclick="closeModal()">Tamam</button></div>`,'rep')}
 function aiTurn(f,ev){const R=S.regions,G=MAP.regions;let mine=[];R.forEach((r,i)=>{if(r.owner===f)mine.push(i)});if(!mine.length)return;
@@ -957,13 +1033,22 @@ function showHelp(){modal(`<h3>⚔ Fetih: Nasıl oynanır?</h3>
 <p><b>Arazi:</b> Sıradağlar geçilmezdir. Geçitler +%40 savunma verir. Köprüsüz nehir geçişi saldırıyı ×0,7'ye düşürür, süvariyi daha da fazla. Dağ ve ormanda savunma güçlüdür, süvari zayıftır.</p>
 <p><b>Ganimet:</b> Fethettiğin bölgenin stokundan yalnızca bir pay (%30–70) ele geçer. Kalanı yangın ve yağmada zayi olur. Kayıpsız kazanmak daha çok ganimet kurtarır.</p>
 <p><b>Hedef:</b> 4 rakibi yık ya da haritanın %75'ini al. İlk ${GRACE} yıl rakipler sana saldırmaz.</p>
-<div class=row><button class="btn primary" onclick="closeModal();if(S.phase==='kurulus')showSetup()">Başla</button></div>`,'help')}
+<div class=savebox><b style="font-size:12.5px">💾 Kayıt</b><span class=muted style="font-size:12px;flex:1">${ST.ok?'Oyun bu tarayıcıya otomatik kaydedilir.':'Tarayıcı kaydı kapalı.'}</span><button class="btn sm" onclick="copyText(exportSave(),'Kayıt panoya kopyalandı.')">📋 Kaydı kopyala</button><button class="btn sm" onclick="showImport()">📥 Kayıt yükle</button></div>
+<div class=row><button class="btn primary" onclick="closeModal();if(S.phase==='kurulus')showSetup()">Başla</button></div><div class=ver>Fetih v${GAME_VERSION} · kayıt v${SAVE_VER}</div>`,'help')}
 function askNew(){modal(`<h3>Yeni oyun?</h3><p>Mevcut oyunun silinir ve yeni bir harita oluşturulur.</p><div class=row><button class=btn onclick="closeModal()">Vazgeç</button><button class="btn danger" onclick="startNew()">Yeni Oyun</button></div>`,'ask')}
-function boot(fn){$('#loading').style.display='flex';setTimeout(()=>{fn();$('#loading').style.display='none'},30)}
-function startNew(){closeModal();boot(()=>{newGame(fl(Math.random()*1e9));resize();centerOn(capIdx(),Math.max(minZ(),1));refresh();showHelp()})}
+function loadMsg(m){const l=$('#loading');if(l)l.textContent=m}
+async function boot(fn){if(boot.busy)return;boot.busy=true;$('#loading').style.display='flex';loadMsg('Harita kuruluyor…');await frame();try{return await fn()}finally{$('#loading').style.display='none';boot.busy=false}}
+function freshStart(){resize();centerOn(capIdx(),Math.max(minZ(),1));refresh();saveNow()}
+function startNew(){if(boot.busy)return;closeModal();boot(async()=>{await newGameAsync(fl(Math.random()*1e9));freshStart();showHelp()})}
 window.addEventListener('resize',resize);
-window.addEventListener('keydown',e=>{if(e.key==='Escape'&&ui.modal&&!['setup','over'].includes(ui.modal))closeModal()});
-boot(()=>{resize();if(!load()){newGame(fl(Math.random()*1e9));resize();centerOn(capIdx(),Math.max(minZ(),1));refresh();showHelp()}else{centerOn(ui.sel??0,Math.max(minZ(),1));refresh();if(S.phase==='kurulus')showSetup();if(S.over)afterModal()}});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&ui.modal&&!['setup','over','bozuk'].includes(ui.modal))closeModal()});
+async function start(){if(!storeCheck())note('st','⚠ Tarayıcı kaydı kapalı: ilerleme kaydedilmeyecek.'+(ST.rd?' (Var olan kayıt okunabiliyor ama üzerine yazılamıyor.)':''),'warn');
+ await boot(async()=>{resize();const r=readSave();let ok=false;
+  if(r&&!r.bad){try{await adoptSaveAsync(r.s);ok=true;if(r.key!==SAVE&&saveNow())stDel(r.key)}catch(e){r.bad=true;r.why=e.message}}
+  if(r&&r.bad)backupBad(r);
+  if(ok){centerOn(ui.sel??0,Math.max(minZ(),1));refresh();if(S.phase==='kurulus')showSetup();if(S.over)afterModal()}
+  else{await newGameAsync(fl(Math.random()*1e9));freshStart();if(ST.bad)showBad();else showHelp()}})}
+if(!TEST)start();
 </script>
 </body>
 </html>
