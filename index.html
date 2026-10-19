@@ -129,8 +129,19 @@ th{color:var(--muted);font-weight:600}
 .evo{display:flex;flex-direction:column;gap:8px}.evo .btn{min-height:44px;text-align:left;width:100%;line-height:1.3}.evo .btn small{display:block;color:var(--muted);font-size:12px;margin-top:2px}.evo .btn b{color:var(--accent)}
 .stones{display:flex;gap:4px;margin:2px 0 6px}.stones span{flex:1;text-align:center;color:var(--muted);font-size:17px;line-height:1.1}.stones span.d{color:var(--good)}.stones span.c{color:var(--accent)}.stones small{display:block;font-size:9.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.goal.on{border-color:var(--accent)}
 .tabs .sm{display:none}
+/* 1c: bitiş ekranı ve miras */
+.end-h{display:flex;gap:12px;align-items:flex-start}.end-h canvas{width:150px;height:auto;border-radius:6px;border:1px solid var(--line);flex:none;background:#0d1a26}.end-h h3{margin:0 0 4px}.end-h p{margin:0 0 4px}
+.end-sc{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:12px 0 6px;padding:8px 12px;border:1px solid var(--accent);border-radius:8px;background:#2a2219}#endSc{font:800 34px Georgia,serif;color:var(--accent);display:block;line-height:1.1;font-variant-numeric:tabular-nums}.end-rk{text-align:right;font-size:13px}.tag.rec{font-size:13px;padding:3px 9px;font-weight:800}
+.end-dg{font-size:13px;margin:6px 0;background:#3d1f1b;border:1px solid #7a3a30;border-radius:6px;padding:7px 9px}
+.end-rw{display:flex;flex-direction:column;gap:6px;margin:8px 0}.beat{opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s;font-size:13px;padding:6px 9px;border-radius:6px;background:var(--panel2);border:1px solid var(--line)}.beat.on{opacity:1;transform:none}.beat.big{font-size:15.5px;border-color:var(--accent);background:#3a2f1f;box-shadow:0 0 0 1px var(--accent) inset}.beat.mp b{color:var(--accent)}.beat .bar{margin-top:5px}
+@media (prefers-reduced-motion:reduce){.beat{transition:none;opacity:1;transform:none}}
+.end .btn{min-height:40px}.end-b{display:flex;flex-direction:column;gap:6px;margin-top:10px}.end-b .btn{min-height:40px}.end-main{font-size:16px;padding:10px 12px;text-align:center}.end-main small{display:block;font-weight:400;font-size:12px;opacity:.85;margin-top:2px}
+.btn.hot{border-color:var(--good);box-shadow:0 0 0 1px var(--good) inset}
+.end-d{margin-top:10px;font-size:13px}.end-d summary{cursor:pointer;padding:9px 0;color:var(--muted);min-height:40px}.end-d canvas{width:100%;height:auto;margin-top:8px;background:#1b1612;border-radius:6px}.end-d p{margin:6px 0}
+.achs{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}.achs .card.got{border-color:#5d7f48;background:#26301f}.mir .item{min-height:44px}.mir .btn{min-height:40px}.mir .item>span{flex:none}.mir .item .btn{white-space:nowrap}
+@media (max-width:520px){.end-h canvas{width:96px}#endSc{font-size:28px}.end-h h3{font-size:16px}}
 .inp{width:100%;min-height:40px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font:inherit}
-@media (max-width:520px){.tabs button{font-size:12px;padding:9px 1px}.tabs .lg{display:none}.tabs .sm{display:inline}header .title{display:none}header{padding:5px 8px}.r{padding:2px 6px}.res{gap:4px}}
+@media (max-width:520px){.tabs button{font-size:12px;padding:9px 1px}.tabs .lg{display:none}.tabs .sm{display:inline}header .title{display:none}header{padding:5px 8px}.r{padding:2px 6px}.r .lg{display:none}.res{gap:4px}}
 @media (max-width:860px){main{flex-direction:column}aside{width:auto;height:46vh;border-left:0;border-top:1px solid var(--line)}.tree{grid-template-columns:70px repeat(4,minmax(70px,1fr))}}
 </style>
 </head>
@@ -166,7 +177,7 @@ th{color:var(--muted);font-weight:600}
 'use strict';
 // ======================= SABİTLER =======================
 const W=1600,H=1100,NEUTRAL=5,BLOCK=-1,WOOD=8,SAVE='fetih-save',META_KEY='fetih-meta-v1';
-const GAME_VERSION='0.7.0',SAVE_VER=7,SAVE_OLD=['fetih-save-v4'],SAVE_BAD='fetih-save-bozuk',TEST=/[?&]test\b/.test(location.search);
+const GAME_VERSION='0.8.0',SAVE_VER=8,SAVE_OLD=['fetih-save-v4'],SAVE_BAD='fetih-save-bozuk',TEST=/[?&]test\b/.test(location.search);
 const ROM=['','I','II','III','IV','V'];
 const FAC=[
  {ad:'Beyliğin',col:[232,176,58]},
@@ -276,11 +287,11 @@ const DYN={
  kartal:{ad:'Dağ Kartalları',e:'🦅',aiAd:'Kartallar',tema:'Kale ve geçit bekçileri',g:['Tüm bölgelerde savunma +%15','Azami sur +1, sur maliyeti ×0,75','Okçu savunması 1,6→1,9'],z:['Saldırı −%10','Süvari +1 demir'],
   start:{u:{piy:12,okc:4},fund:260,mil:1,fort:2,capTerr:['tepe','dag']},mods:{defAdd:.15,maxFortAdd:1,surCost:.75,unitDef:{okc:1.9},atkAdd:-.1,unitAdd:{suv:{demir:1}},gecitDef:.2,gecitMorale:1},ab:'gecit',aiPerk:'Sur tavanı 3, savunma +%10'},
  bilge:{ad:'Bilge Hanedanı',e:'📜',aiAd:'Bilgeler',tema:'Medrese ve âlimler',g:['Medrese ×1,4','Teknoloji maliyeti ×0,85','Antik Harabe bilgi 2→4'],z:['Birlik altın maliyeti ×1,2','Altın maaşı ×1,1'],
-  start:{u:{piy:15},fund:260,mil:1,fort:1,tech:{str:1},fundCost:{medrese:110}},mods:{fieldBy:{medrese:1.4},tcost:.85,featY:{harabe:{bilgi:4}},unitGold:1.2,upGold:1.1},ab:'kulliye',aiPerk:'Teknoloji hızı ×1,25',lock:{mp:60,alt:'ya da 1 Medeniyet zaferi'}},
+  start:{u:{piy:15},fund:260,mil:1,fort:1,tech:{str:1},fundCost:{medrese:110}},mods:{fieldBy:{medrese:1.4},tcost:.85,featY:{harabe:{bilgi:4}},unitGold:1.2,upGold:1.1},ab:'kulliye',aiPerk:'Teknoloji hızı ×1,25',lock:{mp:60,alt:'ya da 1 Medeniyet zaferi (Çırak dışı)',or:'medeniyet'}},
  deniz:{ad:'Deniz Beyleri',e:'⚓',aiAd:'Deniz Beyleri',tema:'Kıyı tüccarları',g:['Liman altın 2→3, tahıl 2→3','Pazar Yeri ×1,15','Ticaret Kavşağı altın 3→4'],z:['Ordu tahıl gideri ×1,2','Ganimet payı −%5'],
-  start:{u:{piy:15},fund:260,mil:1,fort:1,res:{altin:40},capCoastal:true},mods:{featY:{liman:{altin:3,tahil:3},kavsak:{altin:4}},fieldBy:{pazar:1.15},upTahil:1.2,lootAdd:-.05},ab:'harac',aiPerk:'Liman/Kavşak başına kazanç +1',lock:{mp:90,alt:'ya da aynı anda 3 Liman tut'}},
+  start:{u:{piy:15},fund:260,mil:1,fort:1,res:{altin:40},capCoastal:true},mods:{featY:{liman:{altin:3,tahil:3},kavsak:{altin:4}},fieldBy:{pazar:1.15},upTahil:1.2,lootAdd:-.05},ab:'harac',aiPerk:'Liman/Kavşak başına kazanç +1',lock:{mp:90,alt:'ya da aynı anda 4 Liman tut (Çırak dışı)',or:'liman'}},
  akinci:{ad:'Akıncı Sancağı',e:'🏇',aiAd:'Akıncılar',tema:'Yağmacı uç beyleri',g:['Ganimet payı +%5 (tavan %75→%85)','Fetihte moral +5→+6'],z:['Azami tesis seviyesi −1','Fethedilen bölge nüfusu ×0,7→×0,6'],
-  start:{u:{piy:14,suv:3},fund:180,mil:1,fort:1},mods:{lootAdd:.05,lootCap:.85,conqMorale:6,maxFieldAdd:-1,conqPop:.6},ab:'yagma',aiPerk:'Kabilelere daha kolay saldırır',lock:{mp:120,alt:'ya da tek oyunda 1500 ganimet'}},
+  start:{u:{piy:14,suv:3},fund:180,mil:1,fort:1},mods:{lootAdd:.05,lootCap:.85,conqMorale:6,maxFieldAdd:-1,conqPop:.6},ab:'yagma',aiPerk:'Kabilelere daha kolay saldırır',lock:{mp:120,alt:'ya da tek oyunda 6000 ganimet (Çırak dışı)',or:'ganimet'}},
 };
 const DYN6=['boru','tunc','kartal','bilge','deniz','akinci'];
 const ABIL={
@@ -304,28 +315,28 @@ const MUTS={
  sis:{ad:'Sisli Harita',e:'🌫️',tur:'kotu',x:1.15,lock:25,d:'Görüş −1: komşu asker sayıları "?" görünür (Haritacılık 1 bölgeye açar).',mods:{sightAdd:-1}},
  kanli:{ad:'Kanlı Toprak',e:'🩸',tur:'karma',x:0.8,lock:25,d:'Savaşta tüm kayıplar ×1,3. Ganimet payı +%15.',mods:{lootAdd:.15},cfg:{lossExp:1.3}},
  baris:{ad:'Uzun Barış',e:'🕊️',tur:'karma',x:1.15,lock:25,d:'Barış 12 → 20 yıl, ama rakiplerin kazancı ×1,15 ve barış biterken sınırına yığınak yaparlar.',cfg:{grace:20,aiGain:1.15,graceStack:true}},
- ittifak:{ad:'Kutsal İttifak',e:'⛪',tur:'cokkotu',x:1.05,lock:35,d:'Koalisyon eşiği %22 (Çırak\'ta da). Koalisyon sürerken rakipler birbirine saldırmaz.',cfg:{coalAt:.22}},
- surgun:{ad:'Sürgün Bey',e:'🥾',tur:'kotu',x:1.05,lock:35,d:'Başkent sursuz, Karakol yok, yalnız 8 piyade. Kuruluş hazinesi 420.',start:{u:{piy:8},fund:420,mil:0,fort:0}},
+ ittifak:{ad:'Kutsal İttifak',e:'⛪',tur:'cokkotu',x:1.05,lock:{alt:"Usta'da 1 zafer",win:'usta'},d:'Koalisyon eşiği %22 (Çırak\'ta da). Koalisyon sürerken rakipler birbirine saldırmaz.',cfg:{coalAt:.22}},
+ surgun:{ad:'Sürgün Bey',e:'🥾',tur:'kotu',x:1.05,lock:{alt:"Usta'da 1 zafer",win:'usta'},d:'Başkent sursuz, Karakol yok, yalnız 8 piyade. Kuruluş hazinesi 420.',start:{u:{piy:8},fund:420,mil:0,fort:0}},
 };
 const MUT_TUR={kotu:['Kötü','bad'],cokkotu:['Çok kötü','bad'],karma:['Karma',''],iyi:['İyi','good']};
 const MUT_BAN=[['erken','surgun']],MUT_BAN_DESTAN=[['ittifak','kabile']],MUT_WARN=[['bereket','altincag']];
 // Harita türleri. 'kita' = Faz 0 genMap sabitleri (aynı tohum → bit bit aynı harita). orman/vadi: 'rest' sıralamasında birikimli eşik.
 const MAPTYPES={
  kita:{ad:'Kıta',e:'🗺️',d:'Dengeli: ova, orman, dağ karışık.',lock:0,sites:80,minD:98,ell:[.47,.45],noise:.6,LAND:.9,lake:null,ridge:.15,dag:.15,tepe:.15,orman:.38,vadi:.58,maden:5,rivers:6,rivGap:170,bridgeDiv:3,gecit:[3,8],feat:{kavsak:4,liman:5,verimli:5,damar:3,harabe:3,kale:3,mabet:2},cap:{terr:['ova','vadi'],adj:3}},
- vadi:{ad:'Nehir Vadisi',e:'🌊',d:'Bol nehir ve vadi: süvari, köprüler, nehir cezası.',lock:30,sites:80,minD:104,ell:[.50,.47],noise:.45,LAND:.92,lake:null,ridge:.07,dag:.07,tepe:.13,orman:.28,vadi:.62,maden:3,rivers:11,rivGap:115,bridgeDiv:4,gecit:[2,5],feat:{kavsak:5,liman:4,verimli:9,damar:2,harabe:4,kale:2,mabet:2},cap:{terr:['vadi','ova'],adj:3}},
- dag:{ad:'Dağ Kalesi',e:'⛰️',d:'Sıradağlar ve geçitler: kuşatma, okçu, geçit savaşı.',lock:45,sites:84,minD:94,ell:[.47,.45],noise:.6,LAND:.9,lake:null,ridge:.20,dag:.18,tepe:.18,orman:.40,vadi:.52,maden:8,rivers:4,rivGap:190,bridgeDiv:3,gecit:[4,9],feat:{kavsak:3,liman:4,verimli:3,damar:6,harabe:2,kale:4,mabet:2},cap:{terr:['ova','vadi','tepe'],adj:2}},
- korfez:{ad:'Körfez',e:'⚓',d:'Ortada iç deniz: çok liman ve altın, halka biçimli cephe.',lock:60,sites:72,minD:100,ell:[.49,.47],noise:.6,LAND:.9,lake:{r:.6,k:4},ridge:.12,dag:.12,tepe:.15,orman:.34,vadi:.54,maden:5,rivers:5,rivGap:170,bridgeDiv:2,gecit:[3,8],feat:{kavsak:5,liman:10,verimli:5,damar:3,harabe:3,kale:3,mabet:3},cap:{coastal:true,adj:3}},
+ vadi:{ad:'Nehir Vadisi',e:'🌊',d:'Bol nehir ve vadi: süvari, köprüler, nehir cezası.',lock:0,sites:80,minD:104,ell:[.50,.47],noise:.45,LAND:.92,lake:null,ridge:.07,dag:.07,tepe:.13,orman:.28,vadi:.62,maden:3,rivers:11,rivGap:115,bridgeDiv:4,gecit:[2,5],feat:{kavsak:5,liman:4,verimli:9,damar:2,harabe:4,kale:2,mabet:2},cap:{terr:['vadi','ova'],adj:3}},
+ dag:{ad:'Dağ Kalesi',e:'⛰️',d:'Sıradağlar ve geçitler: kuşatma, okçu, geçit savaşı.',lock:30,sites:84,minD:94,ell:[.47,.45],noise:.6,LAND:.9,lake:null,ridge:.20,dag:.18,tepe:.18,orman:.40,vadi:.52,maden:8,rivers:4,rivGap:190,bridgeDiv:3,gecit:[4,9],feat:{kavsak:3,liman:4,verimli:3,damar:6,harabe:2,kale:4,mabet:2},cap:{terr:['ova','vadi','tepe'],adj:2}},
+ korfez:{ad:'Körfez',e:'⚓',d:'Ortada iç deniz: çok liman ve altın, halka biçimli cephe.',lock:45,sites:72,minD:100,ell:[.49,.47],noise:.6,LAND:.9,lake:{r:.6,k:4},ridge:.12,dag:.12,tepe:.15,orman:.34,vadi:.54,maden:5,rivers:5,rivGap:170,bridgeDiv:2,gecit:[3,8],feat:{kavsak:5,liman:10,verimli:5,damar:3,harabe:3,kale:3,mabet:3},cap:{coastal:true,adj:3}},
 };
 const SIZES={
- kisa:{ad:'Kısa',d:'~34 bölge, 3 rakip, %70 fetih',mult:.62,minD:122,nAI:3,conq:.70,heg:2,nBase:1,lock:0},
- orta:{ad:'Normal',d:'~55 bölge, 4 rakip, %75 fetih',mult:1,minD:null,nAI:4,conq:.75,heg:3,nBase:1,lock:0},
- uzun:{ad:'Uzun',d:'~78 bölge, 4 rakip, güçlü kabileler',mult:1.4,minD:82,nAI:4,conq:.75,heg:3,nBase:1.2,lock:40},
+ kisa:{ad:'Kısa',d:'~34 bölge, 3 rakip, %70 fetih',mult:.62,minD:122,nAI:3,conq:.70,heg:2,nBase:1,sp:60,lock:0},
+ orta:{ad:'Normal',d:'~55 bölge, 4 rakip, %75 fetih',mult:1,minD:null,nAI:4,conq:.75,heg:3,nBase:1,sp:90,lock:0},
+ uzun:{ad:'Uzun',d:'~78 bölge, 4 rakip, güçlü kabileler',mult:1.4,minD:82,nAI:4,conq:.75,heg:3,nBase:1.2,sp:130,lock:40},
 };
 const DIFFS={
- cirak: {ad:'Çırak', d:'Bilinen oyun: rakipler ölçülü.',aiGain:1.00,aiBStep:.030,aiBCap:.50,aiSiege:0,  needAdd:0,   grace:12,neutral:1.0,fund:260,res:1.0,coalAt:null,evBias:1.3,mp:.6},
- kalfa: {ad:'Kalfa', d:'Rakipler daha hızlı büyür; %35 toprağa ulaşınca koalisyon kurarlar.',aiGain:1.60,aiBStep:.035,aiBCap:.55,aiSiege:0,  needAdd:-.05,grace:12,neutral:1.1,fund:260,res:1.0,coalAt:.35,evBias:1.0,mp:1.0},
- usta:  {ad:'Usta',  d:'Sert rakipler, kısa barış, az hazine.',aiGain:1.95,aiBStep:.040,aiBCap:.62,aiSiege:.05,needAdd:-.10,grace:10,neutral:1.2,fund:240,res:.9, coalAt:.33,evBias:0.83,mp:1.4,lock:{alt:"Kalfa'da 1 zafer"}},
- destan:{ad:'Destan',d:'Efsaneler için.',aiGain:2.10,aiBStep:.045,aiBCap:.70,aiSiege:.10,needAdd:-.15,grace:8, neutral:1.3,fund:210,res:.8, coalAt:.30,evBias:0.71,mp:1.9,lock:{alt:"Usta'da 1 zafer"}},
+ cirak: {ad:'Çırak', d:'Bilinen oyun: rakipler ölçülü.',aiGain:1.00,aiBStep:.030,aiBCap:.50,aiSiege:0,  needAdd:0,   grace:12,neutral:1.0,fund:260,res:1.0,coalAt:null,evBias:1.3,mp:.4,mpNew:.6,sc:.6},
+ kalfa: {ad:'Kalfa', d:'Rakipler daha hızlı büyür; %35 toprağa ulaşınca koalisyon kurarlar.',aiGain:1.60,aiBStep:.035,aiBCap:.55,aiSiege:0,  needAdd:-.05,grace:12,neutral:1.1,fund:260,res:1.0,coalAt:.35,evBias:1.0,mp:1.0,sc:1},
+ usta:  {ad:'Usta',  d:'Sert rakipler, kısa barış, az hazine.',aiGain:1.95,aiBStep:.040,aiBCap:.62,aiSiege:.05,needAdd:-.10,grace:10,neutral:1.2,fund:240,res:.9, coalAt:.33,evBias:0.83,mp:1.4,sc:1.4,lock:{alt:"Kalfa'da 1 zafer",win:'kalfa'}},
+ destan:{ad:'Destan',d:'Efsaneler için.',aiGain:2.10,aiBStep:.045,aiBCap:.70,aiSiege:.10,needAdd:-.15,grace:8, neutral:1.3,fund:210,res:.8, coalAt:.30,evBias:0.71,mp:1.9,sc:1.9,lock:{alt:"Usta'da 1 zafer",win:'usta'}},
 };
 const AI_COLORS=['Kızıl','Mavi','Yeşil','Mor'];
 const RULERS=['Alp Er','Tarkan','Bilge Kağan','Yağmur Hatun','Arslan Bey','Ertuğrul','Tomris','Kutlu Bey','Turna Hatun','Atsız','Bumin','Börte','İlteriş','Sançar','Kara Yülük','Ay Hatun'];
@@ -354,6 +365,46 @@ const VIC={
 const WONDER_ST=['Temel','Medrese','Darüşşifa','Kütüphane','Kubbe'];
 // Ferman: kuruluşta beyan edilen hedef. Tutarsa miras ×1,25; 30. yıla kadar 1 kez değiştirilebilir, o zaman ×1,10 (MP kazanımı 1c'de).
 const FERMAN={x:1.25,xCh:1.10,until:30};
+// Başlangıç bonusları (§9.2, miras ile açılır, 1 yuva; toplam 400 MP harcanınca 2. yuva). Her takılı bonus miras/skor çarpanını ×x yapar. Günlükte kapalı.
+const BONUS={
+ hazine:{ad:'Hazine Sandığı',e:'💰',d:'Kuruluş hazinesi +40 akçe.',lock:30,x:.95},
+ ciftci:{ad:'Usta Çiftçi',e:'🌾',d:'Başkentte kurduğun ilk tarla Sv.2 başlar.',lock:40,x:.95},
+ muhafiz:{ad:'Sadık Muhafız',e:'🛡️',d:'Başlangıç ordusuna +3 piyade, +1 okçu.',lock:45,x:.9},
+ haritaci:{ad:'Haritacı',e:'🧭',d:'Strateji I (Haritacılık) açık başlar (Bilge\'de Saldırı I).',lock:50,x:.95},
+ kisla:{ad:'Kışla Temeli',e:'🏯',d:'Başkentte kademe 2 askeri kuruluş (Kışla: okçu) ile başla.',lock:60,x:.95},
+};
+// Kozmetik sancaklar (başarım ve günlük seri ödülleri): üst çubukta ve sonuç kartında görünür
+const COS={alti:{ad:'Altı Ocak Sancağı',e:'🏵️'},destan:{ad:'Destan Sancağı',e:'🐉'},haftalik:{ad:'Haftalık Sancak',e:'🚩'},yedi:{ad:'Yedi Gün Sancağı',e:'🎏'},cihan:{ad:'Cihan Sancağı',e:'🌟'}};
+// Başarımlar (§11 + 1c incelemesi). t(s,M): oyun sonu koşulu (s = bitmiş oyun) · pr(M): META ilerleme sayacı [n, hedef] · lv(s): oyun içi canlı izleme {t, ok:true/false/null}
+// miss(s): "kaçırdığın başarım" satırı · c: Çırak'ta da açılır · hid: gizli. Rövanş ve antrenman başarım açmaz.
+const ACH=[
+ {id:'ilk_zafer',ad:'İlk Zafer',d:'Herhangi bir zafer.',mp:15,c:1,t:s=>s.over==='win'},
+ {id:'ders',ad:'Ders Alındı',d:'İlk yenilgi (15. yıldan sonra).',mp:5,c:1,t:s=>s.over==='lose'&&s.turn>=15},
+ {id:'alti_hanedan',ad:'Altı Ocak',d:'Altı hanedanın her biriyle en az bir zafer.',mp:60,c:1,cos:'alti',pr:M=>[DYN6.filter(d=>M.stats.byDyn[d]&&M.stats.byDyn[d].w>0).length,6]},
+ {id:'kulliye',ad:'Külliye',d:'Medeniyet zaferi.',mp:20,t:s=>s.over==='win'&&s.winBy==='medeniyet',lv:s=>({t:`Eser ${s.wonder.stage}/5 · tek. ${techCount()}/18`,ok:s.medClosed!=null?false:null}),miss:s=>s.winBy!=='medeniyet'&&s.wonder.stage>=3?`Külliye: Büyük Eser ${s.wonder.stage}/5 aşamada kaldı`:null},
+ {id:'hegemon',ad:'Taç ve Haraç',d:'Hegemonya zaferi.',mp:20,t:s=>s.over==='win'&&s.winBy==='hegemonya',lv:s=>({t:`${hegHeld().filter(x=>x.st!=='x').length}/${hegNeed()} başkent · ${s.heg.count}/10 yıl`,ok:null}),miss:s=>s.winBy!=='hegemonya'&&s.stats.hegMax>=4?`Taç ve Haraç: geri sayım ${s.stats.hegMax}/10 yılda kesildi`:null},
+ {id:'uc_yol',ad:'Üç Yol',d:'Fetih, Medeniyet ve Hegemonya zaferlerinin üçü de.',mp:40,pr:M=>[['fetih','medeniyet','hegemonya'].filter(p=>M.stats.byPath[p]>0).length,3]},
+ {id:'ferman',ad:'Fermanın Sözü',d:'Ferman ilan et, değiştirmeden o yoldan kazan.',mp:10,t:s=>fermanOk(s)&&!s.fermanCh,lv:s=>({t:s.ferman?`Ferman: ${VIC[s.ferman].ad}${s.fermanCh?' (değişti)':''}`:'Ferman yok',ok:!s.ferman||s.fermanCh?false:null})},
+ {id:'kanli_kurulus',ad:'Kanlı Kuruluş',d:'Erken Savaş kartıyla zafer.',mp:15,t:s=>s.over==='win'&&s.cfg.muts.includes('erken'),lv:s=>({t:s.cfg.muts.includes('erken')?'Erken Savaş ✔':'Erken Savaş kartı gerekir',ok:s.cfg.muts.includes('erken')?null:false})},
+ {id:'vebali',ad:'Vebalı Yıllar',d:'Kara Veba kartıyla, en az 2 vebadan sonra zafer.',mp:15,t:s=>s.over==='win'&&s.cfg.muts.includes('veba')&&s.stats.plagues>=2},
+ {id:'sis_icinde',ad:'Sis İçinde',d:'Sisli Harita kartıyla, Casusluk açmadan zafer.',mp:20,t:s=>s.over==='win'&&s.cfg.muts.includes('sis')&&s.tech.str<2,lv:s=>!s.cfg.muts.includes('sis')?{t:'Sisli Harita kartı gerekir',ok:false}:s.tech.str>=2?{t:'Casusluk açıldı: kaçtı',ok:false}:{t:'Casusluksuz ✔',ok:true}},
+ {id:'kutsal_ittifak',ad:'Herkese Karşı',d:'Kutsal İttifak kartıyla zafer.',mp:25,t:s=>s.over==='win'&&s.cfg.muts.includes('ittifak')},
+ {id:'usta',ad:'Usta Hükümdar',d:"Usta (ya da Destan) zorlukta zafer.",mp:30,t:s=>s.over==='win'&&(s.cfg.diff==='usta'||s.cfg.diff==='destan')},
+ {id:'destan',ad:'Destan Yazıldı',d:'Destan zorlukta zafer.',mp:60,cos:'destan',t:s=>s.over==='win'&&s.cfg.diff==='destan'},
+ {id:'yildirim',ad:'Yıldırım',d:'Normal boyda en geç 45. yılda zafer.',mp:20,t:s=>s.over==='win'&&s.cfg.size==='orta'&&s.turn<=45,lv:s=>s.cfg.size!=='orta'?{t:'Yalnız Normal boyda',ok:false}:s.turn<=45?{t:`Yıl ${s.turn}/45`,ok:null}:{t:'45. yıl geçti: kaçtı',ok:false},miss:s=>s.over==='win'&&s.cfg.size==='orta'&&s.turn>45&&s.turn<=58?`Yıldırım: zafer ${s.turn}. yılda geldi, 45. yıl gerekiyordu`:null},
+ {id:'kalesiz',ad:'Surları Sevmem',d:'Hiç sur yapmadan zafer.',mp:15,t:s=>s.over==='win'&&s.stats.surBuilt===0,lv:s=>s.stats.surBuilt?{t:`${s.stats.surBuilt} sur yaptın: kaçtı`,ok:false}:{t:'Hiç sur yok ✔',ok:true},miss:s=>s.over==='win'&&s.stats.surBuilt>0&&s.stats.surBuilt<=3?`Surları Sevmem: ${s.stats.surBuilt} sur yaptın, kaçtı`:null},
+ {id:'piyade_ordusu',ad:'Halk Ordusu',d:'Hiç süvari ve yeniçeri yetiştirmeden zafer (başlangıç birlikleri sayılmaz).',mp:15,t:s=>s.over==='win'&&!s.stats.recruited.suv&&!s.stats.recruited.yen,lv:s=>{const n=s.stats.recruited.suv+s.stats.recruited.yen;return n?{t:`${n} süvari/yeniçeri: kaçtı`,ok:false}:{t:'Süvarisiz ✔',ok:true}},miss:s=>{const n=s.stats.recruited.suv+s.stats.recruited.yen;return s.over==='win'&&n>0&&n<=12?`Halk Ordusu: ${n} süvari/yeniçeri yetiştirdin, kaçtı`:null}},
+ {id:'koalisyon_kiran',ad:'Kılıç Kırıldı',d:'Bir koalisyon üyesinin başkentini alarak onu koalisyondan çıkar.',mp:15,t:s=>s.stats.coalBroken>0,lv:s=>s.stats.coalBroken?{t:'Kılıç kırıldı ✔',ok:true}:{t:s.coal.on?'Koalisyon kuruldu: bir üyenin başkentini al':'Koalisyon bekleniyor',ok:null}},
+ {id:'geri_donus',ad:'Küllerinden',d:'Başkentini kaybettikten sonra zafer.',mp:20,t:s=>s.over==='win'&&s.stats.capLost>0},
+ {id:'kitlik_yok',ad:'Bereketli Saltanat',d:'Hiç kıtlık yaşamadan, en az 50 yıllık bir zafer.',mp:10,t:s=>s.over==='win'&&s.stats.famine===0&&s.turn>=50,lv:s=>s.stats.famine?{t:`${s.stats.famine} kıtlık yılı: kaçtı`,ok:false}:{t:`Kıtlıksız ${s.turn}/50 yıl`,ok:s.turn>=50?true:null},miss:s=>s.over==='win'&&s.turn>=50&&s.stats.famine>0&&s.stats.famine<=2?`Bereketli Saltanat: ${s.stats.famine} kıtlık yılı yaşadın, kaçtı`:null},
+ {id:'vakanuvis',ad:'Vakanüvis',d:'15 farklı olay gör (oyunlar boyunca).',mp:15,c:1,pr:M=>[Math.min(15,M.stats.evSeen.length),15]},
+ {id:'dort_diyar',ad:'Dört Diyar',d:'Dört harita türünün her birinde zafer.',mp:25,pr:M=>[Object.keys(MAPTYPES).filter(k=>M.stats.byMap[k]>0).length,4]},
+ {id:'uc_huner',ad:'Üç Hüner',d:'Akın, Yağma ve Haraç Diplomasisi yeteneklerinin her birini en az bir kez kullan (oyunlar boyunca).',mp:20,pr:M=>[['akin','yagma','harac'].filter(k=>M.stats.abil[k]>0).length,3]},
+ {id:'son_kale',ad:'Son Kale',d:'15. yıldan sonra 2 ya da daha az bölgeye düşüp yine de kazan.',mp:25,hid:1,t:s=>s.over==='win'&&s.hist.some(h=>h[0]>15&&h[1]<=2)},
+ {id:'kilicsiz',ad:'Kalemle Fetih',d:'En fazla 12 saldırı zaferiyle Medeniyet zaferi.',mp:20,hid:1,t:s=>s.over==='win'&&s.winBy==='medeniyet'&&s.stats.atkWon<=12},
+ {id:'kasirga',ad:'Kasırga',d:'Normal ya da Uzun boyda en geç 35. yılda zafer.',mp:30,hid:1,t:s=>s.over==='win'&&s.cfg.size!=='kisa'&&s.turn<=35},
+];
+const ACHM={};ACH.forEach(a=>ACHM[a.id]=a);
 const CFG_KLASIK={dyn:'klasik',muts:[],map:'kita',size:'orta',diff:'cirak'},CFG_HIZLI={dyn:'boru',muts:[],map:'kita',size:'orta',diff:'cirak'};
 
 // ======================= YARDIMCILAR =======================
@@ -389,10 +440,14 @@ const mutWarn=m=>MUT_WARN.some(p=>p.every(k=>m.includes(k)));
 function cfgFx(c){const o={grace:null,nBase:1,nEvery:3,nCap:1.5,fortStart:0,fortPerAll:.25,siegeAll:0,aiGain:1,graceStack:false,plague:0,lossExp:1,coalAt:null};
  for(const m of c.muts){const f=MUTS[m].cfg||{};for(const k in f){const v=f[k];
   if(k==='nBase'||k==='aiGain')o[k]*=v;else if(k==='nEvery')o[k]=Math.min(o[k],v);else if(k==='coalAt')o[k]=o[k]==null?v:Math.min(o[k],v);else o[k]=v}}return o}
-function startOf(c){const s=JSON.parse(JSON.stringify(DYN[c.dyn].start));if(c.muts.includes('surgun')){const g=MUTS.surgun.start;s.u={...g.u};s.fund=Math.max(s.fund,g.fund);s.mil=g.mil;s.fort=g.fort}return s}
+function startOf(c){const s=JSON.parse(JSON.stringify(DYN[c.dyn].start));if(c.muts.includes('surgun')){const g=MUTS.surgun.start;s.u={...g.u};s.fund=Math.max(s.fund,g.fund);s.mil=g.mil;s.fort=g.fort}
+ // 1c başlangıç bonusları (Usta Çiftçi buyStart'ta)
+ for(const b of c.bonus||[]){if(b==='hazine')s.fund+=40;else if(b==='muhafiz'){s.u.piy=(s.u.piy||0)+3;s.u.okc=(s.u.okc||0)+1}else if(b==='kisla')s.mil=Math.max(s.mil,2);else if(b==='haritaci')s.tech=Object.assign({},s.tech,c.dyn==='bilge'?{sal:1}:{str:1})}return s}
 // Ayarı tamamla: yasaklı çift, kart çarpanı, hazine, barış, rakipler, kabile çarpanı
 function normCfg(c){c=Object.assign({},CFG_KLASIK,c||{});if(!DYN[c.dyn])c.dyn='klasik';if(!MAPTYPES[c.map])c.map='kita';if(!SIZES[c.size])c.size='orta';if(!DIFFS[c.diff])c.diff='cirak';
  c.muts=[...new Set((c.muts||[]).filter(m=>MUTS[m]))].slice(0,2);if(mutBanned(c.muts,c.diff))c.muts=c.muts.slice(0,1);c.dice=!!c.dice&&c.muts.length>0;
+ // 1c: günlük (tarih anahtarı), antrenman, rövanş, başlangıç bonusları (günlükte kapalı), hedef başarım
+ c.daily=typeof c.daily==='string'&&/^\d{4}-\d\d-\d\d$/.test(c.daily)?c.daily:null;c.train=!!c.train;c.rematch=!!c.rematch;c.bonus=c.daily?[]:[...new Set((Array.isArray(c.bonus)?c.bonus:[]).filter(b=>BONUS[b]))].slice(0,2);c.target=ACHM[c.target]?c.target:null;
  const D=DIFFS[c.diff],Zs=SIZES[c.size],fx=cfgFx(c),St=startOf(c);
  c.mutX=+clamp(c.muts.reduce((m,k)=>m*MUTS[k].x,1)*(c.dice?1.1:1),.8,2).toFixed(3);
  c.fund=Math.max(0,St.fund+D.fund-260);c.grace=Math.max(3,(fx.grace??12)+D.grace-12);c.ais=Array.from({length:Zs.nAI},(_,k)=>k+1);
@@ -410,27 +465,38 @@ function mapParams(c){c=c||{};const T=MAPTYPES[c.map]||MAPTYPES.kita,Zs=SIZES[c.
  for(const m of c.muts||[])if(MUTS[m]&&MUTS[m].map)for(const k in MUTS[m].map)P.feat[k]+=MUTS[m].map[k];return P}
 const cfgLine=c=>`${DYN[c.dyn].e} ${DYN[c.dyn].ad} · ${c.muts.length?c.muts.map(m=>MUTS[m].e+' '+MUTS[m].ad).join(' + '):'kart yok'} · ${MAPTYPES[c.map].ad} · ${SIZES[c.size].ad} · ${DIFFS[c.diff].ad}${c.ferman?` · Ferman: ${VIC[c.ferman].e} ${VIC[c.ferman].ad}`:''}`;
 
-// ======================= MİRAS (meta) iskeleti =======================
-// Ayrı anahtar (fetih-meta-v1): oyun kaydı silinse de korunur. MP kazanımı/harcama 1c'de; şimdilik açılımlar + elle MP (metaGive).
-const META_DEFAULT={v:1,mp:0,mpTotal:0,games:0,wins:0,
- unlocked:{dyn:['klasik','boru','tunc','kartal'],mut:['kitlik','erken','kabile','sur','parali','altincag','bereket'],map:['kita'],size:['kisa','orta'],diff:['cirak','kalfa'],bonus:[],cos:[]},
- equipped:{bonus:[],banner:null,color:null},ach:{},
- stats:{byDyn:{},byPath:{fetih:0,medeniyet:0,hegemonya:0},byDiff:{},bestScore:0,fastestWin:null,totalLoot:0,capsTaken:0,maxHarbors:0,maxLootGame:0},
- daily:{last:null,streak:0,best:0,seals:0,hist:{}},history:[],lastCfg:null,seenHelp:false};
-let META=null;
-function metaFix(m){const d=JSON.parse(JSON.stringify(META_DEFAULT));if(!m||typeof m!=='object'||m.v!==1)return d;
- for(const k in d)if(m[k]==null||typeof m[k]!==typeof d[k])m[k]=d[k];for(const k in d.unlocked)if(!Array.isArray(m.unlocked[k]))m.unlocked[k]=d.unlocked[k];
- for(const k in d.unlocked)for(const x of d.unlocked[k])if(!m.unlocked[k].includes(x))m.unlocked[k].push(x);if(typeof m.mp!=='number'||!isFinite(m.mp))m.mp=0;return m}
-function loadMeta(){let m=null;try{const raw=stGet(META_KEY);if(raw)m=JSON.parse(raw)}catch(e){m=null}META=metaFix(m);return META}
-function saveMeta(){if(META)stSet(META_KEY,JSON.stringify(META))}
+// ======================= MİRAS (meta, §9) =======================
+// Ayrı anahtar (fetih-meta-v1; iç sürüm v): oyun kaydı silinse de korunur. Okunamazsa ham hali yedeklenir (fetih-meta-bozuk) ve kullanıcıya bildirilir.
+const META_VER=2,META_BAD='fetih-meta-bozuk';
+const META_DEFAULT={v:META_VER,mp:0,mpTotal:0,mpSpent:0,games:0,wins:0,firstDone:false,
+ unlocked:{dyn:['klasik','boru','tunc','kartal'],mut:['kitlik','erken','kabile','sur','parali','altincag','bereket'],map:['kita','vadi'],size:['kisa','orta'],diff:['cirak','kalfa'],bonus:[],cos:[]},
+ equipped:{bonus:[],banner:null},ach:{},
+ stats:{byDyn:{},byPath:{fetih:0,medeniyet:0,hegemonya:0,ilan:0},byMap:{},byDiff:{},best:{dyn:{},map:{}},bestScore:0,fastestWin:null,totalLoot:0,capsTaken:0,maxHarbors:0,maxLootGame:0,evSeen:[],abil:{akin:0,yagma:0,harac:0}},
+ daily:{last:null,streak:0,best:0,seals:0,started:{},hist:{},weeks:{}},history:[],done:[],lastCfg:null,seenHelp:false};
+let META=null,META_RO=false,META_RAW='';
+// Eksik ya da yanlış tipli alanları varsayılanla tamamlar (iç içe). v1 → v2: yeni alanlar eklenir, varsayılan açılımlar (Nehir Vadisi) eklenir.
+function metaFix(m){const d=JSON.parse(JSON.stringify(META_DEFAULT));if(!m||typeof m!=='object'||Array.isArray(m)||!(m.v>=1&&m.v<=META_VER))return d;
+ const fill=(o,df)=>{for(const k in df){const v=df[k];if(v===null){if(!(k in o))o[k]=null;continue}if(o[k]==null||typeof o[k]!==typeof v||Array.isArray(v)!==Array.isArray(o[k]))o[k]=v;else if(typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length)fill(o[k],v)}};
+ fill(m,d);for(const k in d.unlocked){m.unlocked[k]=m.unlocked[k].filter(x=>typeof x==='string');for(const x of d.unlocked[k])if(!m.unlocked[k].includes(x))m.unlocked[k].push(x)}
+ for(const k of['mp','mpTotal','mpSpent','games','wins'])if(typeof m[k]!=='number'||!isFinite(m[k])||m[k]<0)m[k]=0;m.v=META_VER;return m}
+function loadMeta(){let raw=null,m=null,why='';
+ try{raw=stGet(META_KEY);if(raw!=null){m=JSON.parse(raw);if(!m||typeof m!=='object'||Array.isArray(m))why='biçim tanınmadı';else if(m.v>META_VER){why=`daha yeni bir oyun sürümünden (v${m.v})`;META_RO=true}else if(!(m.v>=1))why='sürüm alanı yok'}}catch(e){why='JSON okunamadı'}
+ if(raw!=null&&why){META_RAW=raw;const b=!META_RO&&stSet(META_BAD,raw);m=null;
+  note('meta',`⚠ <b>Miras kaydı okunamadı</b> (${why}). ${META_RO?'Üzerine yazılmayacak: bu oturumdaki miras geçici.':b?`Ham kayıt yedeklendi (<code>${META_BAD}</code>); miras sıfırdan başlıyor.`:'Ham kayıt yedeklenemedi; aşağıdan kopyala.'} <button class="btn sm" onclick="copyText(META_RAW,'Ham miras kaydı kopyalandı.')">📋 Kopyala</button>`,'err')}
+ META=metaFix(m);if(raw!=null&&!META_RO)saveMeta();return META}
+function saveMeta(){if(META&&!META_RO)stSet(META_KEY,JSON.stringify(META))}
 const metaNew=()=>!META||(!META.games&&!META.lastCfg);
-const LOCK_CAT={dyn:DYN,mut:MUTS,map:MAPTYPES,size:SIZES,diff:DIFFS};
+const LOCK_CAT={dyn:DYN,mut:MUTS,map:MAPTYPES,size:SIZES,diff:DIFFS,bonus:BONUS},LOCK_AD={dyn:'Hanedanlar',mut:'Kural kartları',map:'Harita türleri',size:'Oyun boyu',diff:'Zorluk',bonus:'Başlangıç bonusları'};
 function lockCost(cat,id){const o=LOCK_CAT[cat][id];if(!o)return null;const l=o.lock;return l==null?null:typeof l==='number'?(l||null):l.mp||null}
 function isOpen(cat,id){return !!META&&META.unlocked[cat].includes(id)}
 function lockTxt(cat,id){const o=LOCK_CAT[cat][id],c=lockCost(cat,id),alt=o.lock&&o.lock.alt;return'🔒 '+[c?`${c} MP (sende ${fl(META.mp)})`:'',alt||''].filter(Boolean).join(' ')}
-function unlockItem(cat,id){const c=lockCost(cat,id);if(isOpen(cat,id)||!c||META.mp<c)return false;META.mp-=c;META.unlocked[cat].push(id);saveMeta();return true}
+function unlockItem(cat,id){const c=lockCost(cat,id);if(isOpen(cat,id)||!c||META.mp<c)return false;META.mp-=c;META.mpSpent+=c;META.unlocked[cat].push(id);saveMeta();return true}
+const itemName=(cat,id)=>{const o=LOCK_CAT[cat][id];return(o.e?o.e+' ':'')+(cat==='size'?o.ad+' oyun':o.ad)};
+// Kilitli öğelerin listesi (miras ekranı, sıradaki hedef, bitiş ekranı)
+function lockList(){const L=[];for(const cat in LOCK_CAT)for(const id in LOCK_CAT[cat]){const o=LOCK_CAT[cat][id];if(!o.lock)continue;L.push({cat,id,cost:lockCost(cat,id),open:isOpen(cat,id),alt:o.lock.alt||''})}return L}
+const bonusSlots=()=>1+(META&&META.mpSpent>=400?1:0);
 // Test/geliştirme: konsoldan metaGive(200) → 200 MP
-function metaGive(n){if(!META)loadMeta();META.mp+=+n||0;saveMeta();if(ui.modal==='wiz')wizShow();return META.mp}
+function metaGive(n){if(!META)loadMeta();META.mp+=+n||0;saveMeta();if(ui.modal==='wiz')wizShow();else if(ui.modal==='miras')showMiras();return META.mp}
 
 // ======================= HARİTA ÜRETİMİ =======================
 let MAP=null,S=null,VIS=[],ART=null;const ui={sel:null,tab:'bolge',rtab:'genel',tsel:null,modal:null};
@@ -755,7 +821,8 @@ function initGame(seed,cfg){cfg=normCfg(cfg);
 // 1b durumu: istatistik, geçmiş, olaylar, etkiler, Büyük Eser, Hegemonya, ferman. Eksik alanları tamamlar (yeni oyun, göç ve doğrulama ortak).
 // mig: eski kayıt (olay zamanı rnd tüketmeden seçilir, orijinal başkentler o anki başkentlerdir)
 function def1b(s,mig){const c=s.cfg,R=s.regions,d=(k,v)=>{if(s[k]==null||typeof s[k]!==typeof v)s[k]=v};
- d('stats',{});const st=s.stats;for(const[k,v]of Object.entries({maxRegions:R.filter(r=>r.owner===0).length,atkWon:0,atkLost:0,defWon:0,defLost:0,capsTaken:0,capLost:0,loot:0,famine:0,famineStreak:0,plagues:0,surBuilt:0,coalBroken:0,coalJoin:0,events:0,choices:0,lostT:0,lastAtk:0,vassals:0,hegMax:0,hegHeld:0,wonderT:0}))if(typeof st[k]!=='number')st[k]=v;
+ d('stats',{});const st=s.stats;for(const[k,v]of Object.entries({maxRegions:R.filter(r=>r.owner===0).length,atkWon:0,atkLost:0,defWon:0,defLost:0,capsTaken:0,capLost:0,loot:0,famine:0,famineStreak:0,plagues:0,surBuilt:0,coalBroken:0,coalJoin:0,events:0,choices:0,lostT:0,lastAtk:0,vassals:0,hegMax:0,hegHeld:0,wonderT:0,maxHarb:0,akinN:0,yagmaN:0,haracN:0,declared:0}))if(typeof st[k]!=='number')st[k]=v;
+ for(const k of['bestB','worstB','lastLoss'])if(!st[k]||typeof st[k]!=='object')st[k]=null;
  if(!st.recruited||typeof st.recruited!=='object')st.recruited=Z();if(!st.evN||typeof st.evN!=='object')st.evN={};if(!Array.isArray(st.batT))st.batT=[];if(!Array.isArray(st.conqT))st.conqT=[];
  d('hist',[]);if(!Array.isArray(s.hist))s.hist=[];d('evQ',[]);if(!Array.isArray(s.evQ))s.evQ=[];d('evSeen',{});d('buffs',[]);if(!Array.isArray(s.buffs))s.buffs=[];d('flags',{});
  if(typeof s.evNext!=='number')s.evNext=c.ev===false?1e9:mig?s.turn+6:5+fl(rnd()*3);
@@ -785,6 +852,8 @@ const MIG={
  // v6→v7: kişilikler (eski rakipler 'klasik' kalır: kayıttaki oyunun davranışı değişmez), olaylar, istatistik, Büyük Eser, Hegemonya (orijinal başkent = o anki başkent), ferman yok
  6:s=>{if(!s.cfg||typeof s.cfg!=='object'||!Array.isArray(s.cfg.ais))return s;s.ai=s.ai||{};for(const f of s.cfg.ais){s.ai[f]=s.ai[f]||{dyn:null,name:FAC[f].ad};if(!s.ai[f].per)s.ai[f].per='klasik'}
   if(s.coal){s.coal.mem=s.coal.on?s.cfg.ais.slice():[];s.coal.out=[]}return def1b(s,true)},
+ // v7→v8 (1c): oyun kimliği (miras çifte ödül koruması), günlük/rövanş/bonus ayarı yok; bitmiş ama mirası yazılmamış oyunun ödülü bir kez verilir
+ 7:s=>{if(s.cfg&&typeof s.cfg==='object'){s.cfg.bonus=[];s.cfg.daily=null;s.cfg.train=false;s.cfg.rematch=false;s.cfg.target=null}if(!s.gid)s.gid='v7-'+s.seed+'-'+s.turn;return s},
 };
 function migrate(s){let v=s.ver==null?4:+s.ver;if(!(v>=4))throw Error('Bilinmeyen kayıt sürümü: '+s.ver);if(v>SAVE_VER)throw Error(`Kayıt daha yeni bir oyun sürümünden (v${v}, bu oyun v${SAVE_VER})`);
  while(v<SAVE_VER){if(!MIG[v])throw Error('Göç adımı yok: v'+v);s=MIG[v](s)||s;v++;s.ver=v}return s}
@@ -810,18 +879,23 @@ function showBad(){const r=ST.bad;modal(`<h3>⚠ Kayıtlı oyun okunamadı</h3><
 // Dışa/içe aktarma: "FETIH:" + base64(UTF-8 JSON)
 function b64e(t){const b=new TextEncoder().encode(t);let s='';for(let i=0;i<b.length;i+=8192)s+=String.fromCharCode.apply(null,b.subarray(i,i+8192));return btoa(s)}
 function b64d(t){return new TextDecoder().decode(Uint8Array.from(atob(t),c=>c.charCodeAt(0)))}
-function exportSave(){S.ver=SAVE_VER;return'FETIH:'+b64e(JSON.stringify(S))}
+// 1c: dışa aktarma oyun kaydını ve mirası birlikte taşır ({fetih:2, save, meta}); eski düz kayıt metni de okunur
+function exportSave(){if(S)S.ver=SAVE_VER;return'FETIH:'+b64e(JSON.stringify({fetih:2,save:S||null,meta:META||null}))}
 async function importSave(text){text=String(text||'').trim();if(!text)throw Error('Metin boş');let raw=text;
  if(/^FETIH:/.test(text))try{raw=b64d(text.slice(6).replace(/\s+/g,''))}catch(e){throw Error('Kodlama bozuk (base64 çözülemedi)')}
  else if(text[0]!=='{')throw Error('Bu bir Fetih kaydına benzemiyor');
- const s=parseSave(raw);if(boot.busy)throw Error('Yükleme sürüyor, biraz bekle');await boot(()=>adoptSaveAsync(s));saveNow();return true}
+ let ob=null;try{ob=JSON.parse(raw)}catch(e){throw Error('JSON okunamadı ('+e.message+')')}let sv=raw,mt=null,msg='';if(ob&&ob.fetih===2){mt=ob.meta;sv=ob.save?JSON.stringify(ob.save):null}
+ const s=sv?parseSave(sv):null;
+ if(mt){if(!mt||typeof mt!=='object'||!(mt.v>=1&&mt.v<=META_VER))throw Error('Miras verisi okunamadı');const fm=metaFix(JSON.parse(JSON.stringify(mt)));if(!META||fm.mpTotal>=META.mpTotal){META=fm;saveMeta();msg='Miras yüklendi ('+fl(fm.mp)+' MP).'}else msg='Bu tarayıcıdaki miras daha ileride; korundu.'}
+ if(!s){if(!mt)throw Error('Metinde oyun kaydı yok');return{game:false,msg}}
+ if(boot.busy)throw Error('Yükleme sürüyor, biraz bekle');await boot(()=>adoptSaveAsync(s));saveNow();return{game:true,msg}}
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function copyText(t,msg){const ok=()=>toast(msg||'Panoya kopyalandı.'),fb=()=>{modal(`<h3>Elle kopyala</h3><p class=muted>Pano erişimi yok. Metni seçip kopyala.</p><textarea id=cpTa readonly style="width:100%;height:160px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;font:11px monospace">${esc(t)}</textarea><div class=row><button class="btn primary" onclick="closeModal()">Kapat</button></div>`,'copy');const a=$('#cpTa');a.focus();a.select()};
  try{if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(ok,()=>{if(legacyCopy(t))ok();else fb()});else if(legacyCopy(t))ok();else fb()}catch(e){fb()}}
 function legacyCopy(t){try{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;left:-9999px';document.body.appendChild(a);a.select();const ok=document.execCommand('copy');a.remove();return ok}catch(e){return false}}
 function showImport(){modal(`<h3>📥 Kayıt yükle</h3><p class=muted style="font-size:12.5px">“Kaydı kopyala” ile aldığın metni yapıştır. Mevcut oyunun yerini alır.</p><textarea id=impTa style="width:100%;height:130px;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;font:11px monospace" placeholder="FETIH:…"></textarea><p id=impErr class=bad style="font-size:12.5px;margin:6px 0 0"></p>
  <div class=row><button class=btn onclick="showHelp()">Vazgeç</button><button class="btn primary" onclick="doImport()">Yükle</button></div>`,'imp')}
-async function doImport(){const t=$('#impTa').value;try{await importSave(t);closeModal();centerOn(ui.sel,Math.max(minZ(),1));refresh();toast('Kayıt yüklendi.');if(S.phase==='kurulus')showSetup();else if(S.over)afterModal();else showEvent()}catch(e){const el=$('#impErr');if(el)el.textContent='Yüklenemedi: '+e.message}}
+async function doImport(){const t=$('#impTa').value;try{const res=await importSave(t);if(!res.game){closeModal();toast(res.msg||'Yüklendi.');if(!S||!ART)startNew();return}if(res.msg)setTimeout(()=>toast(res.msg),2500);closeModal();centerOn(ui.sel,Math.max(minZ(),1));refresh();toast('Kayıt yüklendi.');if(S.phase==='kurulus')showSetup();else if(S.over)afterModal();else showEvent()}catch(e){const el=$('#impErr');if(el)el.textContent='Yüklenemedi: '+e.message}}
 // ======================= HATA / UYARI ŞERİTLERİ =======================
 const ERR={list:[],seen:new Map(),closed:false};
 function note(id,html,kind){let b=$('#bar-'+id);if(!b){b=document.createElement('div');b.id='bar-'+id;b.className='bar-n '+(kind||'');$('#bars').appendChild(b)}b.innerHTML=`<span>${html}</span><button class="btn sm" onclick="this.parentNode.remove()" title="Kapat">✕</button>`;return b}
@@ -898,7 +972,7 @@ function resolve0(ao,from,to,A){const b=battle(ao,from,to,A);b.A=A;const{n,ra,rd
  if(ra>rd){const fr=winFr(ao,b),SV=scaleU(A,fr);if(sumU(SV)<1)SV[UK.find(k=>A[k])]=1;
   if(ao===0)S.morale=Math.min(mil().maxMorale,S.morale+mil().conqMorale);const loot=conquer(to,ao,SV,fr);let akin=0;
   // Akın (Börü): turda 1 kez, sağ kalan süvari hazır kalır
-  if(ao===0&&hasAb('akin')&&SV.suv>0&&S.cd.akin!==S.turn){const T=S.regions[to];T.rd.suv=T.u.suv;sync(T);S.cd.akin=S.turn;akin=T.u.suv}
+  if(ao===0&&hasAb('akin')&&SV.suv>0&&S.cd.akin!==S.turn){const T=S.regions[to];T.rd.suv=T.u.suv;sync(T);S.cd.akin=S.turn;akin=T.u.suv;if(S.stats)S.stats.akinN++}
   return{win:true,sent:n,surv:sumU(SV),lost:n-sumU(SV),dLost:dt,SV,loot,akin}}
  return defeat(ao,b)}
 // Savaş istatistikleri (S.stats) ve kişilik izleri: Savunmacı karşı saldırısı (hit), Usta Akıncı Beyi etkisinin harcanması
@@ -906,13 +980,16 @@ function battleStat(ao,d0,c0,from,to,x){const st=S.stats;if(!st)return;
  if(ao===0||d0===0){st.batT.push(S.turn);if(st.batT.length>40)st.batT.shift()}
  if(ao===0){st.lastAtk=S.turn;if(x.win){st.atkWon++;st.conqT.push(S.turn);if(st.conqT.length>20)st.conqT.shift();if(x.loot)for(const k in x.loot.got)st.loot+=x.loot.got[k];if(c0&&isAI(d0))st.capsTaken++}else{st.atkLost++;st.lostT=S.turn}
   if(isAI(d0)&&S.ai[d0])S.ai[d0].hit={from,to,t:S.turn};if(S.buffs.some(b=>b.k==='bey'))S.buffs=S.buffs.filter(b=>b.k!=='bey')}
- else if(d0===0){if(x.win){st.defLost++;st.lostT=S.turn}else st.defWon++}}
+ else if(d0===0){if(x.win){st.defLost++;st.lostT=S.turn;st.lastLoss={t:S.turn,r:to,by:ao}}else st.defWon++}
+ // 1c: en iyi savaş (en çok düşman öldürülen kazanılmış saldırı) ve en büyük kayıp (saldırı ya da savunma)
+ if(ao===0&&x.win&&(!st.bestB||x.dLost>st.bestB.kill))st.bestB={t:S.turn,r:to,sent:x.sent,kill:x.dLost,lost:x.lost};
+ const L=ao===0?x.lost:d0===0?x.dLost:0;if(L>0&&(!st.worstB||L>st.worstB.lost))st.worstB={t:S.turn,r:to,lost:L,k:ao===0?'saldırı':'savunma'}}
 // Yağma (Akıncı): fethetmeden baskın
 const canRaid=(from,to)=>hasAb('yagma')&&S.phase==='oyun'&&(S.cd.yagma||0)<=S.turn&&S.regions[from].owner===0&&S.regions[to].owner>0&&MAP.regions[from].adj.includes(to)&&!truceOn(S.regions[to].owner)&&!isVas(S.regions[to].owner)&&!atkLocked();
 function raid(from,to,A){if(!canRaid(from,to)||!sumU(A))return null;const b=battle(0,from,to,A);b.A=A;const{F,T,n,ra,rd,dt}=b,Ab=ABIL.yagma;S.cd.yagma=S.turn+Ab.cd;
  if(!(ra>rd))return defeat(0,b);const fr=winFr(0,b),SV=scaleU(A,fr);if(sumU(SV)<1)SV[UK.find(k=>A[k])]=1;addU(F,SV,false);
  const st=lootStore(to),got={};for(const k in st){got[k]=st[k]*.4;S.res[k]+=got[k]}
- const kill=takeProp(T.u,Math.ceil(T.troops*.25));remU(T,kill,true);T.raid=S.turn+3;S.morale=Math.min(mil().maxMorale,S.morale+2);
+ const kill=takeProp(T.u,Math.ceil(T.troops*.25));remU(T,kill,true);T.raid=S.turn+3;if(S.stats)S.stats.yagmaN++;S.morale=Math.min(mil().maxMorale,S.morale+2);
  return{win:true,raid:true,sent:n,surv:sumU(SV),lost:n-sumU(SV),dLost:sumU(kill),got}}
 function conquer(i,o,comp,fr){
  const r=S.regions[i],old=r.owner,g=MAP.regions[i],store=o===0?lootStore(i):null,wasCap=r.capital;let loot=null;r.owner=o;r.u=Object.assign(Z(),comp);r.rd=Z();sync(r);r.fort=Math.max(0,r.fort-1);r.pop*=o===0?mil().conqPop:.7;r.raid=0;
@@ -982,7 +1059,8 @@ const techName=(b,k)=>BR.find(x=>x.id===b).t[k-1].ad;
 
 // ======================= OYUNCU EYLEMLERİ =======================
 const fundCost=t=>{const fc=startOf(cfgOf()).fundCost;return fc&&fc[t]!=null?fc[t]:FIELD[t].fund};
-function buyStart(t){const c=capIdx(),fc=fundCost(t);if(S.phase!=='kurulus'||S.fund<fc||S.regions[c].fields.length>=slots(c))return;S.fund-=fc;S.regions[c].fields.push({t,lv:1});refresh()}
+function buyStart(t){const c=capIdx(),fc=fundCost(t);if(S.phase!=='kurulus'||S.fund<fc||S.regions[c].fields.length>=slots(c))return;S.fund-=fc;
+ const lv=t==='tarla'&&(cfgOf().bonus||[]).includes('ciftci')&&!S.regions[c].fields.some(f=>f.t==='tarla')?2:1;S.regions[c].fields.push({t,lv});refresh()}
 function unbuyStart(k){const c=capIdx(),f=S.regions[c].fields[k];if(S.phase!=='kurulus'||!f||f.gift)return;S.fund+=fundCost(f.t);S.regions[c].fields.splice(k,1);refresh()}
 // Önerilen kuruluş: başkentte en verimli tesisleri hazinenin yettiği kadar al (Hızlı Başla ve bot için)
 function autoSetup(){const c=capIdx(),W0={tarla:1.6,pazar:1.5,medrese:2};const pick=Object.keys(FIELD).map(k=>({k,v:fieldOut(c,{t:k,lv:1})*(W0[k]||1)})).sort((a,b)=>b.v-a.v);
@@ -1070,6 +1148,7 @@ function endTurn(){if(!S||S.over)return;if(S.phase!=='oyun'){toast('Önce kurulu
  if(S.turn===S.cfg.grace)ev.push({m:'Barış dönemi sona erdi. Rakipler artık sana saldırabilir!',c:'bad'});
  for(const f in S.truce)if(S.truce[f]===S.turn)ev.push({m:`${facName(+f)} ile ateşkes sona erdi.`,c:''});
  S.buffs=S.buffs.filter(buffOn);rollEvent(ev);
+ if(!S.flags.declN&&declOk()){S.flags.declN=S.turn;ev.push({m:'👑 Gücün rakiplerinin toplamının 1,5 katını aştı: Hedef sekmesinden zaferi ilan edip oyunu erken bitirebilirsin.',c:'good'})}
  ev.forEach(x=>log(x.m,x.c));checkEnd();refresh();saveNow();
  if(S.over)return afterModal();
  if(ev.length)modal(`<h3>📯 Yıl ${S.turn} raporu</h3>${ev.map(x=>`<p class=${x.c}>${x.m}</p>`).join('')}<div class=row><button class="btn primary" onclick="closeModal();showEvent()">Tamam${S.evQ.length?' ›':''}</button></div>`,'rep');else showEvent()}
@@ -1082,7 +1161,7 @@ function plague(ev){const hit=plaguePick();if(!hit)return;const dead=plagueHit(h
 const haracCost=f=>40+8*S.regions.filter(r=>r.owner===f).length;
 function harac(f){if(!hasAb('harac')||S.phase!=='oyun'||S.over||(S.cd.harac||0)>S.turn||truceOn(f)||isVas(f)||!S.regions.some(r=>r.owner===f))return;const c=haracCost(f);if(S.res.altin<c){toast('Yetersiz altın.');return}
  if(aiPer(f).truce==='2x'&&totTroops()<2*aiTroops(f)){toast(`${facName(f)} haracı reddetti: Saldırgan rakip ancak ondan iki kat güçlüysen ateşkese yanaşır.`);return}
- S.res.altin-=c;setTruce(f,ABIL.harac.truce);S.cd.harac=S.turn+ABIL.harac.cd;log(`⚓ ${facName(f)} ile ${ABIL.harac.truce} yıllık ateşkes (${c} altın haraç).`,'good');refresh()}
+ S.res.altin-=c;setTruce(f,ABIL.harac.truce);S.cd.harac=S.turn+ABIL.harac.cd;S.stats.haracN++;log(`⚓ ${facName(f)} ile ${ABIL.harac.truce} yıllık ateşkes (${c} altın haraç).`,'good');refresh()}
 
 // ======================= OLAYLAR (§6) =======================
 // Geçici etkiler: S.buffs=[{k,v,u}] (u: bitiş yılı, u>S.turn iken etkin). tarla: tarla çarpanı · regen: kalan moral · bey: sonraki saldırı
@@ -1248,7 +1327,7 @@ function tick1b(ev){const R=S.regions,st=S.stats,alt=S.cfg.alt,H=VIC.hegemonya,M
    if(!lost&&!(typeof P.vassalAt==='number'&&aiRegs(f)<=P.vassalAt))continue;const b=borderTroops(f);if(b<1||b<2*aiTroops(f))continue;S.evQ.push({id:'S3',d:{f},t:S.turn+1});a.bcd=S.turn+H.offerCd}}
  const sp=S.flags.spread;if(sp&&S.turn>=sp.t){S.flags.spread=null;const c=[];for(const i of sp.from)for(const j of MAP.regions[i].adj)if(!sp.from.includes(j)&&!c.includes(j)&&R[j].owner!==BLOCK)c.push(j);const hit=[];while(hit.length<3&&c.length)hit.push(c.splice(fl(rnd()*c.length),1)[0]);
   if(hit.length){const k=plagueHit(hit);ev.push({m:`☠ Veba yayıldı: ${hit.map(rName).join(', ')} (${k} asker öldü).`,c:'bad'})}}
- const o=own().length;st.maxRegions=Math.max(st.maxRegions,o);S.hist.push([S.turn,o,totTroops()]);if(S.hist.length>200)S.hist=S.hist.filter((x,k)=>k%2===0||k>100)}
+ const o=own().length;st.maxRegions=Math.max(st.maxRegions,o);st.maxHarb=Math.max(st.maxHarb||0,own().filter(i=>MAP.regions[i].feat==='liman').length);S.hist.push([S.turn,o,totTroops()]);if(S.hist.length>200)S.hist=S.hist.filter((x,k)=>k%2===0||k>100)}
 // Koalisyon üyeliği: kişiliğe göre eşik (Fırsatçı −%5 ilk katılır, Tüccar +%5); vasal ve ayrılan üye katılmaz
 const coalAt=f=>S.cfg.coalAt+(aiPer(f).coal||0);
 // Koalisyon (Kalfa+ ya da Kutsal İttifak): oyuncu eşiğe ulaşınca 12 yıl. Üyeler (kişiliğe göre eşik) birbirine saldırmaz, oyuncuya need −0,15 ve hedef skoru +0,5.
@@ -1312,11 +1391,195 @@ function checkEnd(){if(S.over)return;const c={};S.regions.forEach(r=>c[r.owner]=
  if(S.over){if(S.over==='lose')S.winBy=null;save()}}
 const WIN_T={fetih:['👑 Hükümdarlık Kuruldu: Fetih Zaferi',()=>`${S.turn} yılda ${own().length}/${MAP.playN} bölgeyi yönetir oldun. Rakiplerin diz çöktü.`],
  medeniyet:['📜 Medeniyet Zaferi: Külliye Tamamlandı',()=>`${S.turn}. yılda ${techCount()} teknoloji ve beş aşamalı Büyük Eserle çağın ışığı oldun.`],
- hegemonya:['👑 Hegemonya Zaferi',()=>`${S.turn}. yılda eski başkentleri ${VIC.hegemonya.hold} yıl elinde tuttun: rakipler tacına haraç ödüyor.`]};
-function afterModal(){if(!S.over)return;const win=S.over==='win',T=WIN_T[S.winBy]||WIN_T.fetih,st=S.stats,b=`<div class=row style="flex-wrap:wrap"><button class=btn onclick="wizAgain(S.cfg)">↻ Aynı kurallar, yeni harita</button><button class="btn primary" onclick="startNew()">Yeni Sefer</button></div>`,l=`<p class=muted style="font-size:12.5px">${cfgLine(S.cfg)}</p>`;
- const fm=S.ferman?(win&&S.winBy===S.ferman?`<p class=good>📜 Ferman tuttu: ${VIC[S.ferman].e} ${VIC[S.ferman].ad} · miras ×${fmtX(S.fermanCh?FERMAN.xCh:FERMAN.x)}</p>`:`<p class=muted>📜 Ferman (${VIC[S.ferman].ad}) tutmadı.</p>`):'';
- const ln=`<p class=muted style="font-size:12.5px">Olay ${st.events} (${st.choices} seçim) · koalisyon ${S.coal.n||0}${st.coalBroken?` (${st.coalBroken} kılıç kırdın)`:''} · vasal ${st.vassals} · en çok ${st.maxRegions} bölge · ${techCount()} teknoloji</p>`;
- modal(win?`<h3>${T[0]}</h3><p>${T[1]()}</p>${fm}${ln}${l}${b}`:`<h3>🏴 Beylik Yıkıldı</h3><p>${S.turn}. yılda son toprağını da kaybettin.</p><p style="font-size:13px">Zafer yollarında: ${pathTxt()}</p>${fm}${ln}${l}${b}`,'over')}
+ hegemonya:['👑 Hegemonya Zaferi',()=>`${S.turn}. yılda eski başkentleri ${VIC.hegemonya.hold} yıl elinde tuttun: rakipler tacına haraç ödüyor.`],
+ ilan:['👑 Zafer İlanı',()=>`${S.turn}. yılda gücün rakiplerinin toplamını açık ara geçti; beyler tacına boyun eğdi.`]};
+
+// ======================= OYUN SONU · SKOR · MİRAS · GÜNLÜK (1c, §8-§11) =======================
+const VZ={fetih:1000,medeniyet:1100,hegemonya:1100,ilan:900},MAPX={kita:1,vadi:1,dag:1.1,korfez:1.05};
+const RANKS=[[0,'Tımarlı'],[1000,'Subaşı'],[2500,'Sancakbeyi'],[4000,'Beylerbeyi'],[6000,'Vezir-i Âzam'],[8000,'Cihangir']];
+const rankOf=v=>{let k=0;RANKS.forEach((r,i)=>{if(v>=r[0])k=i});return k};
+const fmtN=v=>Math.round(v).toLocaleString('tr-TR');
+// Skor (§8.3): Z + 40·en çok bölge + 25·teknoloji + 10·(saldırı + ½ savunma zaferi) + 100·alınan başkent + hız (zafer: (tavan − yıl)·12; Zafer İlanı'nda yarısı)
+function scoreParts(s){const st=s.stats,win=s.over==='win',sp=SIZES[s.cfg.size].sp;
+ const p={Z:win?VZ[s.winBy]||1000:0,B:40*st.maxRegions,T:25*Object.values(s.tech).reduce((a,b)=>a+b,0),F:Math.round(10*(st.atkWon+.5*st.defWon)),K:100*st.capsTaken,H:win?Math.round(Math.max(0,sp-s.turn)*12*(s.winBy==='ilan'?.5:1)):0};
+ p.raw=p.Z+p.B+p.T+p.F+p.K+p.H;return p}
+const bonX=c=>(c.bonus||[]).reduce((m,b)=>m*(BONUS[b]?BONUS[b].x:1),1);
+const scoreMul=c=>DIFFS[c.diff].sc*c.mutX*(MAPX[c.map]||1)*(DYN[c.dyn].mp||1)*bonX(c);
+function scoreOf(s){const p=scoreParts(s),x=scoreMul(s.cfg);return{p,x,v:Math.round(p.raw*x)}}
+const diffMp=(c,M)=>c.diff==='cirak'&&M&&M.games<2?DIFFS.cirak.mpNew:DIFFS[c.diff].mp;
+const fermanOk=s=>!!(s.ferman&&s.over==='win'&&(s.winBy===s.ferman||(s.winBy==='ilan'&&s.ferman==='fetih')));
+// Miras puanı (§9.1 + 1c): zafer 23 + ham/120; yenilgi 12 + yakınlık round(20·min(1, en yüksek bölge oranı/0,35)) + ham/120.
+// × zorluk (Çırak 0,4; ilk 2 oyun 0,6) × kart × hanedan × bonus × ferman × rövanş 0,8 × antrenman 0,25. 15. yıldan önce biten oyun 0.
+function mpCalc(s,M){const c=s.cfg,win=s.over==='win',p=scoreParts(s),share=s.stats.maxRegions/(MAP?MAP.playN:1);
+ if(s.turn<15)return{game:0,quit:true,share,near:0};
+ const near=win?0:Math.round(20*Math.min(1,share/.35)),base=(win?23:12+near)+p.raw/120;
+ const x={diff:diffMp(c,M),kart:c.mutX*(DYN[c.dyn].mp||1)*bonX(c),ferman:fermanOk(s)?(s.fermanCh?FERMAN.xCh:FERMAN.x):1,re:c.rematch?.8:1,tr:c.train?.25:1};
+ return{game:Math.round(base*x.diff*x.kart*x.ferman*x.re*x.tr),base,near,share,x}}
+const CAT_PRI={dyn:0,map:1,diff:2,size:3,mut:4,bonus:5};// bitiş ekranında öne çıkan açılım
+const gidOf=s=>s.gid||('g'+s.seed+'-'+s.turn+'-'+s.cfg.dyn+'-'+s.cfg.diff);
+// Bitişte bir kez: MP, başarımlar, koşullu açılımlar, rekorlar, günlük seri, geçmiş. Sonuç S.endRes'e yazılır (yenilemede aynı ekran, ödül yok).
+// Çifte ödül koruması: S.metaDone + META.done (oyun kimlikleri); META önce, oyun kaydı sonra yazılır.
+function commitMeta(){const s=S;if(!META)META=metaFix(null);const M=META,id=gidOf(s);
+ if(s.metaDone&&s.endRes)return s.endRes;
+ const c=s.cfg,st=s.stats,win=s.over==='win',sc=scoreOf(s),mp=mpCalc(s,M),R={v:sc.v,p:sc.p,x:sc.x,mp,mpG:{game:0,first:0,ach:0,daily:0},mpTot:0,mp0:fl(M.mp),ach:[],unl:[],aff:[],miss:null,rec:null,daily:null,quit:!!mp.quit,dup:M.done.includes(id)};
+ if(!R.dup&&!R.quit){M.games++;if(win)M.wins++;const T=M.stats,bd=T.byDyn[c.dyn]=T.byDyn[c.dyn]||{g:0,w:0,best:0};bd.g++;
+  if(win){bd.w++;T.byPath[s.winBy]=(T.byPath[s.winBy]||0)+1;T.byMap[c.map]=(T.byMap[c.map]||0)+1;T.byDiff[c.diff]=(T.byDiff[c.diff]||0)+1;if(T.fastestWin==null||s.turn<T.fastestWin)T.fastestWin=s.turn}
+  T.totalLoot+=Math.round(st.loot);T.capsTaken+=st.capsTaken;T.maxHarbors=Math.max(T.maxHarbors,st.maxHarb||0);T.maxLootGame=Math.max(T.maxLootGame,Math.round(st.loot));
+  for(const e in st.evN)if(!T.evSeen.includes(e))T.evSeen.push(e);for(const k of['akin','yagma','harac'])T.abil[k]=(T.abil[k]||0)+(st[k+'N']||0);
+  if(!c.train){const B=T.best,pd=B.dyn[c.dyn]||0,pm=B.map[c.map]||0;R.rec={pd,pm,dyn:sc.v>pd,map:sc.v>pm};if(sc.v>pd)B.dyn[c.dyn]=sc.v;if(sc.v>pm)B.map[c.map]=sc.v;T.bestScore=Math.max(T.bestScore,sc.v);bd.best=Math.max(bd.best||0,sc.v)}
+  // başarımlar (rövanş/antrenman açmaz; Çırak'ta yalnız c işaretliler)
+  if(!c.rematch&&!c.train)for(const A of ACH){if(M.ach[A.id]||(c.diff==='cirak'&&!A.c))continue;const ok=A.pr?(q=>q[0]>=q[1])(A.pr(M)):A.t(s,M);
+   if(ok){M.ach[A.id]=dateKey();R.ach.push(A.id);if(A.cos&&!M.unlocked.cos.includes(A.cos))M.unlocked.cos.push(A.cos)}}
+  for(const A of ACH)if(!M.ach[A.id]&&A.miss){const t=A.miss(s);if(t){R.miss=t;break}}
+  R.mpG.game=mp.game;if(!M.firstDone){M.firstDone=true;R.mpG.first=20}R.mpG.ach=R.ach.reduce((a,k)=>a+ACHM[k].mp,0);
+  if(c.daily&&!c.train){R.mpG.daily=5;R.daily=dailyCommit(c.daily,s,sc.v)}
+  R.mpTot=R.mpG.game+R.mpG.first+R.mpG.ach+R.mpG.daily;M.mp+=R.mpTot;M.mpTotal+=R.mpTot;
+  // koşullu açılımlar (antrenman hariç)
+  const cu=(cat,id,how)=>{if(!isOpen(cat,id)){M.unlocked[cat].push(id);R.unl.push({cat,id,how})}};
+  if(!c.train){if(win&&c.diff==='kalfa')cu('diff','usta',"Kalfa'da zafer");if(win&&(c.diff==='usta'||c.diff==='destan')){cu('diff','destan',"Usta'da zafer");cu('mut','ittifak',"Usta'da zafer");cu('mut','surgun',"Usta'da zafer")}
+   // hanedanların MP'siz yolu Çırak'ta işlemez (Çırak'ta 1500 ganimet ilk oyunda geliyordu; Kalfa botunda 1500 ganimet %75, 3 Liman %54 oyunda tutuyordu → 6000 / 4)
+   if(c.diff!=='cirak'){if(win&&s.winBy==='medeniyet')cu('dyn','bilge','Medeniyet zaferi');if((st.maxHarb||0)>=4)cu('dyn','deniz','aynı anda 4 Liman');if(st.loot>=6000)cu('dyn','akinci','tek oyunda 6000 ganimet')}}
+  R.aff=lockList().filter(L=>L.cost&&!L.open&&L.cost<=M.mp&&L.cost>R.mp0).sort((a,b)=>CAT_PRI[a.cat]-CAT_PRI[b.cat]||a.cost-b.cost).map(L=>({cat:L.cat,id:L.id}));
+  M.history.unshift({d:dateKey(),c:{dyn:c.dyn,muts:c.muts,map:c.map,size:c.size,diff:c.diff},seed:s.seed,over:s.over,winBy:s.winBy,turn:s.turn,score:sc.v,mp:R.mpTot,daily:c.daily,re:c.rematch,tr:c.train});M.history=M.history.slice(0,20)}
+ if(!R.dup){M.done.push(id);M.done=M.done.slice(-40)}
+ saveMeta();s.metaDone=true;s.endRes=R;saveNow();return R}
+
+// --- Günlük meydan okuma (§10 + 1c): tarihten tohum, kurallar sabit (Kısa, Kalfa; Cuma Usta), ilk BAŞLATILAN deneme sayılır ---
+function hash32(t){let h=0x811c9dc5;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,0x01000193)}return h>>>0}
+const dateKey=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const dayNum=k=>{const[y,m,d]=k.split('-').map(Number);return Math.round(Date.UTC(y,m-1,d)/864e5)};
+const weekKey=k=>{const n=dayNum(k);return'w'+(n-(new Date(n*864e5).getUTCDay()+6)%7)};// Pazartesi başlar
+const fmtDate=k=>k?k.split('-').reverse().join('.'):'';
+function dailyOf(k){const sd=hash32('FTH'+k.replace(/-/g,'')),R=mulberry32(sd),all=Object.keys(MUTS),dyn=DYN6[fl(R()*DYN6.length)],diff=new Date(dayNum(k)*864e5).getUTCDay()===5?'usta':'kalfa';let muts=null;
+ for(let q=0;q<40&&!muts;q++){const a=all[fl(R()*all.length)],b=all[fl(R()*all.length)];if(a!==b&&!mutBanned([a,b],diff))muts=[a,b]}
+ const map=Object.keys(MAPTYPES)[fl(R()*4)];return{seed:sd%1e9,cfg:{dyn,muts:muts||['kitlik'],map,size:'kisa',diff,ferman:null,bonus:[],daily:k}}}
+// Seri: dün oynandıysa +1; 1 gün kaçtıysa mühür yakılır; her 7 günlük seri 1 mühür (en çok 2). Haftada 4 gün → Haftalık Sancak. Ödüller kozmetik.
+function dailyCommit(k,s,v){const D=META.daily,o={k,inc:false};
+ if(D.last!==k){const gap=D.last?dayNum(k)-dayNum(D.last):99;if(gap>0){if(gap===1)D.streak++;else if(gap===2&&D.seals>0){D.seals--;D.streak++;o.seal=true}else D.streak=1;D.last=k;o.inc=true}}
+ if(o.inc){D.best=Math.max(D.best,D.streak);if(D.streak%7===0)D.seals=Math.min(2,D.seals+1);const cs=META.unlocked.cos;if(D.streak>=7&&!cs.includes('yedi'))cs.push('yedi');if(D.streak>=30&&!cs.includes('cihan'))cs.push('cihan')}
+ const w=weekKey(k);if(!D.hist[k])D.weeks[w]=(D.weeks[w]||0)+1;if(!D.hist[k]&&D.weeks[w]===4){o.week=true;if(!META.unlocked.cos.includes('haftalik'))META.unlocked.cos.push('haftalik')}
+ const wk=Object.keys(D.weeks).sort();while(wk.length>10)delete D.weeks[wk.shift()];
+ D.hist[k]={score:v,win:s.over==='win',turn:s.turn,path:s.winBy,dyn:s.cfg.dyn};const hk=Object.keys(D.hist).sort();while(hk.length>60)delete D.hist[hk.shift()];
+ o.streak=D.streak;return o}
+function startDaily(k){if(!META)loadMeta();const today=dateKey();k=k||today;const d=dailyOf(k),tr=k!==today||!!META.daily.started[k];
+ if(!tr){META.daily.started[k]=1;const sk=Object.keys(META.daily.started).sort();while(sk.length>14)delete META.daily.started[sk.shift()]}
+ launch(d.seed,normCfg({...d.cfg,train:tr}))}
+// --- Tohum kodu (§8.5): FTH-<tohum base36>-<hanedan>-<harita>-<zorluk>-<kart.kart|0>-<boy>; günlük FTH-DYYYYAAGG ---
+const CODE={dyn:{klasik:'KL',boru:'BO',tunc:'TU',kartal:'KA',bilge:'BI',deniz:'DE',akinci:'AK'},map:{kita:'KI',vadi:'VA',dag:'DA',korfez:'KO'},diff:{cirak:'CI',kalfa:'KA',usta:'US',destan:'DS'},size:{kisa:'K',orta:'O',uzun:'U'},
+ mut:{kitlik:'KT',erken:'ER',kabile:'KB',sur:'SU',parali:'PA',altincag:'AC',bereket:'BE',demirsiz:'DM',veba:'VB',sis:'SI',kanli:'KN',baris:'BA',ittifak:'IT',surgun:'SG'}};
+function seedCode(seed,c){if(c.daily)return'FTH-D'+c.daily.replace(/-/g,'');return['FTH',(seed>>>0).toString(36).toUpperCase(),CODE.dyn[c.dyn],CODE.map[c.map],CODE.diff[c.diff],c.muts.map(m=>CODE.mut[m]).join('.')||'0',CODE.size[c.size]].join('-')}
+function parseCode(t){t=String(t||'').trim().toUpperCase();let m=t.match(/^FTH-D(\d{4})(\d{2})(\d{2})$/);if(m)return{daily:`${m[1]}-${m[2]}-${m[3]}`};
+ m=t.match(/^FTH-([0-9A-Z]{1,7})-([A-Z]{2})-([A-Z]{2})-([A-Z]{2})-([A-Z0.]{1,5})(?:-([KOU]))?$/);if(!m)return null;const rv=k=>{const o={};for(const a in CODE[k])o[CODE[k][a]]=a;return o};
+ const cfg={dyn:rv('dyn')[m[2]],map:rv('map')[m[3]],diff:rv('diff')[m[4]],size:rv('size')[m[6]||'O'],muts:m[5]==='0'?[]:m[5].split('.').map(x=>rv('mut')[x])},seed=parseInt(m[1],36);
+ if(!cfg.dyn||!cfg.map||!cfg.diff||!cfg.size||cfg.muts.some(x=>!x)||!(seed>=0)||mutBanned(cfg.muts,cfg.diff))return null;return{seed,cfg}}
+// Koddan gelen ayarda kilitli içerik varsa oyun antrenman sayılır (kilit atlatılmasın)
+const lockedIn=c=>!isOpen('dyn',c.dyn)||!isOpen('map',c.map)||!isOpen('size',c.size)||!isOpen('diff',c.diff)||c.muts.some(m=>!isOpen('mut',m));
+
+// --- Zaferi ilan et (1c): güç = asker + 5 × bölge. Toprağın ≥ %30 ve gücün ≥ 1,5 × (yıkılmamış, vasal olmayan) rakiplerin toplamı ise oyun erken bitirilebilir ---
+const DECL={r:1.5,sh:.3};// eşikler: 2× botta yalnız ~2 yıl kısaltıyordu, 1,5× ~8 yıl (Uygulama notları 1c)
+const powOf=f=>{let t=0,n=0;for(const r of S.regions)if(r.owner===f){t+=r.troops;n++}return t+5*n};
+function declInfo(){const riv=S.cfg.ais.filter(f=>aliveAI(f)&&!isVas(f)),rp=riv.reduce((a,f)=>a+powOf(f),0),sh=own().length/MAP.playN,r=rp?powOf(0)/rp:99;
+ return{ok:!S.over&&S.phase==='oyun'&&S.turn>=S.cfg.grace&&riv.length>0&&sh>=DECL.sh&&r>=DECL.r,r,sh}}
+const declOk=()=>declInfo().ok;
+function declProbe(){const o=S.over,w=S.winBy;S.over='win';S.winBy='ilan';const r=scoreOf(S);S.over=o;S.winBy=w;return{t:S.turn,v:r.v,raw:r.p.raw}}
+function askDeclare(){if(!declOk())return;const d=declInfo(),p=declProbe();modal(`<h3>👑 Zaferi ilan et</h3><p>Gücün rakiplerinin toplamının <b>${fmtX(r1(d.r))}</b> katı, toprakların %${Math.round(d.sh*100)}. Savaşı şimdi bitirebilirsin.</p><p class=muted style="font-size:12.5px">Zafer İlanı: taban 900 (Fetih 1000), hız bonusunun yarısı. Fetih fermanını tutmuş sayılır. Şimdi biterse skor ≈ <b>${fmtN(p.v)}</b>.</p><div class=row><button class=btn onclick="closeModal()">Sürdür</button><button class="btn primary" onclick="declareWin()">👑 İlan et</button></div>`,'decl')}
+function declareWin(){if(!declOk())return;S.over='win';S.winBy='ilan';S.stats.declared=S.turn;log('👑 Zafer ilan edildi.','good');closeModal();refresh();saveNow();afterModal()}
+
+// --- Bitiş ekranı ---
+function afterModal(){if(!S||!S.over)return;let R=null;try{R=commitMeta()}catch(e){onErr('Miras yazılamadı: '+e.message,e.stack)}showEnd(R)}
+// Yenilgi teşhisi: tek madde (S.stats'tan)
+function diagOf(s){const st=s.stats;if(st.famine>=3)return`Ordun ${st.famine} yıl aç kaldı: ikinci tarlayı daha erken kur, tahıl gelirini artıda tut.`;
+ if(st.defLost>=3&&st.surBuilt<2)return`Cephen sursuzdu: ${st.defLost} bölgeyi savunmada kaybettin, yalnız ${st.surBuilt} sur kurdun.`;
+ if(s.coal&&s.coal.n)return'Koalisyona yakalandın: %35\'e yaklaşırken cepheni sur ve okçuyla güçlendir.';
+ if(st.atkLost>st.atkWon)return`Saldırılarının çoğu püskürtüldü (${st.atkLost}/${st.atkWon+st.atkLost}): şansın %60'ın altındayken saldırma.`;
+ return'Rakipler senden hızlı büyüdü: barış döneminde daha çok kabile bölgesi al.'}
+function nearOf(s){let b=null;for(const h of s.hist)if(!b||h[1]>b[1])b=h;return{sh:s.stats.maxRegions/MAP.playN,t:b?b[0]:s.turn}}
+const cfgShort=c=>`${DYN[c.dyn].e} ${DYN[c.dyn].ad} · ${MAPTYPES[c.map].ad} · ${DIFFS[c.diff].ad}${c.muts.length?' · '+c.muts.map(m=>MUTS[m].e).join(''):''}`;
+// Bitişten sonraki oyun: günlük/antrenman/rövanşta son kendi ayarın temel alınır
+function baseCfg(){const c=S.cfg.daily||S.cfg.train?(META.lastCfg||CFG_HIZLI):S.cfg;return{dyn:c.dyn,muts:(c.muts||[]).slice(),map:c.map,size:c.size,diff:c.diff,ferman:c.ferman||null,bonus:(META.equipped.bonus||[]).filter(b=>isOpen('bonus',b)),target:null}}
+function withItem(c,cat,id){c=Object.assign({},c);if(cat==='mut'){c.muts=[id];c.dice=false}else if(cat==='bonus')c.bonus=[...new Set([id].concat(c.bonus||[]))].slice(0,bonusSlots());else c[cat]=id;if(cat==='diff'&&mutBanned(c.muts,id))c.muts=c.muts.slice(0,1);return c}
+function suggestCfg(){const c=baseCfg(),T=META.stats,won=d=>T.byDyn[d]&&T.byDyn[d].w>0;if(S.over!=='win')return c;
+ if(c.diff==='cirak'&&isOpen('diff','kalfa'))return withItem(c,'diff','kalfa');
+ const nd=DYN6.find(d=>isOpen('dyn',d)&&!won(d)&&d!==c.dyn);if(nd)return withItem(c,'dyn',nd);
+ const nm=Object.keys(MAPTYPES).find(k=>isOpen('map',k)&&!T.byMap[k]&&k!==c.map);if(nm)return withItem(c,'map',nm);return c}
+const newSeed=()=>fl(Math.random()*1e9);
+function goSuggest(){launch(newSeed(),normCfg(suggestCfg()))}
+function rematch(){const c={...S.cfg,rematch:true};if(c.daily)c.train=true;launch(S.seed,normCfg(c))}
+function endUnlockGo(cat,id){if(!isOpen(cat,id)&&!unlockItem(cat,id)){toast('Miras yetmiyor.');return}launch(newSeed(),normCfg(withItem(baseCfg(),cat,id)))}
+function endMain(R){const U=R?R.unl.concat(R.aff):[];
+ if(U.length){const u=U[0],paid=!isOpen(u.cat,u.id);return{t:`🔓 ${paid?'Aç ve başla':'Yeni açıldı, başla'}: ${itemName(u.cat,u.id)} ▶`,s:cfgShort(normCfg(withItem(baseCfg(),u.cat,u.id)))+(paid?` · ${lockCost(u.cat,u.id)} MP`:''),on:`endUnlockGo('${u.cat}','${u.id}')`}}
+ if(S.over!=='win')return{t:'↻ Aynı tohumla rövanş ▶',s:'Aynı harita ve kurallar · miras ×0,8',on:'rematch()'};
+ return{t:'▶ Önerilenle yeni oyun',s:cfgShort(normCfg(suggestCfg())),on:'goSuggest()'}}
+// Sıradaki hedef: alınabilir açılım > en ucuz kilit > günlük > başarım ilerlemesi
+function nextGoal(){const M=META,L=lockList().filter(x=>!x.open&&x.cost).sort((a,b)=>a.cost-b.cost),af=L.find(x=>x.cost<=M.mp),n=L.find(x=>x.cost>M.mp),bar=v=>`<div class=bar><i style="width:${clamp(v,0,1)*100}%"></i></div>`;
+ if(af)return`<b>${itemName(af.cat,af.id)}</b> için miras yetiyor (${af.cost} MP) <button class="btn sm primary" onclick="showMiras('over')">🏛 Miras</button>`;
+ if(n)return`Sıradaki: <b>${itemName(n.cat,n.id)}</b> ${n.cost} MP · <b>${n.cost-fl(M.mp)}</b> kaldı${bar(M.mp/n.cost)}`;
+ if(!M.daily.started[dateKey()])return'📅 Bugünün meydan okuması seni bekliyor.';
+ const a=ACH.find(A=>A.pr&&!M.ach[A.id]);if(a){const p=a.pr(M);return`Başarım: <b>${a.ad}</b> ${p[0]}/${p[1]}${bar(p[0]/p[1])}`}
+ return'Bütün açılımlar senin: rekorlarını ve günlük serini büyüt.'}
+function sparkOf(s){const B='▁▂▃▄▅▆▇█',pn=MAP.playN,o=[];for(let t=10;t<=s.turn+9;t+=10){const h=s.hist.filter(x=>x[0]<=t).pop();if(h)o.push(B[clamp(Math.round(h[1]/pn*16),0,7)])}return o.join('')}
+function shareTxt(){const s=S,c=s.cfg,R=s.endRes,win=s.over==='win',st=s.stats,pn=MAP.playN,bn=META&&META.equipped.banner&&COS[META.equipped.banner];
+ return[`${bn?bn.e+' ':''}⚔ Fetih${c.daily?' · Günlük '+fmtDate(c.daily)+(c.train?' (antrenman)':''):''}${c.rematch?' · rövanş':''}`,`${DYN[c.dyn].ad} · ${DIFFS[c.diff].ad} · ${MAPTYPES[c.map].ad} · ${SIZES[c.size].ad}`,c.muts.length?'🃏 '+c.muts.map(m=>MUTS[m].ad).join(' + '):'',
+  win?`👑 ${(WIN_T[s.winBy]||WIN_T.fetih)[0].replace(/^\S+\s/,'')} · ${s.turn}. yıl · ${own().length}/${pn} bölge`:`🏴 Yenilgi · ${s.turn}. yıl · en çok ${st.maxRegions}/${pn} bölge`,
+  R?`Skor ${fmtN(R.v)}${win?' · '+RANKS[rankOf(R.v)][1]:''}`:'',`⚔${st.atkWon} 🏰${st.capsTaken} ☠${st.defLost}`,sparkOf(s),`Kod: ${seedCode(s.seed,c)}`].filter(Boolean).join('\n')}
+function showEnd(R){const s=S,c=s.cfg,st=s.stats,win=s.over==='win',T=WIN_T[s.winBy]||WIN_T.fetih,pn=MAP.playN;
+ const tag=[c.daily?'📅 Günlük '+fmtDate(c.daily):'',c.train?'antrenman':'',c.rematch?'↻ rövanş':''].filter(Boolean).join(' · ');
+ const nar=win?T[1]():st.lastLoss?`${facName(st.lastLoss.by)}, son toprağın ${rName(st.lastLoss.r)}'yi ${st.lastLoss.t}. yılda aldı.`:`${s.turn}. yılda son toprağını da kaybettin.`;
+ let h=`<div class=end><div class=end-h><canvas id=endMap width=220 height=151 aria-hidden=true></canvas><div><h3>${win?T[0]:`🏴 Beylik Yıkıldı · ${s.turn}. yıl`}</h3><p>${nar}</p><small class=muted>${cfgLine(c)}${tag?` · <b>${tag}</b>`:''}</small></div></div>`;
+ if(R){const rk=win?rankOf(R.v):-1,rc=R.rec;
+  h+=`<div class=end-sc><div><small class=muted>SKOR</small><b id=endSc data-v="${R.v}">${fmtN(R.v)}</b></div><div class=end-rk>${rc?(rc.dyn&&rc.pd?`<span class="tag good rec">YENİ REKOR +${fmtN(R.v-rc.pd)}</span>`:rc.dyn?'<span class="tag good rec">İlk rekor</span>':`<span class=muted>Rekor (${DYN[c.dyn].ad}): ${fmtN(rc.pd)} · ${fmtN(rc.pd-R.v)} eksik</span>`):''}${rk>=0?`<div>🎖 <b>${RANKS[rk][1]}</b>${RANKS[rk+1]?` <small class=muted>· ${RANKS[rk+1][1]} için ${fmtN(RANKS[rk+1][0]-R.v)}</small>`:''}</div>`:''}</div></div>`;
+  if(!win){const n=nearOf(s);h+=`<p class=end-dg>🩺 ${diagOf(s)}<br><span class=muted>Zafere en yakın an: %${Math.round(n.sh*100)} toprak (${n.t}. yıl) · Fetih için %${Math.round(SIZES[c.size].conq*100)}</span></p>`}
+  const b=[],g=R.mpG;
+  if(R.quit)b.push('<div class=beat>🏛 <b>Miras yok:</b> oyun 15. yıldan önce bitti.</div>');
+  else if(R.dup)b.push('<div class=beat>🏛 Bu oyunun mirası zaten yazıldı.</div>');
+  else b.push(`<div class="beat mp">🏛 MİRAS <b>+${R.mpTot} MP</b> <small class=muted>(oyun ${g.game}${g.first?` · ilk sefer ${g.first}`:''}${g.ach?` · başarım ${g.ach}`:''}${g.daily?` · günlük ${g.daily}`:''}${c.train?' · antrenman ×0,25':c.rematch?' · rövanş ×0,8':''}${!win&&R.mp.near?` · yakınlık +${R.mp.near}`:''}) → toplam <b>${fl(R.mp0+R.mpTot)}</b></small></div>`);
+  const U=R.unl.concat(R.aff),un=u=>`<b>${itemName(u.cat,u.id)}</b> ${u.how?`açıldı (${u.how})`:`artık alınabilir (${lockCost(u.cat,u.id)} MP)`}`;if(U.length)b.push(`<div class="beat big">🔓 ${un(U[0])}${U.length>1?`<small class=muted style="display:block;font-size:12px;margin-top:3px">ve ${U.length-1} açılım daha: ${U.slice(1,4).map(u=>itemName(u.cat,u.id)).join(', ')}${U.length>4?'…':''} (🏛 Miras)</small>`:''}</div>`);
+  if(R.ach.length)b.push(`<div class=beat>🏅 ${R.ach.map(k=>`<b>${ACHM[k].ad}</b> <span class=good>+${ACHM[k].mp}</span>`).join(' · ')}</div>`);
+  if(R.miss)b.push(`<div class="beat muted">✖ Kaçırdın · ${R.miss}</div>`);
+  if(R.daily)b.push(`<div class=beat>📅 Günlük seri <b>${R.daily.streak}</b>${R.daily.seal?' (mühür yakıldı)':''}${R.daily.week?' · 🚩 <b>Haftalık Sancak</b> kazandın!':''}</div>`);
+  if(META)b.push(`<div class=beat>➜ ${nextGoal()}</div>`);h+=`<div class=end-rw>${b.join('')}</div>`}
+ const mb=R&&META?endMain(R):{t:'Yeni Sefer',s:'',on:'startNew()'},ds=META&&!META.daily.started[dateKey()];
+ h+=`<div class=end-b><button class="btn primary end-main" onclick="${mb.on}">${mb.t}${mb.s?`<small>${mb.s}</small>`:''}</button><div class=seg><button class=btn onclick="wizAgain(baseCfg())">↻ Aynı kurallar</button><button class=btn onclick="startNew()">🧭 Yeni sefer</button><button class="btn ${ds?'hot':''}" onclick="startDaily()">📅 Günlük${ds?' ●':''}</button></div>
+  <div class=seg><button class=btn onclick="copyText(shareTxt(),'Sonuç panoya kopyalandı.')">📋 Sonucu kopyala</button><button class=btn onclick="showMiras('over')">🏛 Miras</button></div></div>`;
+ const p=R?R.p:scoreParts(s),bb=st.bestB,wb=st.worstB,x=R?R.x:scoreMul(c);
+ h+=`<details class=end-d><summary>Ayrıntılar</summary><div class=kv><span>Zafer tabanı</span><span>${p.Z}</span></div><div class=kv><span>Bölge (en çok ${st.maxRegions}) ×40</span><span>${p.B}</span></div><div class=kv><span>Teknoloji ×25</span><span>${p.T}</span></div><div class=kv><span>Savaş (${st.atkWon} saldırı + ${st.defWon}/2 savunma) ×10</span><span>${p.F}</span></div><div class=kv><span>Başkent (${st.capsTaken}) ×100</span><span>${p.K}</span></div><div class=kv><span>Hız</span><span>${p.H}</span></div><div class=kv><span>Ham × çarpan (zorluk ${fmtX(DIFFS[c.diff].sc)} · kart ${fmtX(c.mutX)} · harita ${fmtX(MAPX[c.map]||1)}${c.dyn==='klasik'?' · Klasik 0,9':''}${c.bonus.length?' · bonus '+fmtX(bonX(c)):''})</span><span>${fmtN(p.raw)} × ${fmtX(r1(x*100)/100)}</span></div>
+  <canvas id=endCh width=600 height=130 aria-label="Yıllara göre bölge ve asker"></canvas><small class=muted><span style="color:var(--accent)">━ bölge</span> · <span style="color:#c96f5f">━ asker</span></small>
+  ${bb?`<p>⚔ En iyi savaş: ${bb.t}. yıl ${rName(bb.r)} · ${bb.sent} askerle ${bb.kill} düşman, ${bb.lost} kayıp</p>`:''}${wb?`<p>💀 En büyük kayıp: ${wb.t}. yıl ${rName(wb.r)} · ${wb.lost} asker (${wb.k})</p>`:''}
+  <p class=muted>Olay ${st.events} (${st.choices} seçim) · koalisyon ${s.coal.n||0}${st.coalBroken?` (${st.coalBroken} kılıç kırdın)`:''} · vasal ${st.vassals} · ganimet ${fmtN(st.loot)} · kıtlık ${st.famine} yıl${s.ferman?` · ferman ${VIC[s.ferman].ad} ${fermanOk(s)?'✔':'✖'}`:''}${win?'':` · zafer yolları: ${pathTxt()}`}</p><p class=muted>Kod: <code>${seedCode(s.seed,c)}</code></p></details></div>`;
+ modal(h,'over',true);try{drawEndMap();drawEndChart()}catch(e){}endAnim()}
+function drawEndMap(){const cv=$('#endMap');if(!cv||TEST||!ART)return;const x=cv.getContext('2d');x.drawImage(ART,0,0,cv.width,cv.height);drawOverlay();x.drawImage(OVL,0,0,cv.width,cv.height);x.drawImage(OVL,0,0,cv.width,cv.height)}
+function drawEndChart(){const cv=$('#endCh'),hs=S.hist;if(!cv||TEST||hs.length<2)return;const x=cv.getContext('2d'),w=cv.width,h=cv.height,t0=hs[0][0],t1=hs[hs.length-1][0]||1,mr=Math.max(...hs.map(a=>a[1]),1),mt=Math.max(...hs.map(a=>a[2]),1);
+ x.clearRect(0,0,w,h);x.strokeStyle='#3a3025';x.lineWidth=1;for(let k=1;k<4;k++){x.beginPath();x.moveTo(0,h*k/4);x.lineTo(w,h*k/4);x.stroke()}
+ const line=(i,m,col)=>{x.strokeStyle=col;x.lineWidth=2.5;x.beginPath();hs.forEach((a,k)=>{const px=(a[0]-t0)/Math.max(1,t1-t0)*(w-4)+2,py=h-4-a[i]/m*(h-12);k?x.lineTo(px,py):x.moveTo(px,py)});x.stroke()};line(2,mt,'#c96f5f');line(1,mr,'#d9a441');
+ x.fillStyle='#a99b84';x.font='11px system-ui';x.fillText(`en çok ${mr} bölge · ${mt} asker`,6,13);x.fillText(`${t1}. yıl`,w-48,h-6)}
+// Skor sayarak yükselir, ödüller ~0,3 sn arayla gelir (prefers-reduced-motion'da hepsi anında)
+function endAnim(){const el=$('#endSc'),bs=[...document.querySelectorAll('.end .beat')],rm=TEST||!window.matchMedia||matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(!el||rm){bs.forEach(b=>b.classList.add('on'));return}const v=+el.dataset.v,t0=performance.now(),D=900;el.textContent='0';
+ const st=t=>{if(!el.isConnected)return;const k=Math.min(1,(t-t0)/D);el.textContent=fmtN(v*(1-(1-k)**3));if(k<1)requestAnimationFrame(st)};requestAnimationFrame(st);
+ bs.forEach((b,i)=>setTimeout(()=>b.classList.add('on'),D*.7+i*300));setTimeout(()=>bs.forEach(b=>b.classList.add('on')),D+bs.length*300+600)}
+
+// --- Miras ekranı: bakiye, günlük/seri, kilitler ve 🔓 Aç, bonuslar, başarımlar, rekorlar, sancak, kayıt ---
+let MIR_BACK=null;
+function mirUnlock(cat,id){if(unlockItem(cat,id)){toast('🔓 Açıldı: '+itemName(cat,id));if(cat==='bonus')mirEquip(id,true)}showMiras()}
+function mirEquip(id,on){const e=META.equipped;e.bonus=e.bonus.filter(b=>b!==id&&isOpen('bonus',b));if(on)e.bonus.unshift(id);e.bonus=e.bonus.slice(0,bonusSlots());saveMeta();if(ui.modal==='miras')showMiras()}
+function mirBanner(id){META.equipped.banner=META.equipped.banner===id?null:id;saveMeta();renderHeader();showMiras()}
+function showMiras(back){if(back!==undefined)MIR_BACK=back;if(!META)loadMeta();const M=META,D=M.daily,today=dateKey(),dst=D.started[today],dh=D.hist[today],wk=D.weeks[weekKey(today)]||0,dc=dailyOf(today).cfg;
+ let h=`<div class="wz mir"><h3>🏛 Miras</h3><div class=fundbox>Bakiye <b>${fl(M.mp)} MP</b> <span class=muted style="font-size:12.5px">· toplam kazanılan ${fl(M.mpTotal)} · ${M.games} oyun, ${M.wins} zafer${M.stats.fastestWin?` · en hızlı zafer ${M.stats.fastestWin}. yıl`:''}</span></div>`;
+ h+=`<h4>📅 Günlük meydan okuma · ${fmtDate(today)}</h4><div class=card><small>${cfgLine(normCfg(dc))}</small><small>${dh?`Bugün: <b>${fmtN(dh.score)}</b> skor (${dh.win?'zafer':'yenilgi'}, ${dh.turn}. yıl)`:dst?'Bugünkü deneme başlatıldı; yeniden oynamak antrenman sayılır.':'<span class=good>● Bugün oynanmadı</span>: ilk başlattığın deneme sayılır.'}</small>
+  <small>Seri <b>${D.streak}</b> gün (en iyi ${D.best}) · Mühür ${D.seals}/2 · Bu hafta ${Math.min(4,wk)}/4 gün → 🚩 Haftalık Sancak · günlük başına +5 MP</small><button class="btn ${dst?'':'primary'}" onclick="startDaily()">${dst?'Antrenman oyna':'Bugünü oyna'} ▶</button></div>`;
+ for(const cat in LOCK_CAT){const L=lockList().filter(x=>x.cat===cat);if(!L.length)continue;h+=`<h4>${LOCK_AD[cat]}${cat==='bonus'?` <span style="text-transform:none;letter-spacing:0">(${bonusSlots()} yuva; 2. yuva 400 MP harcayınca · harcanan ${fl(M.mpSpent)})</span>`:''}</h4>`;
+  for(const x of L){const o=LOCK_CAT[cat][x.id],eq=cat==='bonus'&&M.equipped.bonus.includes(x.id);
+   h+=`<div class=item><div>${itemName(cat,x.id)}<small>${o.d||o.tema||''}${cat==='bonus'?` · miras ×${fmtX(o.x)}`:''}</small></div><span>${x.open?(cat==='bonus'?`<button class="btn sm ${eq?'primary':''}" onclick="mirEquip('${x.id}',${!eq})">${eq?'✔ Takılı':'Tak'}</button>`:'<span class=ok>✔ Açık</span>'):x.cost&&M.mp>=x.cost?`<button class="btn sm primary" onclick="mirUnlock('${cat}','${x.id}')">🔓 Aç (${x.cost} MP)</button>`:`<small class=muted>${lockTxt(cat,x.id)}</small>`}</span></div>`}}
+ const na=ACH.filter(a=>M.ach[a.id]).length;
+ h+=`<h4>🏅 Başarımlar (${na}/${ACH.length})</h4><div class="cards achs">`+ACH.map(A=>{const got=M.ach[A.id];if(A.hid&&!got)return'<div class="card lockd"><b>❔ Gizli başarım</b><small class=muted>Oynadıkça ortaya çıkar.</small></div>';const pr=A.pr&&A.pr(M);
+  return`<div class="card ${got?'got':''}"><b>${got?'✔':'○'} ${A.ad}</b><small>${A.d}</small><small class=muted>+${A.mp} MP${A.c?'':' · Çırak dışı'}${A.cos?' · '+COS[A.cos].e+' sancak':''}${got?' · '+fmtDate(got):''}</small>${pr&&!got?`<div class=bar><i style="width:${pr[0]/pr[1]*100}%"></i></div><small>${pr[0]}/${pr[1]}</small>`:''}</div>`}).join('')+'</div>';
+ const B=M.stats.best,rows=(o,T)=>Object.keys(T).filter(k=>o[k]).map(k=>`<div class=kv><span>${T[k].e||''} ${T[k].ad}</span><span>${fmtN(o[k])}</span></div>`).join('');
+ h+=`<h4>🏆 Rekorlar</h4>${rows(B.dyn,DYN)||'<p class=muted style="font-size:12.5px;margin:0">Henüz yok.</p>'}${rows(B.map,MAPTYPES)}`;
+ if(M.history.length)h+=`<h4>Son oyunlar</h4>`+M.history.slice(0,6).map(x=>`<div class=kv><span>${fmtDate(x.d)} · ${DYN[x.c.dyn].e} ${MAPTYPES[x.c.map].ad} · ${DIFFS[x.c.diff].ad}${x.daily?' · 📅':''}${x.re?' · ↻':''}</span><span>${x.over==='win'?'👑':'🏴'} ${fmtN(x.score)} · +${x.mp} MP</span></div>`).join('');
+ const cs=M.unlocked.cos.filter(k=>COS[k]);h+=`<h4>🚩 Sancak</h4>`+(cs.length?`<div class=seg>${cs.map(k=>`<button class="btn sm ${M.equipped.banner===k?'primary':''}" onclick="mirBanner('${k}')">${COS[k].e} ${COS[k].ad}</button>`).join('')}</div>`:`<p class=muted style="font-size:12.5px;margin:0">Başarımlar ve günlük seri (7/30 gün, Haftalık Sancak) sancak kazandırır.</p>`);
+ h+=`<div class=savebox><b style="font-size:12.5px">💾 Aktarma</b><span class=muted style="font-size:12px;flex:1">Kopyalanan metin oyun kaydını ve mirası birlikte taşır.</span><button class="btn sm" onclick="copyText(exportSave(),'Kayıt ve miras panoya kopyalandı.')">📋 Kopyala</button><button class="btn sm" onclick="showImport()">📥 Yükle</button></div>`;
+ h+=`<div class=wz-nav><span style="flex:1"></span><button class="btn primary" onclick="mirBack()">‹ Geri</button></div></div>`;modal(h,'miras',true)}
+function mirBack(){const b=MIR_BACK;MIR_BACK=null;if(b==='over'&&S&&S.over)afterModal();else if(b==='wiz'){if(!WZ.c)wizInit();wizShow()}else closeModal()}
 
 // ======================= KATMAN: SAHİPLİK =======================
 const OVL=document.createElement('canvas');OVL.width=W;OVL.height=H;const octx=OVL.getContext('2d');let ovImg=null;
@@ -1402,6 +1665,10 @@ function setRTab(t){ui.rtab=t;renderPanel()}
 function renderHeader(){if(!S){$('#res').innerHTML='';return}const e=economy(),c=S.cfg,Dy=dynOf();
  $('#res').innerHTML=`<span class=r title="Tur">📅 Yıl <b>${S.turn}</b></span>`+RES.map(r=>{const v=e.net[r.k];return`<span class=r title="${r.ad}: ${r.ask}&#10;&#10;Üretim ${sgn(e.gross[r.k])}${e.up[r.k]?' · Ordu gideri -'+r1(e.up[r.k]):''}">${r.e} <b>${fl(S.res[r.k])}</b><span class="inc ${v<0?'neg':'pos'}">${sgn(v)}</span></span>`}).join('')
  +`<span class=r title="Nüfus: askerler nüfustan çıkar. Nüfus tahıl stoğu varken büyür; çok asker almak işgücünü ve üretimi düşürür.">👥 <b>${fl(e.pop)}</b>/${fl(e.mpop)}</span><span class=r title="Moral: tüm saldırı ve savunma gücünü çarpar (×${moraleMult(S.morale).toFixed(2)}).">🔥 <b class="${S.morale<50?'neg':''}">${Math.round(S.morale)}</b></span><span class=r title="Toplam asker">🛡 <b>${e.troops}</b></span><span class=r style="cursor:pointer" onclick="setTab('ordu')" title="${esc(Dy.ad+(Dy.g.length?': '+Dy.g.concat(Dy.z.map(x=>'✖ '+x)).join(' · '):'')+'\n'+(c.muts.length?c.muts.map(m=>MUTS[m].ad+': '+MUTS[m].d).join('\n'):'Kural kartı yok')+'\n'+MAPTYPES[c.map].ad+' · '+SIZES[c.size].ad+' · '+DIFFS[c.diff].ad+'\n(Ayrıntı: Ordu sekmesi)')}">${Dy.e}${c.muts.map(m=>MUTS[m].e).join('')} <b>${DIFFS[c.diff].ad}</b>${S.coal&&S.coal.on?' <span class=neg>⚔ Koalisyon</span>':''}</span><span class=r style="cursor:pointer" onclick="setTab('hedef')" title="${esc('Zafer yolları: '+pathTxt()+'\n(Hedefler sekmesi)')}">🏆 ⚔<b>${own().length}</b>/${fetihNeed()}${c.alt?` 📜<b>${techCount()}</b>·${S.wonder.stage}/${VIC.medeniyet.stages} 👑<b>${hegHeld().filter(x=>x.st!=='x').length}</b>/${hegNeed()}${S.heg.count?`·${S.heg.count}y`:''}`:''}</span>`;
+ const tg=c.target&&ACHM[c.target],lv=tg&&tg.lv&&!S.over&&S.phase==='oyun'?tg.lv(S):null,bn=META&&META.equipped.banner&&COS[META.equipped.banner];
+ if(lv)$('#res').innerHTML+=`<span class="r ${lv.ok===false?'neg':lv.ok?'pos':''}" title="${esc('Hedef başarım: '+tg.ad+' — '+tg.d)}">🎯 <span class=lg>${esc(tg.ad)}: </span>${lv.t}</span>`;
+ if(declOk())$('#res').innerHTML+=`<span class=r style="cursor:pointer;border-color:var(--accent)" onclick="askDeclare()" title="Gücün rakiplerinin toplamının 1,5 katı: oyunu şimdi bitirebilirsin">👑 <b><span class=lg>Zaferi </span>ilan et</b></span>`;
+ $('.title').textContent=(bn?bn.e:'⚔')+' FETİH';
  $('#endBtn').disabled=!!S.over||S.phase!=='oyun'}
 function renderPanel(){if(!S){$('#panel').innerHTML='';return}document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===ui.tab));const p=$('#panel'),st=p.scrollTop,same=p.dataset.t===ui.tab+ui.rtab+ui.sel;
  p.innerHTML=({bolge:pRegion,eko:pEco,ordu:pArmy,hedef:pGoal,tek:pTech,kayit:pLog})[ui.tab]();p.dataset.t=ui.tab+ui.rtab+ui.sel;if(same)p.scrollTop=st}
@@ -1533,10 +1800,12 @@ function pArmy(){const e=economy(),M=mil(),mm=moraleMult(S.morale),o=own(),tot=Z
 // --- Hedefler sekmesi: üç zafer yolu, ferman, etkin olay etkileri ---
 const fetihNeed=()=>Math.ceil(MAP.playN*SIZES[S.cfg.size].conq);
 function pathTxt(){const M=VIC.medeniyet;return`⚔ Fetih ${own().length}/${fetihNeed()} bölge`+(S.cfg.alt?` · 📜 Medeniyet ${techCount()}/${M.tech} teknoloji + ${S.wonder.stage}/${M.stages} eser · 👑 Hegemonya ${hegHeld().filter(x=>x.st!=='x').length}/${hegNeed()} başkent${S.heg.count?`, ${S.heg.count}/${VIC.hegemonya.hold} yıl`:''}`:'')}
-function pGoal(){const M=VIC.medeniyet,H=VIC.hegemonya,W=S.wonder,F=fetihNeed(),o=own().length,alt=S.cfg.alt,fm=S.ferman;
+function pGoal(){const M=VIC.medeniyet,H=VIC.hegemonya,W=S.wonder,F=fetihNeed(),o=own().length,alt=S.cfg.alt,fm=S.ferman,dk=declInfo();
  const bar=(v,m,col)=>`<div class=bar><i style="width:${clamp(v/m,0,1)*100}%${col?';background:'+col:''}"></i></div>`;
  const card=(id,body)=>`<div class="card goal ${fm===id?'on':''}" style="margin-bottom:8px"><div class=rh style="justify-content:space-between"><b>${VIC[id].e} ${VIC[id].ad}</b>${fm===id?'<span class="tag good">Ferman</span>':''}</div>${body}</div>`;
  let h=`<p class=muted style="margin-top:0;font-size:12.5px">${alt?'Üç yoldan biriyle kazanırsın; üçü aynı anda açık.':'Bu oyunda yalnız Fetih açık.'}</p>`;
+ h+=dk.ok?`<div class="card goal on" style="margin-bottom:8px"><b>👑 Zaferi ilan et</b><small>Gücün rakiplerinin toplamının ${fmtX(r1(dk.r))} katı. Kalan temizliği beklemeden oyunu bitirebilirsin (taban 900, hız bonusunun yarısı).</small><button class="btn primary" onclick="askDeclare()">👑 Zaferi ilan et</button></div>`
+  :`<p class=muted style="font-size:12px;margin:0 0 8px">👑 Zafer ilanı: toprağın ≥ %30 ve gücün (asker + 5 × bölge) rakiplerinin toplamının 1,5 katı olunca oyunu erken bitirebilirsin. Şimdi ${fmtX(r1(Math.min(dk.r,99)))}× · %${Math.round(dk.sh*100)}.</p>`;
  h+=card('fetih',`<small>Bölge <b>${o}</b>/${F} (%${Math.round(SIZES[S.cfg.size].conq*100)}) ya da bütün rakipleri yık (vasal rakip yıkılmış sayılır, bölgeleri sayılmaz)</small>${bar(o,F)}<div class=chips style="margin-top:6px">${S.cfg.ais.map(f=>`<span class=chip style="${aliveAI(f)&&!isVas(f)?'':'opacity:.5;text-decoration:line-through'}"><span class=dot style="background:${rgb(FAC[f].col)}"></span> ${facName(f)}${isVas(f)?' ⛓':''}</span>`).join('')}</div>`);
  if(alt){const tc=techCount(),why=wonderWhy(),c=wonderCost();
   h+=card('medeniyet',`<small>Teknoloji <b>${tc}</b>/${M.tech}</small>${bar(tc,M.tech,'var(--good)')}<small style="margin-top:6px">Büyük Eser (başkentte) <b>${W.stage}</b>/${M.stages}${W.build?` · ${W.stage+1}. aşama ${W.build} yıl sonra`:''}</small>
@@ -1561,7 +1830,7 @@ function buffsHtml(){const L=[],F=S.flags,W=S.wonder;
  for(const f of S.cfg.ais){const v=needMod(f);if(v)L.push(`${facName(f)} sana daha kolay saldırır (eşik ${String(r1(v)).replace('.',',')})`)}
  const q=own().filter(i=>S.regions[i].qt>S.turn);if(q.length)L.push(`☠ Karantina: ${q.map(rName).join(', ')}`);
  return`<h4>Etkin olay etkileri</h4>`+(L.length?L.map(x=>`<div class=kv><span style="color:var(--text)">${x}</span></div>`).join(''):'<p class=muted style="margin:0;font-size:12.5px">Yok.</p>')+`<p class=muted style="font-size:12px">${S.cfg.ev?`Sonraki olay ~${Math.max(0,S.evNext-S.turn)} yıl içinde · `:''}bu oyunda ${S.stats.events} olay.</p>`}
-function pLog(){return'<div class=log>'+S.log.slice().reverse().map(l=>`<p class=${l.c}><span class=t>Yıl ${l.t}</span>${l.m}</p>`).join('')+'</div>'}
+function pLog(){return(META?`<div class=seg style="margin-bottom:10px"><button class="btn sm" onclick="showMiras(null)">🏛 Miras · ${fl(META.mp)} MP</button><button class="btn sm" onclick="copyText(exportSave(),'Kayıt ve miras panoya kopyalandı.')">📋 Kaydı kopyala</button><button class="btn sm" onclick="showImport()">📥 Kayıt yükle</button></div>`:'')+'<div class=log>'+S.log.slice().reverse().map(l=>`<p class=${l.c}><span class=t>Yıl ${l.t}</span>${l.m}</p>`).join('')+'</div>'}
 document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
 
 // ======================= HANEDAN / KART GÖSTERİMİ =======================
@@ -1570,7 +1839,7 @@ const uTxt=u=>UK.filter(k=>u[k]).map(k=>u[k]+UNITS[k].e).join(' ');
 function startTxt(d,c){const s=c?startOf(c):DYN[d].start;return uTxt(s.u)+` · 💰${c?c.fund:s.fund}`+(s.fort!==1?` · 🧱${s.fort}`:'')+(s.mil===0?' · Karakol yok':'')+(s.fields?' · '+s.fields.map(f=>FIELD[f.t].e+' hediye').join(' '):'')+(s.res?' · +'+costTxt(s.res):'')+(s.tech?' · Haritacılık açık':'')+(s.fundCost?' · '+Object.entries(s.fundCost).map(([k,v])=>FIELD[k].e+v).join(' '):'')}
 function dynHtml(d){const D=DYN[d],A=D.ab&&ABIL[D.ab];return`<div class=dynbox><b>${D.e} ${D.ad}</b> <span class=muted>· ${D.tema}</span>${D.g.map(x=>`<div class=good>✔ ${x}</div>`).join('')}${D.z.map(x=>`<div class=bad>✖ ${x}</div>`).join('')}${A?`<div>★ <b>${A.ad}:</b> ${A.d}</div>`:''}</div>`}
 function mutHtml(m){const M=MUTS[m],t=MUT_TUR[M.tur];return`<div class=mutbox><b>${M.e} ${M.ad}</b> <span class="tag ${t[1]}">${t[0]}</span> <span class=muted>miras ×${fmtX(M.x)}</span><div style="font-size:12px">${M.d}</div></div>`}
-const scoreX=c=>c.mutX*DIFFS[c.diff].mp*(DYN[c.dyn].mp||1);
+const scoreX=c=>c.mutX*diffMp(c,META)*(DYN[c.dyn].mp||1)*bonX(c);
 function abilState(){const a=dynOf().ab;if(a==='akin')return S.cd.akin===S.turn?'bu tur kullanıldı':'hazır';if(a==='yagma')return(S.cd.yagma||0)>S.turn?`${S.cd.yagma-S.turn} yıl sonra`:'hazır (saldırı penceresinde)';
  if(a==='harac')return(S.cd.harac||0)>S.turn?`${S.cd.harac-S.turn} yıl sonra`:'hazır (Güç dengesi)';if(a==='kulliye')return'Büyük Eser −%25, aşama 2 yıl (Hedefler)';return'sürekli'}
 function rulesHtml(){const c=S.cfg,D=DIFFS[c.diff],Zs=SIZES[c.size];let h=`<h4>Hanedan ve kurallar</h4>${dynHtml(c.dyn)}`;
@@ -1615,7 +1884,7 @@ function freshStart(){resize();centerOn(capIdx(),Math.max(minZ(),1));refresh();s
 // Adım 0 karşılama · 1 hanedan · 2 kural kartları · 3 harita/boy/zorluk · 4 kuruluş (showSetup). Mevcut oyun ancak "Başlat"ta silinir.
 const WZ={step:0,c:null,draw:[],redrawn:false,seed:''};
 const wzSh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=fl(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
-function wizInit(){const l=META.lastCfg,c={dyn:'boru',muts:[],map:'kita',size:'orta',diff:l?'kalfa':'cirak',dice:false,ferman:null};if(l)for(const k of['dyn','map','size','diff'])if(l[k])c[k]=l[k];
+function wizInit(){const l=META.lastCfg,c={dyn:'boru',muts:[],map:'kita',size:'orta',diff:l?'kalfa':'cirak',dice:false,ferman:null,bonus:(META.equipped.bonus||[]).filter(b=>isOpen('bonus',b)).slice(0,bonusSlots()),target:l&&l.target&&!META.ach[l.target]?l.target:null};if(l)for(const k of['dyn','map','size','diff'])if(l[k])c[k]=l[k];
  for(const[k,cat,d]of[['dyn','dyn','boru'],['map','map','kita'],['size','size','orta'],['diff','diff','cirak']])if(!isOpen(cat,c[k]))c[k]=d;
  WZ.c=c;WZ.redrawn=false;WZ.seed='';wizDraw()}
 function wizDraw(){WZ.draw=wzSh(META.unlocked.mut.filter(m=>MUTS[m])).slice(0,3);WZ.c.muts=[];WZ.c.dice=false}
@@ -1627,11 +1896,15 @@ function wizRandDyn(){const o=['klasik',...DYN6].filter(d=>isOpen('dyn',d)&&d!==
 function wizMut(m){const c=WZ.c;c.dice=false;if(c.muts.includes(m))c.muts=c.muts.filter(x=>x!==m);else{const n=c.muts.concat(m);if(n.length>2){toast('En fazla 2 kart seçebilirsin.');return}if(mutBanned(n,c.diff)){toast('Bu iki kart birlikte seçilemez.');return}c.muts=n}wizShow()}
 function wizDice(){const pool=META.unlocked.mut.filter(m=>MUTS[m]);let p;for(let k=0;k<50;k++){p=wzSh(pool).slice(0,2);if(!mutBanned(p,WZ.c.diff))break}WZ.draw=p.slice();WZ.c.muts=p;WZ.c.dice=true;wizShow()}
 function wizRedraw(){if(WZ.redrawn)return;WZ.redrawn=true;wizDraw();wizShow()}
-function wizAgain(c){launch(fl(Math.random()*1e9),normCfg(c||META.lastCfg))}
+function wizAgain(c){c=c||META.lastCfg;launch(fl(Math.random()*1e9),normCfg({bonus:(META.equipped.bonus||[]).filter(b=>isOpen('bonus',b)),...c,daily:null,train:false,rematch:false}))}
 function quickStart(){launch(fl(Math.random()*1e9),normCfg(CFG_HIZLI))}
-function wizStart(){const t=String(WZ.seed||'').trim(),sd=/^\d{1,9}$/.test(t)?+t:fl(Math.random()*1e9);launch(sd,normCfg(WZ.c))}
-function launch(seed,cfg){if(boot.busy)return;META.lastCfg={dyn:cfg.dyn,muts:cfg.muts.slice(),map:cfg.map,size:cfg.size,diff:cfg.diff,dice:cfg.dice};saveMeta();closeModal();
- boot(async()=>{await newGameAsync(seed,cfg);freshStart();showSetup()})}
+// Tohum alanı: sayı ya da FTH-… kodu (kod kuralları kurar; kilitli içerik içeren kod antrenman sayılır; FTH-D… günlük)
+function wizStart(){const t=String(WZ.seed||'').trim();if(/^fth-/i.test(t)){const p=parseCode(t);if(!p){toast('Kod çözülemedi: FTH-… biçimini kontrol et.');return}if(p.daily){startDaily(p.daily);return}
+  const c=normCfg({...p.cfg,ferman:WZ.c.ferman,bonus:WZ.c.bonus,target:WZ.c.target});c.train=lockedIn(c);if(c.train)toast('Kodda kilitli içerik var: oyun antrenman sayılacak.');launch(p.seed,c);return}
+ const sd=/^\d{1,9}$/.test(t)?+t:fl(Math.random()*1e9);launch(sd,normCfg(WZ.c))}
+// Yeni oyun: son ayar yalnız sıradan oyunlarda hatırlanır (günlük/rövanş/antrenman değil). S.gid: miras çifte ödül koruması için oyun kimliği.
+function launch(seed,cfg){if(boot.busy)return;if(!META)loadMeta();if(!cfg.daily&&!cfg.rematch&&!cfg.train){META.lastCfg={dyn:cfg.dyn,muts:cfg.muts.slice(),map:cfg.map,size:cfg.size,diff:cfg.diff,dice:cfg.dice,ferman:cfg.ferman,target:cfg.target};META.equipped.bonus=cfg.bonus.slice()}saveMeta();closeModal();
+ boot(async()=>{await newGameAsync(seed,cfg);S.gid=Date.now().toString(36)+'-'+fl(Math.random()*1e9).toString(36);freshStart();showSetup()})}
 function wizShow(){const st=WZ.step,steps=['Hanedan','Kartlar','Harita','Kuruluş'];let h='<div class=wz>';
  if(st>0)h+=`<div class=wz-steps>${steps.map((s,k)=>`<span class="${k+1===st?'on':k+1<st?'done':''}">${k+1}. ${s}</span>`).join('')}</div>`;
  modal(h+[wz0,wz1,wz2,wz3][st]()+'</div>','wiz',true)}
@@ -1643,10 +1916,12 @@ function wz0(){const can=!!(S&&ART&&!S.over),l=META.lastCfg;
   <p style="text-align:center;margin:16px 0 4px"><a class=lnk style="display:inline-block;padding:10px 4px" onclick="wizGo(1)">Seferi kendim hazırlayayım →</a></p>`;
  return`<h3>⚔ Yeni Sefer</h3>${can?`<button class="btn wide" onclick="closeModal()">▶ Devam et <small class=muted>(${S.turn}. yıl)</small></button>`:''}
   <button class="btn primary wide" onclick="wizGo(1)">🧭 Yeni sefer hazırla</button>
+  ${(()=>{const k=dateKey(),st=META.daily.started[k],dc=normCfg(dailyOf(k).cfg);return`<button class="btn wide ${st?'':'hot'}" onclick="startDaily()">📅 Günlük meydan okuma ${st?'<small class=muted>(bugün başlatıldı · tekrar antrenman)</small>':'<span class=good>● bugün oynanmadı</span>'}${META.daily.streak?` · seri ${META.daily.streak}`:''}<br><small class=muted>${cfgShort(dc)} · Kısa</small></button>`})()}
   ${l?`<button class="btn wide" onclick="wizAgain()">↻ Son ayarla, yeni harita<br><small class=muted>${cfgLine(normCfg(l))}</small></button>`:''}
   <button class="btn wide" onclick="quickStart()">⚡ Hızlı Başla<br><small class=muted>${cfgLine(CFG_HIZLI)}</small></button>
   ${can?'<p class=muted style="font-size:12px">Yeni sefer başlayınca mevcut oyunun silinir (miras puanların korunur).</p>':''}
-  <div class=ver>Miras: ${fl(META.mp)} MP${ST.ok?'':' · tarayıcı kaydı kapalı'}</div>`}
+  <button class="btn wide" onclick="showMiras('wiz')">🏛 Miras · <b>${fl(META.mp)} MP</b> <small class=muted>· açılımlar, başarımlar (${ACH.filter(a=>META.ach[a.id]).length}/${ACH.length}), rekorlar</small></button>
+  <div class=ver>${ST.ok?'':'Tarayıcı kaydı kapalı · '}Fetih v${GAME_VERSION}</div>`}
 function wz1(){const c=WZ.c;let h=`<h3>Hanedanını seç</h3><div class="cards wzc wzc2">`;
  for(const d of['klasik',...DYN6]){const D=DYN[d],op=isOpen('dyn',d),A=D.ab&&ABIL[D.ab];
   h+=`<div class="card pick ${c.dyn===d?'on':''} ${op?'':'lockd'}" ${op?`onclick="wizSet('dyn','${d}')"`:''} role=button><div><b>${D.e} ${D.ad}</b>${d==='klasik'?' <span class=tag>miras ×0,9</span>':''}</div><small class=muted>${D.tema}</small>
@@ -1662,16 +1937,21 @@ function wz2(){const c=WZ.c,n=normCfg(c);let h=`<h3>Kural kartları</h3><p class
  if(lk.length)h+=`<details style="font-size:12.5px"><summary class=muted style="cursor:pointer;padding:6px 0">🔒 Kilitli kartlar (${lk.length})</summary>${lk.map(m=>`<div class=item><div>${MUTS[m].e} <b>${MUTS[m].ad}</b><small>${MUTS[m].d}</small></div><span>${unlockBtn('mut',m)||`<small class=muted>${lockTxt('mut',m)}</small>`}</span></div>`).join('')}</details>`;
  return h+wzNav(`<button class=btn onclick="wizDice()" title="2 rastgele kart, miras +%10">🎲 Zar at</button><button class=btn ${WZ.redrawn?'disabled':''} onclick="wizRedraw()" title="Oyun başına 1 kez">↻ Yeniden çek</button>`,
   `<button class=btn onclick="WZ.c.muts=[];WZ.c.dice=false;wizGo(3)" title="Kart almadan devam">Kartsız</button><button class="btn primary" ${c.muts.length?'':'disabled'} onclick="wizGo(3)">İleri ›</button>`)}
+// Başlangıç bonusu yuvaları ve hedef başarım (canlı izleme üst çubukta)
+function wzBonus(){const ob=META.unlocked.bonus.filter(b=>BONUS[b]),c=WZ.c,n=bonusSlots();if(!ob.length)return`<p class=muted style="font-size:12px;margin:10px 0 0">Başlangıç bonusları mirasla açılır: <a class=lnk onclick="showMiras('wiz')">🏛 Miras</a></p>`;
+ return`<h4>Başlangıç bonusu <span style="text-transform:none;letter-spacing:0">(${(c.bonus||[]).length}/${n} yuva)</span></h4><div class=seg>${ob.map(b=>{const on=(c.bonus||[]).includes(b);return`<button class="btn ${on?'primary':''}" onclick="wizBonus('${b}')" title="${esc(BONUS[b].d)}">${BONUS[b].e} ${BONUS[b].ad}<br><small style="font-size:10.5px;opacity:.8">miras ×${fmtX(BONUS[b].x)}</small></button>`}).join('')}</div>`}
+function wizBonus(b){const c=WZ.c,a=c.bonus||[];c.bonus=a.includes(b)?a.filter(x=>x!==b):[b].concat(a).slice(0,bonusSlots());wizShow()}
+function wzTarget(){const L=ACH.filter(a=>a.lv&&!a.hid&&!META.ach[a.id]);if(!L.length)return'';return`<h4>🎯 Hedef başarım <span style="text-transform:none;letter-spacing:0">(isteğe bağlı, üst çubukta izlenir)</span></h4><select class=inp onchange="WZ.c.target=this.value||null"><option value="">Yok</option>${L.map(a=>`<option value="${a.id}" ${WZ.c.target===a.id?'selected':''}>${a.ad} (+${a.mp} MP): ${a.d}</option>`).join('')}</select>${WZ.c.diff==='cirak'?'<p class=muted style="font-size:12px;margin:4px 0 0">Çırak\'ta yalnız İlk Zafer, Ders Alındı, Altı Ocak ve Vakanüvis açılır.</p>':''}`}
 function segBtns(cat,T){return Object.keys(T).map(k=>{const op=isOpen(cat,k),on=WZ.c[cat]===k;return`<button class="btn ${on?'primary':''}" ${op?`onclick="wizSet('${cat}','${k}')"`:'disabled'} title="${esc(op?T[k].d:lockTxt(cat,k))}">${op?'':'🔒 '}${T[k].ad}${cat==='size'?`<br><small style="font-size:10.5px;opacity:.8">${op?T[k].d.split(',')[0]:lockCost(cat,k)+' MP'}</small>`:''}</button>`}).join('')}
 function wz3(){const c=WZ.c,n=normCfg(c);let h=`<h3>Harita, boy ve zorluk</h3><h4 style="margin-top:4px">Harita türü</h4><div class="cards wzc wzc2">`;
  for(const k in MAPTYPES){const T=MAPTYPES[k],op=isOpen('map',k);h+=`<div class="card pick ${c.map===k?'on':''} ${op?'':'lockd'}" ${op?`onclick="wizSet('map','${k}')"`:''} role=button><div><b>${T.e} ${T.ad}</b></div><small class=muted>${T.d}</small>${op?'':`<small class=muted>${lockTxt('map',k)}</small>${unlockBtn('map',k)}`}</div>`}
  h+=`</div><h4>Oyun boyu</h4><div class=seg>${segBtns('size',SIZES)}</div><h4>Zorluk</h4><div class=seg>${segBtns('diff',DIFFS)}</div><p class=muted style="font-size:12px;margin:6px 0 0">${DIFFS[c.diff].d} Miras ×${fmtX(DIFFS[c.diff].mp)}.</p>
  <h4>Ferman <span style="text-transform:none;letter-spacing:0">(isteğe bağlı)</span></h4><div class=seg>${[['','Yok'],...Object.keys(VIC).map(k=>[k,VIC[k].e+' '+VIC[k].ad])].map(([k,a])=>`<button class="btn ${(c.ferman||'')===k?'primary':''}" onclick="wizSet('ferman','${k}')">${a}</button>`).join('')}</div><p class=muted style="font-size:12px;margin:6px 0 0">Kazanacağın yolu beyan et: o yoldan kazanırsan miras ×${fmtX(FERMAN.x)}. ${FERMAN.until}. yıla kadar bir kez değiştirebilirsin.</p>
- <h4>Tohum</h4><input id=wzSeed inputmode=numeric maxlength=9 placeholder="boş = rastgele harita" value="${esc(WZ.seed)}" oninput="WZ.seed=this.value" class=inp>
+ ${wzBonus()}${wzTarget()}<h4>Tohum ya da kod</h4><input id=wzSeed maxlength=40 placeholder="boş = rastgele · sayı ya da FTH-… kodu" value="${esc(WZ.seed)}" oninput="WZ.seed=this.value" class=inp autocomplete=off>
  <div class=fundbox style="font-size:13px">${cfgLine(n)}<br><span class=muted>Barış ${n.grace} yıl · hazine ${n.fund} akçe · ${n.ais.length} rakip · miras ×${fmtX(scoreX(n))}</span></div>${S&&ART&&!S.over?'<p class=muted style="font-size:12px;margin:0">Mevcut oyunun silinir (miras puanların korunur).</p>':''}`;
  return h+wzNav('',`<button class="btn primary" onclick="wizStart()">Seferi Başlat ▶</button>`)}
 window.addEventListener('resize',resize);
-window.addEventListener('keydown',e=>{if(ui.modal==='ev'&&/^[1-9]$/.test(e.key)){e.preventDefault();pickEvent(+e.key-1);return}if(e.key==='Escape'&&ui.modal&&!['setup','over','bozuk','ev'].includes(ui.modal)&&!(ui.modal==='wiz'&&!ART))closeModal()});
+window.addEventListener('keydown',e=>{if(ui.modal==='ev'&&/^[1-9]$/.test(e.key)){e.preventDefault();pickEvent(+e.key-1);return}if(e.key==='Escape'&&ui.modal&&!['setup','over','bozuk','ev','miras'].includes(ui.modal)&&!(ui.modal==='wiz'&&!ART))closeModal()});
 async function start(){if(!storeCheck())note('st','⚠ Tarayıcı kaydı kapalı: ilerleme kaydedilmeyecek.'+(ST.rd?' (Var olan kayıt okunabiliyor ama üzerine yazılamıyor.)':''),'warn');loadMeta();
  let ok=false;await boot(async()=>{resize();const r=readSave();
   if(r&&!r.bad){try{await adoptSaveAsync(r.s);ok=true;if(r.key!==SAVE&&saveNow())stDel(r.key)}catch(e){r.bad=true;r.why=e.message}}

@@ -19,6 +19,7 @@ window.SIM_RESULT  // son çalıştırmanın tamamı
 await checkMaps()  // Klasik/Kıta/Normal haritaları ve başlangıç durumu Faz 0 ile aynı mı (map-hashes.json)
 simJob('ad', [{difficulty:'kalfa'}, {difficulty:'usta'}])  // uzun ölçüm: arka planda koşar, JOBS.ad'da birikir
 await runSim({difficulty:'kalfa', goal:'hegemonya', seeds:[1,2,3]})  // zafer yolu botu
+await metaRun('m',10) // 1c: §9.3 planıyla 10 oyunluk miras ilerlemesi × tekrar, JOBS.m'de
 await evUnit(7)    // olay birim testi: 18 olay + Biat Teklifi, her seçenek ayrı kopyada, 3 yıl oynanır; [{id,cond,opt,m,bad,err}]
 ```
 
@@ -41,6 +42,9 @@ await evUnit(7)    // olay birim testi: 18 olay + Biat Teklifi, her seçenek ayr
 | `ferman` | `false` | `true`: `goal` ferman olarak beyan edilir |
 | `pers` | — | Bütün rakiplere tek kişilik (`saldirgan`, `tuccar`, `savunmaci`, `firsatci`) |
 | `ev` / `alt` | `true` | `false`: olaylar / alternatif zaferler (vasal, eser yarışı dahil) kapalı. İkisi kapalıyken Klasik/Çırak satırları `baseline-v2.json` ile birebir aynıdır |
+| `meta` | `false` | 1c: satıra `meta` eklenir: skor, ham skor, MP (`mpCalc`, oturmuş oyuncu; `mpNew`: ilk 2 oyun), en yüksek bölge oranı, ilk "Zaferi ilan et" anı ve o anki skor (`dec`), başarım sayaçları. Kapalıyken satırlar eski taban çizgileriyle birebir aynı kalır |
+| `declare` | `false` | `meta` ile: bot ilk fırsatta zaferi ilan eder |
+| `cfgExtra` | — | Oyun ayarına ek alanlar (ör. `{daily:'2026-10-19'}`, `{bonus:['hazine']}`) |
 
 Varsayılan ayar (Klasik + kart yok + Kıta + Normal + Çırak) Faz 0 oyunudur.
 

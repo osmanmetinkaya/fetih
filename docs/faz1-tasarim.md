@@ -993,3 +993,56 @@ Kalfa AI kazancı ×1,60 kişiliklerle yeniden ölçüldü ve değişmedi: %50 (
 - Nehir Vadisi %79 ve Kısa/Dağ uçları; harita/boy dengesi 1b'de ayarlanmadı.
 - Fetih botu biat teklifini hep kabul ediyor (oyun başına ~1,2 vasal); vasallık Fetih'i kısaltıyor, insan oyuncuda ölçülmedi.
 - Zafer yolu botları kaba: Medeniyet ve Hegemonya payları bot politikasına çok duyarlı.
+
+---
+
+## Uygulama notları (1c)
+
+*Uygulandı: 19.10.2026, oyun v0.8.0, kayıt v8, miras `fetih-meta-v1` iç sürüm `v:2`. Bağımsız incelemenin (Opus) 11 maddesi tasarımın üstüne uygulandı; çelişkide inceleme geçerli sayıldı. Ölçümler `tests/sim.js` botuyla (`meta:true`, `declare`, `metaRun`).*
+
+### Yapılanlar
+- **Skor ve rütbe (§8.3-8.4):** `scoreParts/scoreOf`. Taban Fetih 1000 · Medeniyet/Hegemonya 1100 · Zafer İlanı 900; hız bonusu `SIZES.sp` (Kısa 60 / Normal 90 / Uzun 130), Zafer İlanı'nda yarısı. Skor çarpanı `DIFFS.sc` (0,6 / 1 / 1,4 / 1,9) × kart × harita × hanedan (Klasik 0,9) × bonus. Rütbe yalnız zaferde.
+- **Miras puanı (inceleme 1, 5):** zafer `23 + ham/120`; yenilgi `12 + round(20·min(1, en yüksek bölge oranı/0,35)) + ham/120`; × zorluk (`DIFFS.mp`: Çırak **0,4**, ilk 2 oyun 0,6 · Kalfa 1 · Usta 1,4 · Destan 1,9) × kart × hanedan × bonus × ferman (1,25 / değişmişse 1,10; Zafer İlanı Fetih fermanını tutar) × rövanş **0,8** × antrenman 0,25. 15. yıldan önce biten oyun 0. **İlk Sefer +20 MP** (tur ≥ 15 olan ilk oyun). Günlük (sayılan) +5 MP.
+- **commitMeta:** bitişte bir kez; sırası istatistik → rekor → başarım → MP → koşullu açılım → geçmiş → `saveMeta()` → `S.metaDone/S.endRes` → `saveNow()`. Çifte ödüle karşı ayrıca `META.done` (son 40 oyun kimliği, `S.gid`). Yenilemede bitiş ekranı `S.endRes`'ten yeniden çizilir.
+- **Bitiş ekranı (inceleme 2, 3):** tek sütun: başlık + tek anlatı cümlesi + son haritanın küçük görseli → sayarak yükselen skor (`prefers-reduced-motion`'da anında), hanedan rekoru farkı ("YENİ REKOR +N"), rütbe (zaferde) → ~0,3 sn arayla ödül vuruşları: MP → açılım (büyük kutu) → başarımlar → "kaçırdığın başarım" → günlük seri → sıradaki hedef çubuğu → ana düğme + 3 ikincil (Aynı kurallar / Yeni sefer / Günlük ●) + Sonucu kopyala + Miras → katlanır Ayrıntılar (skor dökümü, bölge/asker grafiği, en iyi savaş, en büyük kayıp, olay/koalisyon özeti, tohum kodu). Yenilgide tek teşhis + "Zafere en yakın an %X (Y. yıl)".
+- **Ana düğme:** yeni açılım varsa "🔓 Aç ve başla: X ▶" (MP'yi harcar, son ayarı X ile doldurup doğrudan kuruluşa gider: bitişten oyuna 2 tık), yoksa yenilgide "↻ Aynı tohumla rövanş", zaferde "▶ Önerilenle yeni oyun" (Çırak → Kalfa, sonra zafer alınmamış hanedan, sonra zafer alınmamış harita).
+- **Kilit ağacı (inceleme 6):** Nehir Vadisi açık; Dağ Kalesi 30, Körfez 45; Uzun 40; Bilge 60 / Deniz 90 / Akıncı 120 MP ya da koşul (**Çırak dışında**: Medeniyet zaferi / aynı anda **4** Liman / tek oyunda **6000** ganimet; tasarımdaki 3 Liman / 1500 ganimet Kalfa botunda oyunların %54 / %75'inde tutuyordu, 24 oyun); Usta ← Kalfa'da zafer, Destan ← Usta'da zafer; **Kutsal İttifak ve Sürgün Bey ← Usta'da zafer** (MP'siz). Başlangıç bonusları `BONUS` (Hazine 30, Usta Çiftçi 40, Sadık Muhafız 45 = **+3 piyade +1 okçu, ×0,9**, Haritacı 50, Kışla Temeli 60; diğerleri ×0,95), 1 yuva, 400 MP harcayınca 2.
+- **Kişisel rekor (inceleme 4):** `META.stats.best.dyn/map`; ekranda hanedan rekoru.
+- **Günlük (inceleme 7, 8):** `dailyOf(tarih)`: `hash32('FTH'+YYYYMMDD)` → hanedan (6'dan), 2 kart (yasaklı çift hariç), harita (4'ten), **her gün Kısa**, Kalfa (Cuma Usta), bonus/ferman yok. İlk **başlatılan** deneme sayılır (`META.daily.started`), aynı günün sonraki denemeleri ve başka günün kodu antrenman. Oyun başladığı tarihe yazılır (`cfg.daily`). Seri yalnız gösterilir; günde düz +5 MP; 7 günlük seri 1 mühür (≤ 2, 1 günlük boşluğu kapatır); haftada (Pazartesi başlangıçlı) herhangi 4 gün → 🚩 Haftalık Sancak; 7 ve 30 günlük seri sancak. Paylaşım kartı `FTH-D20261019` ve `⚔ kazanılan saldırı 🏰 alınan başkent ☠ savunmada kaybedilen bölge`.
+- **Tohum kodu (§8.5):** `FTH-<base36>-<hanedan>-<harita>-<zorluk>-<kart.kart|0>-<boy>`; 3. adımdaki alan sayı ya da kod alır. Kodda kilitli içerik varsa oyun antrenman sayılır (kilit atlatılamasın).
+- **Başarımlar (inceleme 9):** 25 başarım (`ACH`): 6 "X ile zafer" → tek **Altı Ocak** (0/6 ilerleme); `cift_kart`, `yagmaci`, `seri7` silindi; eklendi **Vakanüvis** (15 farklı olay), **Dört Diyar** (4 harita türünde zafer), **Üç Hüner** ve gizli **Son Kale**, **Kalemle Fetih**, **Kasırga**. Çırak'ta yalnız İlk Zafer, Ders Alındı, Altı Ocak, Vakanüvis. Rövanş/antrenman başarım açmaz. 6 başarımda "kaçırdın" satırı (ör. "Surları Sevmem: 1 sur yaptın, kaçtı"); 10 başarımda canlı izleme (`lv`): sihirbazın 3. adımında **hedef başarım** seçilir, üst çubukta 🎯 ile izlenir.
+- **Zaferi ilan et (inceleme 10):** güç = asker + 5 × bölge. Koşul: barış bitmiş, toprak ≥ %30, gücün ≥ **1,5 ×** (yıkılmamış, vasal olmayan) rakiplerin toplamı. Üst çubukta ve Hedef sekmesinde düğme, ilk kez sağlandığında yıl raporunda haber. Sonuç `winBy:'ilan'`: taban 900, hız bonusunun yarısı.
+- **Miras ekranı (inceleme 11):** sihirbazın açılışı, bitiş ekranı ve Kayıt sekmesinden: bakiye, günlük/seri/mühür/hafta, bütün kilitler (🔓 Aç), bonus tak/çıkar, başarım ızgarası (ilerleme çubukları, gizliler ❔), rekorlar, son 6 oyun, sancak seçimi, aktarma.
+- **Kayıt:** `SAVE_VER` 7 → 8, `MIG[7]` (bonus/günlük/rövanş yok, `gid`). `S.stats`'a yalnız sayaç eklendi (en çok liman, Akın/Yağma/Haraç kullanımı, en iyi savaş, en büyük kayıp, son kayıp, ilan yılı). Miras bozuksa ham hali `fetih-meta-bozuk`'a yedeklenir, şeritle bildirilir (kopyala düğmesi); daha yeni sürümden gelen miras üzerine yazılmaz. Dışa aktarma artık `{fetih:2, save, meta}`; eski düz kayıt metni de okunur; içe aktarılan miras yalnız toplam kazanılan MP'si buradakinden az değilse yerini alır.
+
+### Tasarımdan sapmalar
+- **Antrenman MP'si:** inceleme 5 "×0,25 koru", inceleme 7 "MP vermez" diyordu; ×0,25 seçildi (her bitiş bir şey versin), seri ve başarım vermez.
+- **Zafer İlanı eşiği 2 → 1,5:** 2 katında bot ilan hakkını zaferden ortalama yalnız 2 yıl önce kazanıyordu (aşağıda).
+- **Üç Hüner** üç yeteneğin tek oyunda kullanılması olarak yapılamazdı (üç ayrı hanedanın yeteneği); oyunlar boyunca birikimli.
+- **Günlük kayıt yuvası ayrı değil:** günlük oyun da tek kayıt yuvasını kullanır (sihirbaz "mevcut oyunun silinir" uyarısı geçerli). Günlükte zorunlu tur tavanı yok; "tavan 60" Kısa'nın hız bonusu tavanıdır.
+- Kozmetik yalnız sancak emojisi (üst çubuk ve sonuç kartı); rütbe çerçevesi, ustalık yıldızı, renk seçimi yok. "Yeniden çek 2. kez 5 MP" yapılmadı.
+
+### Ölçümler (bot, son kod)
+**MP beklentisi (Klasik, kart yok, Kıta, Normal; 48 tohum her zorlukta; `mpCalc`, oturmuş oyuncu = ilk 2 oyun sonrası):**
+
+| Zorluk | Zafer | Ort. MP | Zaferde | Yenilgide | Ort. skor (zafer) |
+|---|---|---|---|---|---|
+| Çırak | 46/48 | 23,1 (ilk 2 oyun: 34,8) | 23,5 | 14,0 | 2.756 |
+| Kalfa | 26/48 (3 bitmedi) | **49,2** | 60,1 | 36,3 | 4.737 |
+| Usta | 15/48 | 56,0 | 86,3 | 42,3 | 6.867 |
+| Destan | 5/48 | 62,3 | 113,8 | 56,3 | 8.940 |
+
+Kabul: Kalfa / Çırak = 49,2 / 23,1 = **2,13 ≥ 1,5** (ilk 2 oyunun 0,6 çarpanına göre 1,41). Yenilgi MP'si zaferin %60'ı (Kalfa): yenilen oyuncu da açılım biriktirir.
+
+**Zaferi ilan et (Kalfa, 24 tohum):** 2× eşiğinde ilan hakkı zaferden ortalama yalnız 2,4 yıl önce geliyordu (48 tohumda 85,8 → 88,2. yıl; bot hep ilan etse kazanılan oyun 83,2 → 82,4 yıl). 1,5× eşiğinde hak 13 yıl önce gelir (71,2 → 84,2); hep ilan eden bot: zafer 14/24 → **16/24**, zafer süresi 83,2 → **75,5** yıl, zafer skoru 4.848 → 4.114 (−%15), ort. MP 53,0 → 49,4. Risk: hakkın geldiği 15 oyunun 2'si ilan edilmeseydi yenilgiyle bitiyordu (ilan ≈ +8 puan kazanma).
+
+**Miras ilerlemesi (§9.3 planı, boş META, bot en ucuz açılımı hemen alır, 10 tekrar × 10 oyun):** oyun başına ortalama MP 71 · 62 · 95 · 74 · 67 · 70 · 59 · 45 · 66 · 56; birikmiş (medyan) 74 · 116 · 242 · 294 · 385 · 477 · 506 · 539 · 662 · **703** (§9.3: 672). İlk açılım her tekrarda **1. oyunda** (kart, 20 MP); ilk hanedan/harita açılımı 2-5. oyunda (medyan 3). 10. oyunda: hanedan 6/6 (9 tekrar; 1'inde 4), harita 4/4 (10/10), kart 12-14/14, Usta 10/10, Destan 4/10. Koşullu açılımlar (eşik yükseltildikten sonra da) sık: Deniz 10/10, Akıncı 9/10, Bilge 1/10 tekrarda MP'siz geldi.
+
+**Başarım tutarlılığı (Kalfa, Börü, 12 tohum):** her oyun sonunda 19 oyun-içi başarımın `ACH.t` sonucu, `S.stats`'tan bağımsız yazılmış koşullarla 12/12 aynı; `commitMeta`'nın açtığı küme, koşulu sağlayanlarla 12/12 aynı.
+**Günlük:** aynı tarih → aynı hanedan/kart/harita/tohum; aynı ayarla iki bot koşusu birebir aynı satır (`randLeak` 0); 60 ardışık günün 60'ında geçerli kurallar (2 kart, yasaklı çift yok, Kısa); Cuma Usta. Seri birim testi: ardışık gün +1, 1 gün boşlukta mühür yakılıyor, 2 gün boşlukta 1'e dönüyor, aynı haftada 4 gün → Haftalık Sancak, 7 gün → 1 mühür + Yedi Gün Sancağı. Tohum kodu kodla-çöz gidiş dönüşü aynı.
+
+### Açık riskler
+- Koşullu hanedan açılımları (4 Liman, 6000 ganimet) botta 10 oyun içinde neredeyse kesin; Deniz/Akıncı'nın MP fiyatı pratikte ödenmiyor. İnsan oyuncuda ölçülmedi.
+- Miras ilerlemesi botun "en ucuz açılımı hemen al" politikasıyla ölçüldü; kartlar hızlı tükeniyor (10. oyunda 12-14/14, hedef ~9).
+- Günlük oyun ayrı kayıt yuvasında değil; günlüğü başlatan oyuncu süren oyununu kaybeder (uyarı var).
+- Zafer İlanı 1,5× eşiği, savaşı kazanmaya yakın ama bitmemiş oyunları erken "zafer" yapabiliyor (+8 puan botta).
