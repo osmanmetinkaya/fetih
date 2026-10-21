@@ -29,7 +29,7 @@
  --hud-h:52px;--aw:400px;--peek:72px;
  /* geriye uyum takma adları */
  --bg:var(--bg-0);--panel:var(--bg-1);--panel2:var(--bg-2);--text:var(--tx-1);--muted:var(--tx-2);--accent:var(--brand)}
-@media (prefers-reduced-motion:reduce){:root{--d-1:0ms;--d-2:0ms;--d-3:0ms;--d-4:0ms;--d-5:0ms;--d-6:0ms}}
+:root.rm,:root.rm0{--d-1:0ms;--d-2:0ms;--d-3:0ms;--d-4:0ms;--d-5:0ms;--d-6:0ms}/* hareket: PREF.motion + prefers-reduced-motion (JS: MOT()) */
 @media (max-width:767px){:root{--hud-h:48px;--t-sm:13.5px;--t-md:15px;--t-lg:17px;--t-2xl:24px;--t-3xl:32px}}
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -94,7 +94,9 @@ aside{width:var(--aw);flex:none;background:var(--bg-1);border-left:1px solid var
 .tabs button{flex:1;min-width:0;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 2px;background:none;border:0;border-bottom:3px solid transparent;color:var(--tx-2);font:600 var(--t-xs)/1.2 var(--font-ui);cursor:pointer;position:relative}
 .tabs button .ic{width:20px;height:20px}
 @media (hover:hover){.tabs button:hover{color:var(--tx-1);background:var(--bg-2)}}
-.tabs button.on{color:var(--tx-1);border-bottom-color:var(--brand)}
+.tabs button.on{color:var(--tx-1)}
+.tabs{position:relative}.tabs .tink{position:absolute;left:0;bottom:0;width:100px;height:3px;background:var(--brand);border-radius:3px 3px 0 0;transform-origin:0 0;transition:transform 180ms var(--ease-out);pointer-events:none}
+.tabs.noink .tink{display:none}.tabs.noink button.on{border-bottom-color:var(--brand)}
 .tabs button.on .ic{color:var(--brand)}
 .tabs .nd{position:absolute;top:7px;right:calc(50% - 17px);width:8px;height:8px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 2px var(--bg-1)}
 .tabs .sm{display:none}
@@ -232,7 +234,8 @@ th .ic{width:16px;height:16px}
 .urow b{text-align:right;font-variant-numeric:tabular-nums}
 /* ---- pencere (modal) §5.8 ---- */
 #modalBg{position:fixed;inset:0;background:var(--overlay);display:none;align-items:center;justify-content:center;z-index:var(--z-modal);padding:16px}
-#modal{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--rad-lg);padding:24px;width:min(460px,100%);max-height:min(90vh,760px);overflow:auto;overscroll-behavior:contain;box-shadow:var(--e-3);animation:modal-in var(--d-3) var(--ease-out);min-width:0}
+#modal{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--rad-lg);padding:24px;width:min(460px,100%);max-height:min(90vh,760px);overflow:auto;overscroll-behavior:contain;box-shadow:var(--e-3);animation:modal-in 200ms var(--ease-out) both;min-width:0;position:relative}
+#modal.late{animation-delay:300ms}#modalBg{animation:fade-in 200ms var(--ease-out)}
 #modal.wide{width:min(680px,100%)}
 #modal.wide:has(.wz),#modal.wide:has(.end){width:min(880px,100%)}
 @keyframes modal-in{from{opacity:0;transform:scale(.96)}}
@@ -241,8 +244,10 @@ th .ic{width:16px;height:16px}
 #modal .row{position:sticky;bottom:-24px;background:var(--bg-1);padding:12px 0;margin-bottom:-12px;border-top:1px solid var(--line);z-index:2}
 .chance{font:800 32px/1.1 var(--font-num);text-align:center;margin:8px 0;font-variant-numeric:tabular-nums}
 .chance small{font:500 var(--t-sm) var(--font-ui);color:var(--tx-2)}
-#toast{position:fixed;bottom:24px;left:calc((100vw - var(--aw)) / 2);transform:translateX(-50%);max-width:min(520px,calc(100vw - var(--aw) - 32px));min-height:44px;background:var(--bg-3);box-shadow:var(--e-2);border-left:3px solid var(--brand);padding:10px 14px;border-radius:var(--rad-sm);display:none;align-items:center;gap:8px;z-index:var(--z-toast);font-size:var(--t-md);animation:toast-in var(--d-3) var(--ease-out)}
-@keyframes toast-in{from{opacity:0;transform:translate(-50%,-8px)}}
+#toast{position:fixed;bottom:24px;left:calc((100vw - var(--aw)) / 2);transform:translateX(-50%);width:max-content;max-width:min(520px,calc(100vw - var(--aw) - 32px));display:flex;flex-direction:column;align-items:center;gap:6px;z-index:var(--z-toast);pointer-events:none}
+.tst{min-height:44px;background:var(--bg-3);box-shadow:var(--e-2);border-left:3px solid var(--brand);padding:10px 14px;border-radius:var(--rad-sm);display:flex;align-items:center;gap:8px;font-size:var(--t-md);animation:toast-in 180ms var(--ease-out);max-width:100%}
+.tst.tg{border-left-color:var(--good)}.tst.tb{border-left-color:var(--bad)}.tst.out{animation:toast-out 140ms var(--ease-in) forwards}
+@keyframes toast-in{from{opacity:0;transform:translateY(-8px)}}@keyframes toast-out{to{opacity:0;transform:translateY(-8px)}}
 #bars{position:fixed;top:calc(var(--hud-h) + env(safe-area-inset-top) + 8px);left:50%;transform:translateX(-50%);width:min(640px,calc(100% - 16px));display:flex;flex-direction:column;gap:6px;z-index:var(--z-bars);pointer-events:none}
 .bar-n{pointer-events:auto;display:flex;align-items:flex-start;gap:8px;background:var(--bg-3);border-left:3px solid var(--warn);border-radius:var(--rad-md);padding:8px 8px 8px 12px;font-size:var(--t-sm);box-shadow:var(--e-2)}
 .bar-n>span{flex:1;min-width:0;overflow-wrap:anywhere}.bar-n.err{border-left-color:var(--bad)}.bar-n .btn.sm{flex:none}.bar-n span .btn{margin-left:4px}
@@ -255,8 +260,6 @@ h3 .tag{font-size:var(--t-xs)}
 .dynbox>div{display:flex;gap:6px;align-items:baseline}
 .rivals{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}
 .wz .btn.wide{margin-top:8px}
-.wz-steps{display:flex;gap:4px;margin:0 0 12px;font-size:var(--t-xs)}.wz-steps span{flex:1;text-align:center;padding:6px 1px;border-bottom:3px solid var(--line);color:var(--tx-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.wz-steps span.on{border-color:var(--brand);color:var(--tx-1);font-weight:700}.wz-steps span.done{border-color:var(--good);color:var(--tx-2)}
 .wzc{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 .pick{cursor:pointer;min-height:44px;-webkit-tap-highlight-color:transparent;position:relative}
 @media (hover:hover){.pick:hover{border-color:var(--edge)}}
@@ -283,15 +286,88 @@ h3 .tag{font-size:var(--t-xs)}
 .end-rk{text-align:right;font-size:var(--t-sm)}.end-rk>div{display:inline-flex;align-items:center;gap:6px}
 .end-dg{font-size:var(--t-sm);margin:8px 0;background:var(--bad-wash);border-left:3px solid var(--bad);border-radius:var(--rad-sm);padding:8px 12px}
 .end-rw{display:flex;flex-direction:column;gap:6px;margin:8px 0}
-.beat{opacity:0;transform:translateX(12px);transition:opacity .24s var(--ease-out),transform .24s var(--ease-out);font-size:var(--t-sm);padding:8px 12px;border-radius:var(--rad-md);background:var(--bg-2)}
+.beat{font-size:var(--t-sm);padding:8px 12px;border-radius:var(--rad-md);background:var(--bg-2)}
 .beat.on{opacity:1;transform:none}.beat.big{font-size:var(--t-lg);background:var(--brand-wash);box-shadow:var(--e-glow)}.beat.mp b{color:var(--brand)}.beat .bar{margin-top:6px}
-@media (prefers-reduced-motion:reduce){.beat{transition:none;opacity:1;transform:none}#modal,#toast{animation:none}.hc.decl{animation:none}}
 .end-b{display:flex;flex-direction:column;gap:8px;margin-top:12px}.end-main{display:block;min-height:56px;font-size:var(--t-lg);padding:10px 16px;text-align:center}.end-main small{display:block;font-weight:500;font-size:var(--t-xs);margin-top:2px}
 .end-d{margin-top:12px;font-size:var(--t-sm)}.end-d summary,details>summary{cursor:pointer;padding:10px 0;color:var(--tx-2);min-height:44px;display:flex;align-items:center;gap:6px}.end-d canvas{width:100%;height:auto;margin-top:8px;background:var(--bg-2);border-radius:var(--rad-md)}.end-d p{margin:6px 0}
 .achs{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}.achs .card.got{border-color:rgba(76,195,138,.45)}.achs .card b{display:flex;gap:6px;align-items:center}.achs .card:not(.got) b .ic{color:var(--tx-dis)}.achs .card.got b .ic{color:var(--good)}
 .mir .item>div{flex:1 1 60%}.mir .item>span{flex:0 1 auto;min-width:0;text-align:right}.mir .item .btn{white-space:nowrap}
 .menu .btn.wide{display:flex;align-items:center;justify-content:flex-start}
 tr.flash td,h4.flash{background:var(--brand-wash);transition:background .3s}
+/* ===== Aşama 4-6: pencere, sihirbaz, bitiş, olay, saldırı, hareket (§5.8-5.15, §9) ===== */
+@keyframes fade-in{from{opacity:0}}@keyframes fade-out{to{opacity:0}}@keyframes modal-out{to{opacity:0;transform:scale(.97)}}@keyframes sheet-out{to{opacity:0;transform:translateY(30%)}}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}}@keyframes tab-swap{from{opacity:0;transform:translateY(4px)}}@keyframes grow-x{from{transform:scaleX(0)}}
+@keyframes wiz-r{from{opacity:0;transform:translateX(16px)}}@keyframes wiz-l{from{opacity:0;transform:translateX(-16px)}}@keyframes flip{from{transform:perspective(700px) rotateY(-90deg);opacity:0}}
+@keyframes pop{40%{transform:scale(1.08)}}@keyframes rank-up{40%{transform:scale(1.15)}}@keyframes shk{to{transform:translate(-1px,-4px) rotate(-20deg)}}@keyframes yr-in{from{transform:translateY(100%);opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse-good{from{background-color:rgba(76,195,138,.32)}}@keyframes pulse-bad{from{background-color:rgba(255,107,94,.32)}}
+@keyframes yc{0%{opacity:0;transform:translate(-50%,-50%) scale(.92)}28%,72%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+.mbar{position:sticky;top:-24px;height:0;z-index:4;display:flex;justify-content:flex-end;margin:-16px -16px 0 0}
+.mbar .btn{margin-top:-4px;background:var(--bg-1)}
+#modal:has(.mbar) h3{padding-right:44px}
+.mghost{position:fixed;inset:0;z-index:var(--z-modal);pointer-events:none;background:var(--overlay);display:flex;align-items:center;justify-content:center;padding:16px;animation:fade-out 140ms var(--ease-in) forwards}
+.mghost>#modal{animation:modal-out 140ms var(--ease-in) forwards!important;pointer-events:none}
+.hc.up{animation:pulse-good 400ms var(--ease-out)}.hc.dn{animation:pulse-bad 400ms var(--ease-out)}.hc.up b,.hc.dn b{display:inline-block;animation:pop 400ms var(--ease-out)}
+.hc.yr b.yrin{display:inline-block;animation:yr-in 260ms var(--ease-out)}
+#panel.swap{animation:tab-swap 140ms var(--ease-out)}
+#yearCard{position:absolute;left:50%;top:42%;z-index:var(--z-mapui);pointer-events:none;background:var(--scrim-map);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:var(--rad-lg);padding:12px 28px;text-align:center;box-shadow:var(--e-2);opacity:0;transform:translate(-50%,-50%)}
+#yearCard small{display:block;font:700 var(--t-xs)/1.3 var(--font-ui);letter-spacing:.12em;color:var(--tx-2)}#yearCard b{display:block;font:800 var(--t-3xl)/1.1 var(--font-num);color:var(--tx-1);font-variant-numeric:tabular-nums}
+#yearCard.on{animation:yc 700ms var(--ease-out) forwards}
+#view{transition:filter 900ms var(--ease-in)}
+#loading{flex-direction:column}#loading .lbar{width:180px;height:4px;border-radius:2px;background:var(--bg-3);overflow:hidden}#loading .lbar i{display:block;height:100%;background:var(--brand);transform-origin:0 0;transform:scaleX(var(--lp,.05));transition:transform 300ms var(--ease-out)}
+#loading .ld{font:800 22px/1 var(--font-ui);letter-spacing:.18em}#loading .lt{font:500 var(--t-sm)/1.3 var(--font-ui);letter-spacing:0;color:var(--tx-2)}
+.btn.busy{color:transparent!important}.btn.busy::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;border:2px solid var(--tx-2);border-top-color:transparent;animation:spin .8s linear infinite}
+/* olay penceresi §5.13 */
+.evm{position:relative;padding-top:6px;animation:rise 260ms var(--ease-out)}
+.evm .evs{position:absolute;left:-24px;right:-24px;top:-24px;height:4px;background:var(--brand);transform-origin:0 0;animation:grow-x 260ms var(--ease-out)}
+.evm.t-good .evs{background:var(--good)}.evm.t-bad .evs{background:var(--bad)}.evm.t-info .evs{background:var(--info)}
+.evm h3{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.evm h3 .ic{width:28px;height:28px}
+.evsub{margin:-6px 0 8px;font-size:var(--t-sm);color:var(--tx-2)}.evt{font-size:15px;margin:0 0 12px}
+.evo .btn.evb{display:flex;align-items:flex-start;gap:12px;min-height:64px;padding:10px 12px;transition:background .2s,opacity .2s,border-color .12s}
+.evo .key{flex:none;width:32px;height:32px;border-radius:8px;background:var(--bg-2);display:inline-flex;align-items:center;justify-content:center;font:800 var(--t-md)/1 var(--font-num);color:var(--brand)}
+.evo .evx{flex:1;min-width:0}.evo .evx b{color:var(--tx-1)}
+@media (hover:hover){.evo .btn.evb:hover:not(:disabled){border-color:var(--brand)}}
+.evo .btn.evb:focus-visible{border-color:var(--brand)}
+.evm.picked .evb{opacity:.4}.evm.picked .evb.pk{opacity:1;background:var(--brand-wash);border-color:var(--brand)}
+/* saldırı penceresi §5.14 */
+.atkh{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.atkh .dot{width:16px;height:16px}
+.atkg{display:flex;align-items:center;gap:16px;margin:12px 0 4px}
+.cring{position:relative;width:64px;height:64px;flex:none}.cring svg{width:64px;height:64px;transform:rotate(-90deg)}.cring circle{fill:none;stroke-width:5}.cring .rt{stroke:var(--bg-3)}.cring .rf{stroke-linecap:round;stroke-dasharray:100;transition:stroke-dashoffset 400ms var(--ease-out)}
+.cring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 15px/1 var(--font-num);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.atkg .w{font:700 var(--t-lg)/1.2 var(--font-ui)}.atkg small{display:block;color:var(--tx-2);font-size:var(--t-xs)}
+.pw{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--fc,var(--bg-3));margin:10px 0 4px}.pw i{background:var(--brand);transform-origin:0 0}
+.pwl{display:flex;justify-content:space-between;font-size:var(--t-xs);color:var(--tx-2);font-variant-numeric:tabular-nums}.pwl b{color:var(--tx-1)}
+.atkd{margin-top:8px}.atkd>summary{min-height:44px}
+.lastb{border-left:3px solid var(--good);margin-top:12px}.lastb.l{border-left-color:var(--bad)}.lastb b{display:flex;align-items:center;gap:6px}
+/* sihirbaz §6.4 */
+.wz-steps{display:flex;align-items:center;gap:0;margin:0 0 16px}.wz-steps>span{flex:1;display:flex;align-items:center;gap:6px;min-width:0;color:var(--tx-2);font-size:var(--t-xs);font-weight:600;border:0;padding:0;white-space:nowrap}
+.wz-steps>span:not(:last-child)::after{content:'';flex:1;height:2px;background:var(--line);margin:0 6px;min-width:8px}
+.wz-steps>span.done:not(:last-child)::after{background:var(--good)}
+.wz-steps i{flex:none;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--bg-3);color:var(--tx-2);font:800 12px/1 var(--font-num);font-style:normal}
+.wz-steps .on{color:var(--tx-1)}.wz-steps .on i{background:var(--brand);color:var(--ink)}.wz-steps .done i{background:var(--good-wash);color:var(--good)}.wz-steps .done i .ic{width:14px;height:14px}
+.wz-steps em{font-style:normal;overflow:hidden;text-overflow:ellipsis}
+.wzb.ar{animation:wiz-r 200ms var(--ease-out)}.wzb.al{animation:wiz-l 200ms var(--ease-out)}
+.pick.flip{animation:flip 320ms var(--ease-io) both}
+.pick.lockd{border:1px dashed var(--line);background:var(--bg-2)}.pick.lockd.can{border-color:var(--brand)}
+.pick .lk+div{padding-right:20px}.pick.lockd .lk{position:absolute;top:10px;right:10px;width:16px;height:16px;color:var(--tx-3)}.pick.lockd.can .lk{color:var(--brand)}
+.wz-nav .btn{min-height:48px}
+.unl{position:relative}.unl::after{content:'';position:absolute;inset:-1px;border-radius:inherit;box-shadow:inset 0 0 0 2px var(--brand),var(--e-glow);animation:fade-out 900ms 300ms var(--ease-in) both;pointer-events:none}
+.ulk .shk{transform-box:fill-box;transform-origin:100% 100%}.beat.on .ulk .shk,.unl .ulk .shk{animation:shk 450ms var(--ease-back) 150ms both}
+/* bitiş §5.15 */
+.beat{opacity:0;transform:translateX(12px);transition:opacity 240ms var(--ease-out),transform 240ms var(--ease-out)}
+.end-sc #endSc{min-width:5ch}
+.rkb{display:flex;gap:3px;margin:6px 0 2px;justify-content:flex-end}.rkb i{width:22px;height:6px;border-radius:3px;background:var(--bg-3)}.rkb i.on{background:var(--brand)}
+.end-rk{display:flex;flex-direction:column;align-items:flex-end;gap:4px}.end-rk .rk{opacity:0;transition:opacity 240ms}.end-rk.on .rk{opacity:1}.end-rk.on .rk.up{animation:rank-up 500ms var(--ease-back)}
+.end-rk .rk.up b{color:var(--brand)}
+/* başarım kartı §5.12 */
+.achs .card.ach{flex-direction:row;align-items:flex-start;gap:12px}.ach .med{flex:none;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--bg-3);color:var(--tx-dis)}
+.ach .med .ic{width:28px;height:28px}.ach.got .med{background:var(--brand-wash);color:var(--brand);box-shadow:inset 0 0 0 2px var(--brand)}.ach>div{min-width:0;display:flex;flex-direction:column;gap:3px}
+.ach b{font-size:var(--t-md)}.ach .bar{margin-top:4px}
+.mir .fundbox b{font:800 22px/1.2 var(--font-num);color:var(--brand)}
+/* hareket azaltma: az = yalnız ≤120 ms opaklık, yok = hiçbiri */
+:root.rm *,:root.rm *::before,:root.rm *::after{animation-name:none!important;transition-duration:0s!important}
+:root.rm #modal,:root.rm .tst,:root.rm .evm,:root.rm #modalBg{animation:fade-in 100ms both!important}
+:root.rm0 *,:root.rm0 *::before,:root.rm0 *::after{animation:none!important;transition:none!important}
+:root.rm .beat,:root.rm0 .beat{opacity:1;transform:none}:root.rm .end-rk .rk,:root.rm0 .end-rk .rk{opacity:1}
 /* ---- tablet: sağ panel haritanın üstüne biner (§4.5, §6.2) ---- */
 @media (min-width:768px) and (max-width:1099px){
  :root{--aw:360px}
@@ -337,8 +413,13 @@ tr.flash td,h4.flash{background:var(--brand-wash);transition:background .3s}
  body:not([data-sheet=peek]) #mapWrap .hint{display:none}
  #toast{left:50%;top:calc(var(--hud-h) + env(safe-area-inset-top) + 8px);bottom:auto;max-width:calc(100vw - 32px)}
  #modalBg{padding:0;align-items:flex-end}
- #modal,#modal.wide,#modal.wide:has(.wz),#modal.wide:has(.end){width:100%;max-height:92dvh;border-radius:var(--rad-lg) var(--rad-lg) 0 0;border-width:1px 0 0;padding:12px 16px calc(16px + env(safe-area-inset-bottom));animation:sheet-in var(--d-4) var(--ease-out)}
+ #modal,#modal.wide,#modal.wide:has(.wz),#modal.wide:has(.end){width:100%;max-height:92dvh;border-radius:var(--rad-lg) var(--rad-lg) 0 0;border-width:1px 0 0;padding:12px 16px calc(16px + env(safe-area-inset-bottom));animation:sheet-in 260ms var(--ease-out) both}
  #modal::before{content:'';display:block;width:36px;height:4px;border-radius:2px;background:var(--edge);margin:0 auto 12px}
+ #modalBg>#modal.full{max-height:none;height:100dvh;border-radius:0;border-width:0;padding-top:calc(12px + env(safe-area-inset-top))}#modalBg>#modal.full::before{display:none}
+ .mbar{top:-12px;margin:-8px -8px 0 0}
+ .wz-steps em{display:none}.wz-steps .on em{display:inline}
+ .evm .evs{left:-16px;right:-16px;top:-12px}
+ .mghost{align-items:flex-end;padding:0}.mghost>#modal{animation-name:sheet-out!important}
  .wz-nav{bottom:calc(-16px - env(safe-area-inset-bottom));padding-bottom:calc(8px + env(safe-area-inset-bottom))}
  .wz-nav .btn{flex:1 1 auto}
  #modal .row{bottom:calc(-16px - env(safe-area-inset-bottom));padding-bottom:calc(12px + env(safe-area-inset-bottom))}
@@ -370,14 +451,15 @@ tr.flash td,h4.flash{background:var(--brand-wash);transition:background .3s}
     <div class="hint" id="hint"></div>
     <button class="btn primary" id="ctxAct" onclick="ctxGo()"></button>
     <div id="tip"></div>
-    <div id="loading">Harita çiziliyor…</div>
+    <div id="yearCard" aria-hidden="true"></div>
+    <div id="loading"><span class="ld">FETİH</span><span class="lbar"><i></i></span><span class="lt" id="loadT">Harita çiziliyor…</span></div>
   </div>
   <aside id="side">
     <button class="btn ico" id="sideTgl" onclick="sideToggle()" aria-label="Paneli daralt"><svg class="ic" aria-hidden="true"><use href="#i-ok-sag"/></svg></button>
     <div id="sheet">
       <div class="grab" id="grab" role="button" tabindex="0" aria-label="Paneli aç / kapat"><div id="peek"></div></div>
       <nav class="tabs" id="tabs" role="tablist">
-        <button data-t="bolge" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-kale"/></svg><span>Bölge</span></button><button data-t="eko" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-pazar"/></svg><span class=lg>Ekonomi</span><span class=sm>Eko</span></button><button data-t="ordu" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-saldiri"/></svg><span>Ordu</span></button><button data-t="hedef" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-kupa"/></svg><span>Hedef</span></button><button data-t="tek" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-bilgi"/></svg><span class=lg>Teknoloji</span><span class=sm>Tekno</span></button><button data-t="kayit" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-gunce"/></svg><span>Kayıt</span></button>
+        <button data-t="bolge" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-kale"/></svg><span>Bölge</span></button><button data-t="eko" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-pazar"/></svg><span class=lg>Ekonomi</span><span class=sm>Eko</span></button><button data-t="ordu" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-saldiri"/></svg><span>Ordu</span></button><button data-t="hedef" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-kupa"/></svg><span>Hedef</span></button><button data-t="tek" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-bilgi"/></svg><span class=lg>Teknoloji</span><span class=sm>Tekno</span></button><button data-t="kayit" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-gunce"/></svg><span>Kayıt</span></button><i class="tink" aria-hidden="true"></i>
       </nav>
       <div id="panel" role="tabpanel"></div>
     </div>
@@ -665,7 +747,19 @@ function canPay(c){return Object.entries(c).every(([k,v])=>S.res[k]>=v-1e-9)}
 function pay(c){for(const[k,v]of Object.entries(c))S.res[k]-=v}
 function scaleC(c,m){const o={};for(const k in c)o[k]=Math.round(c[k]*m*10)/10;return o}
 function addY(t,y,m=1){for(const[k,v]of Object.entries(y))t[k]=(t[k]||0)+v*m}
-function toast(m){const t=$('#toast');t.innerHTML=emo(m);t.style.display='flex';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2400)}
+// ---- Ayarlar (§13 hazırlığı; arayüz Aşama 8): localStorage['fetih-ayar'], kayıttan ayrı. Konsoldan: PREF.battleModal='hep' (her savaşta sonuç penceresi) · prefSet('motion','az') ----
+const PREF_KEY='fetih-ayar',PREF=(()=>{const d={v:1,battleModal:'onemli',motion:null};if(TEST)return d;try{const o=JSON.parse(localStorage.getItem(PREF_KEY)||'null');if(o&&typeof o==='object'){if(['onemli','hep'].includes(o.battleModal))d.battleModal=o.battleModal;if(['tam','az','yok'].includes(o.motion))d.motion=o.motion}}catch(e){}return d})();
+function prefSave(){motApply();if(TEST)return;try{localStorage.setItem(PREF_KEY,JSON.stringify(PREF))}catch(e){}}
+function prefSet(k,v){PREF[k]=v;prefSave()}
+// Hareket düzeyi (§9.1): 2 tam · 1 az (konum/ölçek yok, ≤120 ms opaklık) · 0 yok. PREF.motion boşsa prefers-reduced-motion izlenir
+const RMQ=matchMedia('(prefers-reduced-motion: reduce)'),MOT=()=>{const m=PREF.motion;return m==='yok'?0:m==='az'?1:m==='tam'?2:RMQ.matches?1:2};
+function motApply(){const r=document.documentElement,m=MOT();r.classList.toggle('rm',m===1);r.classList.toggle('rm0',m===0)}
+motApply();if(RMQ.addEventListener)RMQ.addEventListener('change',motApply);
+// Efekt durumu (§8, §9.3): tek rAF döngüsü (fxLoop), q = geçici efektler, cnt = HUD sayaçları. TEST kipinde kapalı (belirlenimci testler etkilenmez)
+const FX={on:!TEST,q:[],raf:0,dirty:false,cnt:{},hv:{},b:[],old:{},tgt:null,tch:{},sel:null,pins:{},shake:null,n:0,ovN:0,lastR:0};
+// Toast yığını (§5.9): en çok 3, yenisi alta; 2,4 sn
+function toast(m,k){const T=$('#toast');if(!T)return;const d=document.createElement('div');d.className='tst'+(k==='good'?' tg':k==='bad'?' tb':'');if(k==='bad')d.setAttribute('role','alert');d.innerHTML=emo(m);T.appendChild(d);while(T.children.length>3)T.firstChild.remove();
+ setTimeout(()=>{d.classList.add('out');setTimeout(()=>d.remove(),MOT()?150:0)},2400)}
 function segX(ax,ay,bx,by,cx,cy,dx,dy){const ex=bx-ax,ey=by-ay,fx=dx-cx,fy=dy-cy,den=ex*fy-ey*fx;if(Math.abs(den)<1e-9)return null;
  const t=((cx-ax)*fy-(cy-ay)*fx)/den,u=((cx-ax)*ey-(cy-ay)*ex)/den;return t>=0&&t<=1&&u>=0&&u<=1?[ax+t*ex,ay+t*ey]:null}
 const pkey=(a,b)=>a<b?a*1000+b:b*1000+a;
@@ -958,29 +1052,32 @@ function wall(c,x,y,k,lv){const w=(14+lv*3)*k;c.fillStyle='#a49a8a';c.fillRect(x
  c.fillStyle='#a49a8a';for(let t=-w;t<w;t+=4*k)c.fillRect(x+t,y-5*k,2*k,2*k);c.strokeStyle='rgba(40,34,28,.7)';c.lineWidth=.7;c.strokeRect(x-w,y-3*k,w*2,4*k)}
 function tower(c,x,y,k,w,h){c.fillStyle='#cfc5b2';c.fillRect(x-w/2,y-h,w,h);c.fillStyle='#9d9381';c.fillRect(x+w*.1,y-h,w*.4,h);
  c.fillStyle='#cfc5b2';for(let t=0;t<3;t++)c.fillRect(x-w/2+t*w*.4,y-h-2.2*k,w*.22,2.2*k);c.strokeStyle='#3d362d';c.lineWidth=.8;c.strokeRect(x-w/2,y-h,w,h)}
-function flag(c,x,y,k,col){c.strokeStyle='#2c241c';c.lineWidth=1*k;c.beginPath();c.moveTo(x,y);c.lineTo(x,y-9*k);c.stroke();c.fillStyle=rgb(col);c.beginPath();c.moveTo(x,y-9*k);c.lineTo(x+8*k,y-7*k);c.lineTo(x,y-5*k);c.fill();c.strokeStyle='rgba(0,0,0,.5)';c.lineWidth=.5;c.stroke()}
-function iCastle(c,x,y,k,col,fort){c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x+2*k,y+3*k,19*k,5*k,0,0,7);c.fill();
+function flag(c,x,y,k,col,o){c.strokeStyle='#2c241c';c.lineWidth=1*k;c.beginPath();c.moveTo(x,y);c.lineTo(x,y-9*k);c.stroke();c.fillStyle=rgb(col);c.beginPath();c.moveTo(x,y-9*k);c.lineTo(x+8*k,y-7*k);c.lineTo(x,y-5*k);c.fill();c.strokeStyle='rgba(0,0,0,.5)';c.lineWidth=.5;c.stroke();
+ // sancak deseni (§7.4): Kızıl /, Mavi nokta, Yeşil yatay, Mor \
+ if(o>0&&o<5){c.strokeStyle='rgba(16,19,26,.75)';c.fillStyle='rgba(16,19,26,.75)';c.lineWidth=.9*k;c.beginPath();if(o===2){c.arc(x+2.6*k,y-7*k,1*k,0,7);c.fill()}else{if(o===1){c.moveTo(x+1*k,y-5.8*k);c.lineTo(x+4*k,y-8.2*k)}else if(o===3){c.moveTo(x+.5*k,y-7*k);c.lineTo(x+6*k,y-7*k)}else{c.moveTo(x+1*k,y-8.2*k);c.lineTo(x+4*k,y-5.8*k)}c.stroke()}}}
+function iCastle(c,x,y,k,col,fort,o){c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x+2*k,y+3*k,19*k,5*k,0,0,7);c.fill();
  tower(c,x-12*k,y+2*k,k,7*k,15*k);tower(c,x+12*k,y+2*k,k,7*k,15*k);
  c.fillStyle='#bfb5a2';c.fillRect(x-9*k,y-8*k,18*k,10*k);c.strokeStyle='#3d362d';c.lineWidth=.8;c.strokeRect(x-9*k,y-8*k,18*k,10*k);
  tower(c,x,y-4*k,k,9*k,16*k);c.fillStyle='#3a2c20';c.beginPath();c.arc(x,y+2*k,3*k,Math.PI,0);c.lineTo(x+3*k,y+2*k);c.lineTo(x-3*k,y+2*k);c.fill();
- flag(c,x,y-22*k,k,col);if(fort>1)wall(c,x,y+6*k,k,fort)}
-function iFort(c,x,y,k,col,fort){c.fillStyle='rgba(0,0,0,.28)';c.beginPath();c.ellipse(x+2*k,y+3*k,16*k,4.5*k,0,0,7);c.fill();
+ flag(c,x,y-22*k,k,col,o);if(fort>1)wall(c,x,y+6*k,k,fort)}
+function iFort(c,x,y,k,col,fort,o){c.fillStyle='rgba(0,0,0,.28)';c.beginPath();c.ellipse(x+2*k,y+3*k,16*k,4.5*k,0,0,7);c.fill();
  tower(c,x-8*k,y+2*k,k,7*k,12*k);tower(c,x+8*k,y+2*k,k,7*k,12*k);c.fillStyle='#bfb5a2';c.fillRect(x-5*k,y-6*k,10*k,8*k);c.strokeStyle='#3d362d';c.lineWidth=.8;c.strokeRect(x-5*k,y-6*k,10*k,8*k);
- if(col)flag(c,x+8*k,y-12*k,k,col);wall(c,x,y+5*k,k,fort)}
-function iFeat(c,f,x,y,k){c.fillStyle='rgba(22,17,12,.72)';c.beginPath();c.arc(x,y,8.5*k,0,7);c.fill();c.strokeStyle='rgba(217,164,65,.8)';c.lineWidth=1;c.stroke();
- c.lineWidth=1.2*k;c.lineCap='round';
- if(f==='gecit'){c.fillStyle='#b8b0a4';c.beginPath();c.moveTo(x-6*k,y+4*k);c.lineTo(x-2.5*k,y-5*k);c.lineTo(x-.8*k,y+4*k);c.fill();c.beginPath();c.moveTo(x+.8*k,y+4*k);c.lineTo(x+2.5*k,y-5*k);c.lineTo(x+6*k,y+4*k);c.fill();c.strokeStyle='#e9c46a';c.beginPath();c.moveTo(x,y+5*k);c.lineTo(x,y-3*k);c.stroke()}
- else if(f==='kavsak'){c.strokeStyle='#c9a26b';c.beginPath();c.moveTo(x,y+5*k);c.lineTo(x,y-5*k);c.stroke();c.fillStyle='#e0c08a';c.fillRect(x-5*k,y-4*k,6*k,2.4*k);c.fillRect(x-1*k,y-.5*k,6*k,2.4*k)}
- else if(f==='liman'){c.fillStyle='#7a5230';c.beginPath();c.moveTo(x-6*k,y+2*k);c.lineTo(x+6*k,y+2*k);c.lineTo(x+4*k,y+5*k);c.lineTo(x-4*k,y+5*k);c.fill();c.strokeStyle='#d8cdb8';c.beginPath();c.moveTo(x,y+2*k);c.lineTo(x,y-6*k);c.stroke();c.fillStyle='#f2ebdc';c.beginPath();c.moveTo(x+.5*k,y-6*k);c.lineTo(x+5*k,y+1*k);c.lineTo(x+.5*k,y+1*k);c.fill()}
- else if(f==='harabe'){c.fillStyle='#e2d6bb';c.fillRect(x-5*k,y-4*k,2.4*k,9*k);c.fillRect(x+2.5*k,y-1*k,2.4*k,6*k);c.fillRect(x-6*k,y+4*k,12*k,1.5*k);c.fillRect(x-2*k,y-5*k,4*k,1.5*k)}
- else if(f==='kale'){c.fillStyle='#a49a8a';c.beginPath();c.moveTo(x-4*k,y+5*k);c.lineTo(x-4*k,y-4*k);c.lineTo(x-2*k,y-6*k);c.lineTo(x,y-3*k);c.lineTo(x+2*k,y-6*k);c.lineTo(x+4*k,y-2*k);c.lineTo(x+4*k,y+5*k);c.fill();c.fillStyle='#3a2c20';c.fillRect(x-1*k,y+1*k,2*k,4*k)}
- else if(f==='mabet'){c.fillStyle='#f0e8d6';c.beginPath();c.moveTo(x-6*k,y-2*k);c.lineTo(x,y-6*k);c.lineTo(x+6*k,y-2*k);c.fill();for(let t=-1;t<=1;t++)c.fillRect(x+t*3.5*k-.8*k,y-2*k,1.6*k,6*k);c.fillRect(x-6*k,y+4*k,12*k,1.4*k)}
- else if(f==='verimli'){c.strokeStyle='#e8c95a';for(let t=-1;t<=1;t++){c.beginPath();c.moveTo(x,y+5*k);c.quadraticCurveTo(x+t*2*k,y,x+t*4*k,y-5*k);c.stroke()}c.fillStyle='#e8c95a';for(let t=-1;t<=1;t++){c.beginPath();c.ellipse(x+t*4*k,y-5*k,1.4*k,2.6*k,t*.4,0,7);c.fill()}}
- else if(f==='damar'){c.fillStyle='#6fd3e6';c.beginPath();c.moveTo(x,y-6*k);c.lineTo(x+5*k,y-1*k);c.lineTo(x,y+6*k);c.lineTo(x-5*k,y-1*k);c.fill();c.fillStyle='#bff1fa';c.beginPath();c.moveTo(x,y-6*k);c.lineTo(x-5*k,y-1*k);c.lineTo(x,y-1*k);c.fill()}}
-function iBadge(c,x,y,k,r,i,sel){const w=26*k,h=19*k,col=FAC[r.owner].col;c.beginPath();c.moveTo(x-w/2,y-h/2);c.lineTo(x+w/2,y-h/2);c.lineTo(x+w/2,y+h*.1);c.quadraticCurveTo(x+w/2,y+h*.5,x,y+h*.62);c.quadraticCurveTo(x-w/2,y+h*.5,x-w/2,y+h*.1);c.closePath();
- c.fillStyle=rgb(col);c.fill();c.lineWidth=sel?2.4:1.4;c.strokeStyle=sel?'#fff':'rgba(20,14,8,.85)';c.stroke();
- c.fillStyle='rgba(255,255,255,.18)';c.fillRect(x-w/2+1.5,y-h/2+1.5,w-3,h*.28);
- c.font=`700 ${Math.round(11*k)}px ${MAPF}`;c.fillStyle='#fff';c.strokeStyle='rgba(0,0,0,.55)';c.lineWidth=2.5;const t=vis(i).txt;c.strokeText(t,x,y+1);c.fillText(t,x,y+1)}
+ if(col)flag(c,x+8*k,y-12*k,k,col,o);wall(c,x,y+5*k,k,fort)}
+// Özel bölge işareti (§7.4): koyu daire + altın kenar, içinde sprite'taki aynı silüet
+function iFeat(c,f,x,y,k){c.beginPath();c.arc(x,y,8.5*k,0,7);c.fillStyle='rgba(16,19,26,.78)';c.fill();c.lineWidth=1.5;c.strokeStyle='#F2B33D';c.stroke();const im=icoImg(f,'#F1F3F7');if(im){const s=12*k;c.drawImage(im,x-s/2,y-s/2,s,s)}}
+// Bölge rozeti (§7.4, §2.6): sancak şekli (oyuncu kalkan, Kızıl üçgen, Mavi daire, Yeşil kare, Mor baklava, Kabile altıgen), mürekkep hale, sayı mürekkep. "?" bilgi yok: koyu dolgu + sahip renkli halka; "~" tahmin %85
+function bPath(c,o,x,y,w,h){const a=w/2,b=h/2;c.beginPath();
+ if(o===0){c.moveTo(x-a,y-b);c.lineTo(x+a,y-b);c.lineTo(x+a,y+b*.2);c.quadraticCurveTo(x+a,y+b*.9,x,y+b*1.3);c.quadraticCurveTo(x-a,y+b*.9,x-a,y+b*.2)}
+ else if(o===1){c.moveTo(x-a*1.2,y-b);c.lineTo(x+a*1.2,y-b);c.lineTo(x,y+b*1.35)}
+ else if(o===2)c.ellipse(x,y,Math.max(a,b*1.1),b*1.1,0,0,7);
+ else if(o===3)c.rect(x-a,y-b,w,h);
+ else if(o===4){c.moveTo(x,y-b*1.35);c.lineTo(x+a*1.25,y);c.lineTo(x,y+b*1.35);c.lineTo(x-a*1.25,y)}
+ else{const q=Math.min(a*.4,b);c.moveTo(x-a+q,y-b);c.lineTo(x+a-q,y-b);c.lineTo(x+a,y);c.lineTo(x+a-q,y+b);c.lineTo(x-a+q,y+b);c.lineTo(x-a,y)}c.closePath()}
+function iBadge(c,x,y,k,r,i,sel,L){const o=r.owner,col=FAC[o].col,v=vis(i),unk=v.txt==='?',t=L===0?v.txt.replace('~',''):v.txt,fs=Math.max(8,Math.round(12*k));c.font=`700 ${fs}px ${MAPF}`;
+ const w=Math.max(20*k,c.measureText(t).width+10*k),h=16*k;if(v.txt[0]==='~')c.globalAlpha=.85;
+ bPath(c,o,x,y,w,h);c.lineJoin='round';c.lineWidth=sel?7:3.2;c.strokeStyle='rgba(16,19,26,.92)';c.stroke();if(sel){c.lineWidth=3;c.strokeStyle='#fff';c.stroke()}
+ c.fillStyle=unk?'#273041':rgb(col);c.fill();if(unk){c.lineWidth=2.5;c.strokeStyle=rgb(col);c.stroke()}else{c.lineWidth=1;c.strokeStyle='rgba(255,255,255,.28)';c.stroke()}
+ c.fillStyle=unk?'#F1F3F7':'#10131A';c.fillText(t,x,o===1?y-h*.2:y+.5);c.globalAlpha=1}
 
 // ======================= BİRLİKLER =======================
 const Z=()=>({piy:0,okc:0,suv:0,kus:0,yen:0});
@@ -1212,7 +1309,7 @@ function defeat(ao,b){const{F,T,n,ra,rd,dt,D,lx}=b;let fr=Math.sqrt(1-(ra/rd)**2
  if(ao===0)S.morale=Math.max(0,S.morale-6);if(T.owner===0)S.morale=Math.min(mil().maxMorale,S.morale+2);
  return{win:false,sent:n,back:sumU(back),lost:n-sumU(back),dLost:dt-sumU(DS)}}
 function winFr(ao,b){let fr=b.rd>0?Math.sqrt(1-(b.rd/b.ra)**2):1;if(b.lx!==1)fr=fr**b.lx;if(ao===0){const M=mil();fr=1-(1-fr)*M.lossMult*M.conqLoss}return fr}
-function resolve(ao,from,to,A){const d0=S.regions[to].owner,c0=S.regions[to].capital,x=resolve0(ao,from,to,A);battleStat(ao,d0,c0,from,to,x);return x}
+function resolve(ao,from,to,A){const d0=S.regions[to].owner,c0=S.regions[to].capital;if(FX.on)fxPre(to);const x=resolve0(ao,from,to,A);battleStat(ao,d0,c0,from,to,x);if(FX.on)FX.b.push({ao,from,to,win:x.win,n:x.sent,d0,c0,loot:ao===0&&x.win&&x.loot?x.loot.got:null});return x}
 function resolve0(ao,from,to,A){const b=battle(ao,from,to,A);b.A=A;const{n,ra,rd,dt}=b;
  if(ra>rd){const fr=winFr(ao,b),SV=scaleU(A,fr);if(sumU(SV)<1)SV[UK.find(k=>A[k])]=1;
   if(ao===0)S.morale=Math.min(mil().maxMorale,S.morale+mil().conqMorale);const loot=conquer(to,ao,SV,fr);let akin=0;
@@ -1337,14 +1434,19 @@ function pickComp(){const c=Z();for(const k of UK){const el=$('#pk'+k);if(el){c[
 function updPick(){if(ACT.type==='atk')updAtk();else{const c=pickComp();$('#mvb').disabled=!sumU(c);$('#mn').textContent=sumU(c)}}
 function openAttack(from,to){const r=S.regions[from];if(S.over){afterModal();return}if(S.phase!=='oyun'){toast('Önce kuruluşu tamamla.');return}if(truceOn(S.regions[to].owner)){toast(`${facName(S.regions[to].owner)} ile ateşkes var (${S.truce[S.regions[to].owner]-S.turn} yıl).`);return}if(isVas(S.regions[to].owner)){toast(`${facName(S.regions[to].owner)} senin vasalın.`);return}if(atkLocked()){toast(`Barış sözü verdin: ${S.flags.lockAtk-S.turn} yıl saldıramazsın.`);return}if(r.ready<1){toast('Bu bölgede bu tur hazır asker yok.');return}
  const tg=MAP.regions[to];ACT={type:'atk',from,to};
- modal(`<h3>⚔️ ${MAP.regions[from].name} → ${tg.name}</h3>
+ modal(`<h3 class=atkh>${fdot(0)}${MAP.regions[from].name} ${ic('ok-sag','k-mut')} ${fdot(S.regions[to].owner)}${tg.name}</h3>
  <div class=muted>${facName(S.regions[to].owner)} · ${TER[tg.terrain].ad}${tg.feat?' · '+FEAT[tg.feat].ad:''}</div>
+ <div id=ap aria-live=polite></div>
  <h4>Gönderilecek birlikler (toplam <b id=an></b>)</h4>${picker(r.rd)}
- <div id=ap></div><div class=row><button class=btn onclick="closeModal()">Vazgeç</button>${hasAb('yagma')?`<button class=btn id=rdb ${canRaid(from,to)?'':'disabled'} onclick="doRaid()" title="${esc(ABIL.yagma.d)}">🏇 Yağma${(S.cd.yagma||0)>S.turn?` (${S.cd.yagma-S.turn} tur)`:''}</button>`:''}<button class="btn primary" id=atb onclick="doAttack()">Saldır!</button></div>`,'atk');updAtk()}
-function updAtk(){const{from,to}=ACT,A=pickComp(),n=sumU(A);$('#an').textContent=n;$('#atb').disabled=!n;if(!n){$('#ap').innerHTML='<p class=muted>En az bir birlik seç.</p>';return}
- const p=previewAtk(from,to,A),M=mil(),c=crossAt(from,to),T=S.regions[to];
- $('#ap').innerHTML=emo(`<div class=chance style="color:${chanceCol(p.ch)}">%${Math.round(p.ch*100)} <small style="font-size:13px;color:var(--muted)">kazanma şansı${M.spy?'':' (tahmini)'}</small></div>
- <div class=kv><span>Saldırı gücü</span><span>${r1(rawAtk(A,from,to,0))} × ${p.am.toFixed(2)} = <b>${Math.round(p.aP)}</b></span></div>
+ <details class="end-d atkd"><summary>${ic('bilgi-i')} Ayrıntılar: güç ve çarpanlar</summary><div id=apx></div></details><div class=row><button class=btn onclick="closeModal()">Vazgeç</button>${hasAb('yagma')?`<button class=btn id=rdb ${canRaid(from,to)?'':'disabled'} onclick="doRaid()" title="${esc(ABIL.yagma.d)}">🏇 Yağma${(S.cd.yagma||0)>S.turn?` (${S.cd.yagma-S.turn} tur)`:''}</button>`:''}<button class="btn primary" id=atb onclick="doAttack()">Saldır!</button></div>`,'atk');updAtk()}
+// §5.14: şans halkası + sözcük, güç karşılaştırma çubuğu, tahmini kayıp ve ganimet; çarpanlar "Ayrıntılar" içinde
+const chanceW=c=>c>=.7?'Güçlü':c>=.4?'Belirsiz':'Riskli';
+function updAtk(){const{from,to}=ACT,A=pickComp(),n=sumU(A);$('#an').textContent=n;$('#atb').disabled=!n;if(!n){$('#ap').innerHTML='<p class=muted>En az bir birlik seç.</p>';$('#apx').innerHTML='';return}
+ const p=previewAtk(from,to,A),M=mil(),c=crossAt(from,to),T=S.regions[to],ch=Math.round(p.ch*100),cc=chanceCol(p.ch),fp=p.aP/(p.aP+p.dP||1),wf=p.aP>p.dP?winFr(0,{ra:p.aP,rd:p.dP,lx:fxOf().lossExp}):0,el=wf?n-Math.round(n*wf):null;
+ $('#ap').innerHTML=emo(`<div class=atkg><div class=cring>${ring(p.ch,cc).replace('class=ring','')}<b style="color:${cc}">%${ch}</b></div><div><span class=w style="color:${cc}">${chanceW(p.ch)}</span><small>kazanma şansı${M.spy?'':' (tahmini)'}</small><small>${el!=null?`Kazanırsan tahmini kayıp ~${el} asker`:'Güçler denk değil: kazanma zor'}</small></div></div>
+ <div class=pw style="--fc:var(--f${T.owner})"><i style="width:${(fp*100).toFixed(1)}%"></i></div><div class=pwl><span>Sen <b>${Math.round(p.aP)}</b></span><span>oran ×${fmtX(r1(p.aP/(p.dP||1)))}</span><span><b>${Math.round(p.dP)}</b> savunma</span></div>
+ <div class=kv><span>💰 Olası ganimet</span><span>${lootLine(lootStore(to,M.spy?T.troops:est(T.troops)),lootRate(.7))}</span></div>`);
+ $('#apx').innerHTML=emo(`<div class=kv><span>Saldırı gücü</span><span>${r1(rawAtk(A,from,to,0))} × ${p.am.toFixed(2)} = <b>${Math.round(p.aP)}</b></span></div>
  <div class=kv><span>Savunma gücü</span><span>${r1(rawDef(knownDef(to),T.owner))} × ${p.dm.toFixed(2)} = <b>${Math.round(p.dP)}</b></span></div>
  <h4>Birliklerin gücü</h4>${UK.filter(k=>A[k]).map(k=>{const v=uAtk(k,from,to,0)/UNITS[k].atk;return`<div class=kv><span>${ic(UNITS[k].i)} ${A[k]} ${UNITS[k].ad}${Math.abs(v-1)>.01?` <span class="${v>1?'good':'bad'}">(arazi/nehir ×${r1(v)})</span>`:''}</span><span>${r1(A[k]*uAtk(k,from,to,0))}</span></div>`}).join('')}
  <div class=kv><span>Düşman birlikleri</span><span>${M.spy?compTxt(T.u):'~'+est(T.troops)+' (bileşim bilinmiyor)'}</span></div>
@@ -1353,18 +1455,24 @@ function updAtk(){const{from,to}=ACT,A=pickComp(),n=sumU(A);$('#an').textContent
  ${c?`<div class=kv><span>${c.bridge?'🌉 Köprüden geçiş':'🌊 Köprüsüz nehir geçişi'}</span><span class="${c.bridge?'':'bad'}">${c.bridge?'ceza yok':'×'+M.river+(A.suv?' (süvari ayrıca ×0,6)':'')}</span></div>`:''}
  <div class=kv><span>⚒️ Harcanacak demir</span><span>${fl(p.iron)}/${Math.ceil(p.ironNeed)}</span></div>
  ${T.fort?`<div class=kv><span>🪵 Kuşatma</span><span>${fl(p.wood)}/${Math.ceil(p.woodNeed)} odun${A.kus?` + ${A.kus} kuşatma takımı`:''} → surun %${Math.round(p.siege*100)}'i kırılır</span></div>`:''}
- <div class=kv><span>💰 Olası ganimet</span><span>${lootLine(lootStore(to,M.spy?T.troops:est(T.troops)),lootRate(.7))}</span></div>
  <h4>Savunma çarpanı</h4>${defParts(to,p.siege).map(([k,v])=>`<div class=kv><span>${k}</span><span>+${pct(v)}</span></div>`).join('')||'<p class=muted>Ek savunma yok.</p>'}
  ${M.spy?'':'<p class=muted style="font-size:12px">Düşman sayısı tahminidir. Strateji II (Casusluk) kesin bilgi verir.</p>'}`)}
 function doAttack(){const{from,to}=ACT,A=pickComp();if(!sumU(A))return;const tn=MAP.regions[to].name,prevOwner=S.regions[to].owner,wasCap=S.regions[to].capital;const res=resolve(0,from,to,A);
  if(res.win){log(`${tn} fethedildi! (${res.lost} kayıp) Ganimet: ${lootLine(res.loot.got,1)} (zayi %${Math.round((1-res.loot.rate)*100)})`,'good');ui.sel=to;ui.rtab='genel'}else log(`${tn} saldırısı püskürtüldü. ${res.lost} asker kaybedildi.`,'bad');
- checkEnd();refresh();
+ checkEnd();
+ // §5.14: sonuç toast + bölge kartı + günlük; pencere yalnız başkent alındığında, oyunu bitiren savaşta, büyük yenilgide (kayıp ≥ %60) ya da PREF.battleModal==='hep'
+ ui.lastB={t:S.turn,from,to,win:res.win,sent:res.sent,lost:res.lost,dLost:res.dLost,loot:res.win?res.loot.got:null,cap:wasCap,po:prevOwner,akin:res.akin||0};
+ if(PREF.battleModal!=='hep'&&!S.over&&!(res.win&&wasCap)&&res.lost<.6*res.sent){closeModal();refresh();fxFlush();
+  toast(res.win?`🏆 <b>${tn}</b> fethedildi · ${res.lost} kayıp · düşman ${res.dLost}${res.akin?` · 🐺 Akın: ${res.akin} süvari hazır`:''}`:`💀 ${tn} saldırısı püskürtüldü · ${res.lost} kayıp`,res.win?'good':'bad');return}
+ refresh();fxFlush();
  modal(`<h3>${res.win?'🏆 Zafer!':'💀 Yenilgi'}</h3><p>${res.win?`<b>${tn}</b> artık senin. ${res.sent} askerden <b>${res.surv}</b> tanesi bölgeye yerleşti (${compTxt(res.SV)}). Düşman kaybı: ${res.dLost}.<br><span class=good>Moral +${mil().conqMorale}</span>${res.akin?`<br><b>🐺 Akın!</b> ${res.akin} süvari hazır: bu tur yeniden saldırabilir.`:''}${wasCap?`<br><b>${facName(prevOwner)} başkentini kaybetti!</b>`:''}<br><small class=muted>Savaşta bölgenin nüfusu, kuruluşu ve tesisleri zarar gördü.</small>`
  :`Saldırı püskürtüldü. ${res.sent} askerden ${res.back} tanesi geri çekildi. Düşman ${res.dLost} asker kaybetti.<br><span class=bad>Moral -6</span>`}</p>
  ${res.win?lootHtml(res.loot):''}<div class=row><button class="btn primary" onclick="closeModal()">Tamam</button></div>`,'res')}
-function doRaid(){const{from,to}=ACT,A=pickComp();if(!sumU(A)||!canRaid(from,to))return;const tn=MAP.regions[to].name,res=raid(from,to,A);if(!res)return;
+function doRaid(){const{from,to}=ACT,A=pickComp();if(!sumU(A)||!canRaid(from,to))return;const tn=MAP.regions[to].name;fxPre(to);const res=raid(from,to,A);if(!res)return;if(FX.on)FX.b.push({ao:0,from,to,win:res.win,n:res.sent,raid:true,loot:res.win?res.got:null});
+ ui.lastB={t:S.turn,from,to,win:res.win,sent:res.sent,lost:res.lost,dLost:res.dLost,loot:res.win?res.got:null,raid:true};
  if(res.win)log(`🏇 ${tn} yağmalandı: ${lootLine(res.got,1)}. ${res.lost} kayıp, düşman ${res.dLost} asker kaybetti.`,'good');else log(`🏇 ${tn} yağması püskürtüldü. ${res.lost} asker kaybedildi.`,'bad');
- refresh();modal(`<h3>${res.win?'🏇 Yağma başarılı':'💀 Yağma püskürtüldü'}</h3><p>${res.win?`${res.sent} akıncıdan <b>${res.surv}</b> tanesi ganimetle döndü. Düşman ${res.dLost} asker kaybetti; ${tn} 3 yıl yarı üretimle çalışacak.<br>Ganimet: <b>${lootLine(res.got,1)}</b>`:`${res.sent} askerden ${res.back} tanesi geri çekildi. <span class=bad>Moral -6</span>`}</p><div class=row><button class="btn primary" onclick="closeModal()">Tamam</button></div>`,'res')}
+ if(PREF.battleModal!=='hep'&&res.lost<.6*res.sent){closeModal();refresh();fxFlush();toast(`🏇 ${tn} yağmalandı: ${lootLine(res.got,1)} · ${res.lost} kayıp`,'good');return}
+ refresh();fxFlush();modal(`<h3>${res.win?'🏇 Yağma başarılı':'💀 Yağma püskürtüldü'}</h3><p>${res.win?`${res.sent} akıncıdan <b>${res.surv}</b> tanesi ganimetle döndü. Düşman ${res.dLost} asker kaybetti; ${tn} 3 yıl yarı üretimle çalışacak.<br>Ganimet: <b>${lootLine(res.got,1)}</b>`:`${res.sent} askerden ${res.back} tanesi geri çekildi. <span class=bad>Moral -6</span>`}</p><div class=row><button class="btn primary" onclick="closeModal()">Tamam</button></div>`,'res')}
 function openMove(from,to){const r=S.regions[from];if(r.ready<1){toast('Bu bölgede bu tur hazır asker yok.');return}ACT={type:'mov',from,to};
  modal(`<h3>➜ ${MAP.regions[from].name} → ${MAP.regions[to].name}</h3><h4>Taşınacak birlikler (toplam <b id=mn>${r.ready}</b>)</h4>${picker(r.rd)}
  <p class=muted style="font-size:12px">Taşınan birlikler bu tur tekrar hareket edemez.</p>
@@ -1373,7 +1481,7 @@ function doMove(){const{from,to}=ACT,A=pickComp();if(!sumU(A))return;remU(S.regi
 
 // ======================= TUR SONU & YAPAY ZEKA =======================
 function endTurn(){if(!S)return;if(S.over){if(!TEST)afterModal();return}if(S.phase!=='oyun'){toast('Önce kuruluşu tamamla.');return}if(S.evQ.length){showEvent();return}
- const ev=[],e=economy(),M=mil(),fx=fxOf();for(const k in e.net)S.res[k]+=e.net[k];let ok=true,famine=false;
+ fxSkip();FX.b=[]; const ev=[],e=economy(),M=mil(),fx=fxOf();for(const k in e.net)S.res[k]+=e.net[k];let ok=true,famine=false;
  if(S.res.tahil<0){S.res.tahil=0;ok=false;famine=true;let lost=0;S.regions.forEach(r=>{if(r.owner===0&&r.troops>0){const l=Math.ceil(r.troops*.08);remU(r,takeProp(r.u,l),false);lost+=l}});S.morale-=10;ev.push({m:`Kıtlık! Ordu aç kaldı: ${lost} asker öldü, nüfus azalıyor, moral -10.`,c:'bad'})}
  if(S.res.altin<0){S.res.altin=0;ok=false;S.morale-=8;ev.push({m:'Hazine boş! Maaşlar ödenemedi, moral -8.',c:'bad'})}
  const st=S.stats;st.famine+=famine?1:0;st.famineStreak=famine?st.famineStreak+1:0;
@@ -1394,7 +1502,7 @@ function endTurn(){if(!S)return;if(S.over){if(!TEST)afterModal();return}if(S.pha
  for(const f in S.truce)if(S.truce[f]===S.turn)ev.push({m:`${facName(+f)} ile ateşkes sona erdi.`,c:''});
  S.buffs=S.buffs.filter(buffOn);rollEvent(ev);
  if(!S.flags.declN&&declOk()){S.flags.declN=S.turn;ev.push({m:`👑 Gücün rakiplerinin toplamının ${fmtX(DECL.r)} katını aştı: Hedef sekmesinden zaferi ilan edip oyunu erken bitirebilirsin.`,c:'good'})}
- ev.forEach(x=>log(x.m,x.c));checkEnd();refresh();saveNow();
+ ev.forEach(x=>log(x.m,x.c));checkEnd();refresh();saveNow();fxTurn();
  if(S.over)return afterModal();
  if(ev.length)modal(`<h3>📯 Yıl ${S.turn} raporu</h3>${ev.map(x=>`<p class=${x.c}>${x.m}</p>`).join('')}<div class=row><button class="btn primary" onclick="closeModal();showEvent()">Tamam${S.evQ.length?' ›':''}</button></div>`,'rep');else showEvent()}
 // Veba: bölgen + 3 komşusu (her sahip). plaguePick rnd sırası 1a ile aynı.
@@ -1774,13 +1882,14 @@ function showEnd(R){const s=S,c=s.cfg,st=s.stats,win=s.over==='win',T=WIN_T[s.wi
  const nar=win?T[1]():st.lastLoss?`${facName(st.lastLoss.by)}, son toprağın ${rName(st.lastLoss.r)}'yi ${st.lastLoss.t}. yılda aldı.`:`${s.turn}. yılda son toprağını da kaybettin.`;
  let h=`<div class=end><div class=end-h><canvas id=endMap width=220 height=151 aria-hidden=true></canvas><div><h3 class="${win?'win':''}">${win?ic((VIC[s.winBy]||VIC.fetih).i)+' '+T[0].replace(/^\S+\s/,''):`🏴 Beylik Yıkıldı · ${s.turn}. yıl`}</h3><p>${nar}</p><small class=muted>${cfgLine(c)}${tag?` · <b>${tag}</b>`:''}</small></div></div>`;
  if(R){const rk=win?rankOf(R.v):-1,rc=R.rec;
-  h+=`<div class=end-sc><div><small class=muted>SKOR</small><b id=endSc data-v="${R.v}">${fmtN(R.v)}</b></div><div class=end-rk>${rc?(rc.dyn&&rc.pd?`<span class="tag good rec">YENİ REKOR +${fmtN(R.v-rc.pd)}</span>`:rc.dyn?'<span class="tag good rec">İlk rekor</span>':`<span class=muted>Rekor (${DYN[c.dyn].ad}): ${fmtN(rc.pd)} · ${fmtN(rc.pd-R.v)} eksik</span>`):''}${rk>=0?`<div>🎖 <b>${RANKS[rk][1]}</b>${RANKS[rk+1]?` <small class=muted>· ${RANKS[rk+1][1]} için ${fmtN(RANKS[rk+1][0]-R.v)}</small>`:''}</div>`:''}</div></div>`;
+  const up=rk>0&&rc&&rankOf(rc.pd||0)<rk;
+  h+=`<div class=end-sc><div><small class=muted>SKOR</small><b id=endSc data-v="${R.v}">${fmtN(R.v)}</b></div><div class=end-rk id=endRk>${rc?(rc.dyn&&rc.pd?`<span class="tag good rec">YENİ REKOR +${fmtN(R.v-rc.pd)}</span>`:rc.dyn?'<span class="tag good rec">İlk rekor</span>':`<span class=muted>Rekor (${DYN[c.dyn].ad}): ${fmtN(rc.pd)} · ${fmtN(rc.pd-R.v)} eksik</span>`):''}${rk>=0?`<div class="rk${up?' up':''}">${ic('rutbe','k-brand')} <b>${RANKS[rk][1]}</b>${up?' <span class="tag good">yükseldi</span>':''}</div><div class=rkb role=img aria-label="Rütbe ${rk+1}/${RANKS.length}">${RANKS.map((x,k)=>`<i class="${k<=rk?'on':''}"></i>`).join('')}</div>${RANKS[rk+1]?`<small class=muted>${RANKS[rk+1][1]} için ${fmtN(RANKS[rk+1][0]-R.v)}</small>`:''}`:''}</div></div>`;
   if(!win){const n=nearOf(s);h+=`<p class=end-dg>🩺 ${diagOf(s)}<br><span class=muted>Zafere en yakın an: %${Math.round(n.sh*100)} toprak (${n.t}. yıl) · Fetih için %${Math.round(SIZES[c.size].conq*100)}</span></p>`}
   const b=[],g=R.mpG;
   if(R.quit)b.push('<div class=beat>🏛 <b>Miras yok:</b> oyun 15. yıldan önce bitti.</div>');
   else if(R.dup)b.push('<div class=beat>🏛 Bu oyunun mirası zaten yazıldı.</div>');
   else b.push(`<div class="beat mp">🏛 MİRAS <b>+${R.mpTot} MP</b> <small class=muted>(oyun ${g.game}${g.first?` · ilk sefer ${g.first}`:''}${g.ach?` · başarım ${g.ach}`:''}${g.daily?` · günlük ${g.daily}`:''}${c.train?' · antrenman ×0,25':c.rematch?' · rövanş ×0,8':''}${!win&&R.mp.near?` · yakınlık +${R.mp.near}`:''}) → toplam <b>${fl(R.mp0+R.mpTot)}</b></small></div>`);
-  const U=R.unl.concat(R.aff),un=u=>`<b>${itemName(u.cat,u.id)}</b> ${u.how?`açıldı (${u.how})`:`artık alınabilir (${lockCost(u.cat,u.id)} MP)`}`;if(U.length)b.push(`<div class="beat big">🔓 ${un(U[0])}${U.length>1?`<small class=muted style="display:block;font-size:12px;margin-top:3px">ve ${U.length-1} açılım daha: ${U.slice(1,4).map(u=>itemName(u.cat,u.id)).join(', ')}${U.length>4?'…':''} (🏛 Miras)</small>`:''}</div>`);
+  const U=R.unl.concat(R.aff),un=u=>`<b>${itemName(u.cat,u.id)}</b> ${u.how?`açıldı (${u.how})`:`artık alınabilir (${lockCost(u.cat,u.id)} MP)`}`;if(U.length)b.push(`<div class="beat big">${ULK} ${un(U[0])}${U.length>1?`<small class=muted style="display:block;font-size:12px;margin-top:3px">ve ${U.length-1} açılım daha: ${U.slice(1,4).map(u=>itemName(u.cat,u.id)).join(', ')}${U.length>4?'…':''} (🏛 Miras)</small>`:''}</div>`);
   if(R.ach.length)b.push(`<div class=beat>🏅 ${R.ach.map(k=>`<b>${ACHM[k].ad}</b> <span class=good>+${ACHM[k].mp}</span>`).join(' · ')}</div>`);
   if(R.miss)b.push(`<div class="beat muted">✖ Kaçırdın · ${R.miss}</div>`);
   if(R.daily)b.push(`<div class=beat>📅 Günlük seri <b>${R.daily.streak}</b>${R.daily.seal?' (mühür yakıldı)':''}${R.daily.week?' · 🚩 <b>Haftalık Sancak</b> kazandın!':''}</div>`);
@@ -1793,21 +1902,28 @@ function showEnd(R){const s=S,c=s.cfg,st=s.stats,win=s.over==='win',T=WIN_T[s.wi
   <canvas id=endCh width=600 height=130 aria-label="Yıllara göre bölge ve asker"></canvas><small class=muted><span style="color:var(--accent)">━ bölge</span> · <span style="color:var(--bad)">━ asker</span></small>
   ${bb?`<p>⚔ En iyi savaş: ${bb.t}. yıl ${rName(bb.r)} · ${bb.sent} askerle ${bb.kill} düşman, ${bb.lost} kayıp</p>`:''}${wb?`<p>💀 En büyük kayıp: ${wb.t}. yıl ${rName(wb.r)} · ${wb.lost} asker (${wb.k})</p>`:''}
   <p class=muted>Olay ${st.events} (${st.choices} seçim) · koalisyon ${s.coal.n||0}${st.coalBroken?` (${st.coalBroken} kılıç kırdın)`:''} · vasal ${st.vassals} · ganimet ${fmtN(st.loot)} · kıtlık ${st.famine} yıl${s.ferman?` · ferman ${VIC[s.ferman].ad} ${fermanOk(s)?'✔':'✖'}`:''}${win?'':` · zafer yolları: ${pathTxt()}`}</p><p class=muted>Kod: <code>${seedCode(s.seed,c)}</code></p></details></div>`;
- modal(h,'over',true);try{drawEndMap();drawEndChart()}catch(e){}endAnim()}
+ modal(h,'over',true);try{drawEndMap();drawEndChart()}catch(e){}
+ // defeat: harita tuvalinin rengi çekilir, pencere 300 ms gecikir · victory: sahiplik bir kez parlar (§9.2)
+ if(!TEST){view.style.filter=win?'':'saturate(.15) brightness(.7)';if(MOT()===2){if(!win)$('#modal').classList.add('late');else fxAdd({dur:900,L:0,d:(c,e)=>{c.globalAlpha=.6*Math.sin(Math.PI*e/900);c.drawImage(OVL,0,0);c.globalAlpha=1}})}}
+ endAnim()}
+// kilit açılış ikonu: dil (shk) ayrı grup, açılırken kalkar (unlock §9.2)
+const ULK='<svg class="ic ulk k-brand" viewBox="0 0 24 24" aria-hidden="true"><g class="shk"><path d="M8 10V7.5a4 4 0 0 1 8 0V10" fill="none" stroke="currentColor" stroke-width="2.4"/></g><path d="M4.5 10h15v12h-15z"/></svg>';
 function drawEndMap(){const cv=$('#endMap');if(!cv||TEST||!ART)return;const x=cv.getContext('2d');x.drawImage(ART,0,0,cv.width,cv.height);drawOverlay();x.drawImage(OVL,0,0,cv.width,cv.height);x.drawImage(OVL,0,0,cv.width,cv.height)}
 function drawEndChart(){const cv=$('#endCh'),hs=S.hist;if(!cv||TEST||hs.length<2)return;const x=cv.getContext('2d'),w=cv.width,h=cv.height,t0=hs[0][0],t1=hs[hs.length-1][0]||1,mr=Math.max(...hs.map(a=>a[1]),1),mt=Math.max(...hs.map(a=>a[2]),1);
  x.clearRect(0,0,w,h);x.strokeStyle='#2F394A';x.lineWidth=1;for(let k=1;k<4;k++){x.beginPath();x.moveTo(0,h*k/4);x.lineTo(w,h*k/4);x.stroke()}
  const line=(i,m,col)=>{x.strokeStyle=col;x.lineWidth=2.5;x.beginPath();hs.forEach((a,k)=>{const px=(a[0]-t0)/Math.max(1,t1-t0)*(w-4)+2,py=h-4-a[i]/m*(h-12);k?x.lineTo(px,py):x.moveTo(px,py)});x.stroke()};line(2,mt,'#FF6B5E');line(1,mr,'#F2B33D');
  x.fillStyle='#A7B1C2';x.font='11px system-ui';x.fillText(`en çok ${mr} bölge · ${mt} asker`,6,13);x.fillText(`${t1}. yıl`,w-48,h-6)}
 // Skor sayarak yükselir, ödüller ~0,3 sn arayla gelir (prefers-reduced-motion'da hepsi anında)
-function endAnim(){const el=$('#endSc'),bs=[...document.querySelectorAll('.end .beat')],rm=TEST||!window.matchMedia||matchMedia('(prefers-reduced-motion: reduce)').matches;
- if(!el||rm){bs.forEach(b=>b.classList.add('on'));return}const v=+el.dataset.v,t0=performance.now(),D=900;el.textContent='0';
- const st=t=>{if(!el.isConnected)return;const k=Math.min(1,(t-t0)/D);el.textContent=fmtN(v*(1-(1-k)**3));if(k<1)requestAnimationFrame(st)};requestAnimationFrame(st);
- bs.forEach((b,i)=>setTimeout(()=>b.classList.add('on'),D*.7+i*300));setTimeout(()=>bs.forEach(b=>b.classList.add('on')),D+bs.length*300+600)}
+// Skor 1200 ms ease-out-expo sayar (FX döngüsünde), rütbe sayaç bitince, vuruşlar 350 ms arayla; dokununca hepsi anında (fxSkip). Azaltılmış harekette anında
+function endAnim(){const el=$('#endSc'),bs=[...document.querySelectorAll('.end .beat')],rk=$('#endRk'),T=[];
+ const fin=()=>{T.forEach(clearTimeout);bs.forEach(b=>b.classList.add('on'));if(rk)rk.classList.add('on');if(FX.endFin===fin)FX.endFin=null};
+ if(!el||!FX.on||MOT()<2){if(el)el.textContent=fmtN(+el.dataset.v);fin();return}
+ const D=1200;fxCount('endSc','#endSc',0,+el.dataset.v,D,fmtN,1,()=>rk&&rk.classList.add('on'));FX.endFin=fin;
+ bs.forEach((b,i)=>T.push(setTimeout(()=>b.classList.add('on'),D*.6+i*350)));T.push(setTimeout(fin,D+bs.length*350+400))}
 
 // --- Miras ekranı: bakiye, günlük/seri, kilitler ve 🔓 Aç, bonuslar, başarımlar, rekorlar, sancak, kayıt ---
 let MIR_BACK=null;
-function mirUnlock(cat,id){if(unlockItem(cat,id)){toast('🔓 Açıldı: '+itemName(cat,id));if(cat==='bonus')mirEquip(id,true)}showMiras()}
+function mirUnlock(cat,id){if(unlockItem(cat,id)){ui.unl=cat+':'+id;toast('🔓 Açıldı: '+itemName(cat,id),'good');if(cat==='bonus')mirEquip(id,true)}showMiras()}
 function mirEquip(id,on){const e=META.equipped;e.bonus=e.bonus.filter(b=>b!==id&&isOpen('bonus',b));if(on)e.bonus.unshift(id);e.bonus=e.bonus.slice(0,bonusSlots());saveMeta();if(ui.modal==='miras')showMiras()}
 function mirBanner(id){META.equipped.banner=META.equipped.banner===id?null:id;saveMeta();renderHeader();showMiras()}
 function showMiras(back){if(back!==undefined)MIR_BACK=back;if(!META)loadMeta();const M=META,D=M.daily,today=dateKey(),dst=D.started[today],dh=D.hist[today],wk=D.weeks[weekKey(today)]||0,dc=dailyOf(today).cfg;
@@ -1816,16 +1932,16 @@ function showMiras(back){if(back!==undefined)MIR_BACK=back;if(!META)loadMeta();c
   <small>Seri <b>${D.streak}</b> gün (en iyi ${D.best}) · Mühür ${D.seals}/2 · Bu hafta ${Math.min(4,wk)}/4 gün → 🚩 Haftalık Sancak · günlük başına +5 MP</small><button class="btn ${dst?'':'primary'}" onclick="startDaily()">${dst?'Antrenman oyna':'Bugünü oyna'} ▶</button></div>`;
  for(const cat in LOCK_CAT){const L=lockList().filter(x=>x.cat===cat);if(!L.length)continue;h+=`<h4>${LOCK_AD[cat]}${cat==='bonus'?` <span style="text-transform:none;letter-spacing:0">(${bonusSlots()} yuva; 2. yuva 400 MP harcayınca · harcanan ${fl(M.mpSpent)})</span>`:''}</h4>`;
   for(const x of L){const o=LOCK_CAT[cat][x.id],eq=cat==='bonus'&&M.equipped.bonus.includes(x.id);
-   h+=`<div class=item><div>${itemName(cat,x.id)}<small>${o.d||o.tema||''}${cat==='bonus'?` · miras ×${fmtX(o.x)}`:''}</small></div><span>${x.open?(cat==='bonus'?`<button class="btn sm ${eq?'primary':''}" onclick="mirEquip('${x.id}',${!eq})">${eq?'✔ Takılı':'Tak'}</button>`:'<span class=ok>✔ Açık</span>'):x.cost&&M.mp>=x.cost?`<button class="btn sm primary" onclick="mirUnlock('${cat}','${x.id}')">🔓 Aç (${x.cost} MP)</button>`:`<small class=muted>${lockTxt(cat,x.id)}</small>`}</span></div>`}}
+   h+=`<div class="item${ui.unl===cat+':'+x.id?' unl':''}"><div>${itemName(cat,x.id)}<small>${o.d||o.tema||''}${cat==='bonus'?` · miras ×${fmtX(o.x)}`:''}</small></div><span>${x.open?(cat==='bonus'?`<button class="btn sm ${eq?'primary':''}" onclick="mirEquip('${x.id}',${!eq})">${eq?'✔ Takılı':'Tak'}</button>`:'<span class=ok>✔ Açık</span>'):x.cost&&M.mp>=x.cost?`<button class="btn sm primary" onclick="mirUnlock('${cat}','${x.id}')">🔓 Aç (${x.cost} MP)</button>`:`<small class=muted>${lockTxt(cat,x.id)}</small>`}</span></div>`}}
  const na=ACH.filter(a=>M.ach[a.id]).length;
- h+=`<h4>🏅 Başarımlar (${na}/${ACH.length})</h4><div class="cards achs">`+ACH.map(A=>{const got=M.ach[A.id];if(A.hid&&!got)return'<div class="card lockd"><b>❔ Gizli başarım</b><small class=muted>Oynadıkça ortaya çıkar.</small></div>';const pr=A.pr&&A.pr(M);
-  return`<div class="card ${got?'got':''}"><b>${got?'✔':'○'} ${A.ad}</b><small>${A.d}</small><small class=muted>+${A.mp} MP${A.c?'':' · Çırak dışı'}${A.cos?' · '+ic(COS[A.cos].i)+' sancak':''}${got?' · '+fmtDate(got):''}</small>${pr&&!got?`<div class=bar><i style="width:${pr[0]/pr[1]*100}%"></i></div><small>${pr[0]}/${pr[1]}</small>`:''}</div>`}).join('')+'</div>';
+ h+=`<h4>🏅 Başarımlar (${na}/${ACH.length})</h4><div class="cards achs">`+ACH.map(A=>{const got=M.ach[A.id];if(A.hid&&!got)return`<div class="card ach"><span class=med>${ic('yardim')}</span><div><b>Gizli başarım</b><small class=muted>Oynadıkça ortaya çıkar.</small></div></div>`;const pr=A.pr&&A.pr(M);
+  return`<div class="card ach ${got?'got':''}"><span class=med role=img aria-label="${got?'Kazanıldı':'Kazanılmadı'}">${ic('basarim')}</span><div><b>${A.ad}</b><small class=muted>${A.d}</small><small><span class="tag ${got?'good':''}">+${A.mp} MP</span>${A.c?'':' Çırak dışı'}${A.cos?' · '+ic(COS[A.cos].i)+' sancak':''}${got?' · '+fmtDate(got):''}</small>${pr&&!got?`<div class=bar><i style="width:${pr[0]/pr[1]*100}%"></i></div><small class=muted>${pr[0]}/${pr[1]}</small>`:''}</div></div>`}).join('')+'</div>';
  const B=M.stats.best,rows=(o,T)=>Object.keys(T).filter(k=>o[k]).map(k=>`<div class=kv><span>${T[k].e||''} ${T[k].ad}</span><span>${fmtN(o[k])}</span></div>`).join('');
  h+=`<h4>🏆 Rekorlar</h4>${rows(B.dyn,DYN)||'<p class=muted style="font-size:12.5px;margin:0">Henüz yok.</p>'}${rows(B.map,MAPTYPES)}`;
  if(M.history.length)h+=`<h4>Son oyunlar</h4>`+M.history.slice(0,6).map(x=>`<div class=kv><span>${fmtDate(x.d)} · ${ic(DYN[x.c.dyn].i)} ${MAPTYPES[x.c.map].ad} · ${DIFFS[x.c.diff].ad}${x.daily?' · 📅':''}${x.re?' · ↻':''}</span><span>${x.over==='win'?'👑':'🏴'} ${fmtN(x.score)} · +${x.mp} MP</span></div>`).join('');
  const cs=M.unlocked.cos.filter(k=>COS[k]);h+=`<h4>🚩 Sancak</h4>`+(cs.length?`<div class=seg>${cs.map(k=>`<button class="btn sm ${M.equipped.banner===k?'primary':''}" onclick="mirBanner('${k}')">${ic(COS[k].i)} ${COS[k].ad}</button>`).join('')}</div>`:`<p class=muted style="font-size:12.5px;margin:0">Başarımlar ve günlük seri (7/30 gün, Haftalık Sancak) sancak kazandırır.</p>`);
  h+=`<div class=savebox><b style="font-size:12.5px">💾 Aktarma</b><span class=muted style="font-size:12px;flex:1">Kopyalanan metin oyun kaydını ve mirası birlikte taşır.</span><button class="btn sm" onclick="copyText(exportSave(),'Kayıt ve miras panoya kopyalandı.')">📋 Kopyala</button><button class="btn sm" onclick="showImport()">📥 Yükle</button></div>`;
- h+=`<div class=wz-nav><span style="flex:1"></span><button class="btn primary" onclick="mirBack()">‹ Geri</button></div></div>`;modal(h,'miras',true)}
+ h+=`<div class=wz-nav><span style="flex:1"></span><button class="btn primary" onclick="mirBack()">‹ Geri</button></div></div>`;modal(h,'miras',true);ui.unl=null}
 function mirBack(){const b=MIR_BACK;MIR_BACK=null;if(b==='over'&&S&&S.over)afterModal();else if(b==='wiz'){if(!WZ.c)wizInit();wizShow()}else closeModal()}
 
 // ---- İkon kimlikleri (docs/gorsel-dil.md §7.3). e (emoji) alanları paylaşım metni ve günlük için kalır ----
@@ -1839,23 +1955,114 @@ function mirBack(){const b=MIR_BACK;MIR_BACK=null;if(b==='over'&&S&&S.over)after
  set(BONUS,{hazine:'ganimet',ciftci:'tarla',muhafiz:'asker',haritaci:'harita',kisla:'kisla'});for(const k in COS)COS[k].i='sancak';
  const EI={E01:'altin',E02:'tahil',E03:'tahil',E04:'moral',E05:'olum',E06:'ateskes',E07:'nufus',E08:'bilgi',E09:'sur',E10:'suvari',E11:'olay',E12:'demirmaden',E13:'vasal',E14:'piyade',E15:'moral',E16:'baskent',E17:'uyari',E18:'yagma',S3:'vasal'};
  EVENTS.forEach(E=>E.i=EI[E.id]||'olay')}
-// ======================= KATMAN: SAHİPLİK =======================
+// ======================= KATMAN: SAHİPLİK (§8.1) =======================
 const OVL=document.createElement('canvas');OVL.width=W;OVL.height=H;const octx=OVL.getContext('2d');let ovImg=null;
-function hatchFlags(){const f=new Uint8Array(MAP.n),s=ui.ctx?ui.ctx.from:ui.sel;if(s==null||S.regions[s].owner!==0||S.regions[s].ready<1||S.phase!=='oyun')return f;
- for(let j=0;j<MAP.n;j++){if(canAttack(s,j))f[j]=1;else if(canMove(s,j))f[j]=2}return f}
-function drawOverlay(){if(!ovImg)ovImg=octx.createImageData(W,H);const d=ovImg.data;d.fill(0);
- const{ids,blk,n,bP,bO}=MAP,R=S.regions,hf=hatchFlags(),sel=ui.sel,tint=[];
- for(let i=0;i<n;i++)tint.push(blk[i]||R[i].owner===NEUTRAL?null:FAC[R[i].owner].col);
- for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=y*W+x,id=ids[p];if(id<0||blk[id])continue;const o=p*4;let c=tint[id],a=c?58:0;
-  if(hf[id]&&((x+y)>>3)&1){c=hf[id]===1?[255,60,40]:[255,240,200];a=hf[id]===1?52:40}
-  if(id===sel){c=[255,250,225];a=hf[id]?a:60}
-  if(a){d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=a}}
- const put=(o,c,a)=>{d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=a};
- for(let k=0;k<bP.length;k++){const p=bP[k],id=ids[p];if(blk[id])continue;const ot=bO[k],o=p*4,t=tint[id];
-  if(id===sel||(ot>=0&&ot===sel&&!blk[ot])){put(o,[255,246,215],255);continue}
-  if(ot<0||blk[ot]){if(t)put(o,t,210);continue}
-  if(R[ot].owner!==R[id].owner){if(t)put(o,t,240);else put(o,[45,36,26],170)}else put(o,[30,24,18,],60)}
+// Bölge geometrisi (harita başına bir kez): kutu bb, sınır pikselleri (rbO/rbL), iç şerit listesi (SP piksel, SO karşı bölge, SD 1..3 px uzaklık)
+let MG=null;
+function mgeo(){if(MG&&MG.m===MAP)return MG;const{ids,n,bP,bO}=MAP,N=W*H,bb=new Int32Array(n*4),cnt=new Int32Array(n+1);
+ for(let i=0;i<n;i++){bb[i*4]=W;bb[i*4+1]=H;bb[i*4+2]=-1;bb[i*4+3]=-1}
+ for(let k=0;k<bP.length;k++){const p=bP[k],id=ids[p],x=p%W,y=(p-x)/W,o=id*4;cnt[id+1]++;if(x<bb[o])bb[o]=x;if(y<bb[o+1])bb[o+1]=y;if(x>bb[o+2])bb[o+2]=x;if(y>bb[o+3])bb[o+3]=y}
+ for(let i=0;i<n;i++)cnt[i+1]+=cnt[i];const rbO=cnt.slice(),rbL=new Int32Array(bP.length),fill=cnt.slice();for(let k=0;k<bP.length;k++)rbL[fill[ids[bP[k]]]++]=k;
+ const dist=new Uint8Array(N).fill(255),oth=new Int16Array(N);for(let k=0;k<bP.length;k++){dist[bP[k]]=0;oth[bP[k]]=bO[k]}
+ for(let d=1;d<=3;d++)for(let k=0;k<bP.length;k++){const p=bP[k],id=ids[p],x=p%W,y=(p-x)/W;
+  for(let dy=-d;dy<=d;dy++){const yy=y+dy;if(yy<0||yy>=H)continue;const st=dy===-d||dy===d?1:2*d;for(let dx=-d;dx<=d;dx+=st){const xx=x+dx;if(xx<0||xx>=W)continue;const q=yy*W+xx;if(ids[q]===id&&dist[q]>d){dist[q]=d;oth[q]=bO[k]}}}}
+ let m=0;for(let q=0;q<N;q++)if(dist[q]>0&&dist[q]<4)m++;const SP=new Int32Array(m),SO=new Int16Array(m),SD=new Uint8Array(m);m=0;
+ for(let q=0;q<N;q++){const d=dist[q];if(d>0&&d<4){SP[m]=q;SO[m]=oth[q];SD[m]=d;m++}}
+ return MG={m:MAP,bb,rbO,rbL,SP,SO,SD}}
+// Hedef bayrakları: 1 saldırılabilir, 2 taşınabilir, 3 ateşkes, 4 vasal (kaynak: bağlamsal hedefin kaynağı ya da seçili kendi bölgen). Saldırı şansı burada bir kez hesaplanır (kare başına değil)
+function tgtFlags(){const f=new Uint8Array(MAP.n),s=ui.ctx?ui.ctx.from:ui.sel;FX.tgt=f;FX.tch={};if(s==null||!S.regions[s]||S.regions[s].owner!==0||S.phase!=='oyun'||S.over)return f;
+ if(S.regions[s].ready>=1)for(let j=0;j<MAP.n;j++){if(canAttack(s,j)){f[j]=1;FX.tch[j]=previewAtk(s,j,S.regions[s].rd).ch}else if(canMove(s,j))f[j]=2}
+ for(const j of MAP.regions[s].adj){const o=S.regions[j].owner;if(!f[j]&&o>0&&o!==NEUTRAL){if(isVas(o))f[j]=4;else if(truceOn(o))f[j]=3}}return f}
+// Desen kalıpları 6×6 (§2.6): 1 Kızıl /, 2 Mavi nokta, 3 Yeşil yatay, 4 Mor \ ; oyuncu ve kabile desensiz
+const PT=(()=>{const t=new Uint8Array(5*36);for(let y=0;y<6;y++)for(let x=0;x<6;x++){const j=y*6+x;t[36+j]=(x+y)%6<1;t[72+j]=x<2&&y<2;t[108+j]=y<1;t[144+j]=(x-y+6)%6<1}return t})();
+function drawOverlay(){FX.ovN++;if(!ovImg)ovImg=octx.createImageData(W,H);const d=ovImg.data;d.fill(0);
+ const{ids,blk,n,bP,bO}=MAP,R=S.regions,G=mgeo(),tf=tgtFlags(),sel=ui.sel,tc=[],ta=new Uint8Array(n),tb=new Uint8Array(n),tp=new Uint8Array(n),sis=hasMut('sis'),sg=mil().sight;
+ for(let i=0;i<n;i++){if(blk[i])continue;const o=R[i].owner;let c=o===NEUTRAL?null:FAC[o].col;
+  if(sis&&o!==0&&VIS[i]>sg){c=[40,44,52];ta[i]=tb[i]=100}else if(c){ta[i]=o===0?56:46;tb[i]=o===0?56:96;tp[i]=o>0&&o<5?o:0}
+  if(i===sel){c=c?mix(c,[255,250,225],.35):[255,250,225];ta[i]=Math.max(ta[i],26)+20;tb[i]=Math.max(tb[i],ta[i])}tc[i]=c}
+ for(let y=0;y<H;y++){const ym=(y%6)*6;for(let x=0,p=y*W,xm=0;x<W;x++,p++,xm=xm===5?0:xm+1){const id=ids[p];if(id<0)continue;const a0=ta[id];if(!a0)continue;
+  const t=tp[id],c=tc[id],o=p*4;d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=t&&PT[t*36+ym+xm]?tb[id]:a0}}
+ const put=(o,c,a)=>{d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=a},INK=[16,19,26],BONE=[207,200,186],IN=[30,24,18],BAD=[255,107,94],WH=[241,243,247];
+ // devlet sınırı: 1 px mürekkep (kabile tarafı kemik), aynı sahip içi ince; kıyıda sahip rengi
+ for(let k=0;k<bP.length;k++){const p=bP[k],id=ids[p];if(blk[id])continue;const ot=bO[k],o=p*4,ow=R[id].owner;
+  if(ot<0||blk[ot]){if(ow!==NEUTRAL)put(o,FAC[ow].col,210);continue}const oo=R[ot].owner;if(oo!==ow)put(o,ow===NEUTRAL?BONE:INK,ow===NEUTRAL?115:178);else put(o,IN,50)}
+ // 3 px iç şerit (komşu aynı sahipse yok) + hedef bölgelerde kesik çizgi (saldırı kırmızı 3 px, taşıma beyaz 2 px)
+ const{SP,SO,SD}=G;for(let j=0;j<SP.length;j++){const p=SP[j],id=ids[p];if(blk[id])continue;const ow=R[id].owner,f=tf[id];
+  if(f===1||f===2){const x=p%W,y=(p-x)/W;if((f===1||SD[j]<3)&&((((x+y)>>2)^((x-y+8192)>>2))&1)){put(p*4,f===1?BAD:WH,f===1?235:210);continue}}
+  if(ow===NEUTRAL)continue;const ot=SO[j];if(ot>=0&&!blk[ot]&&R[ot].owner===ow)continue;put(p*4,FAC[ow].col,217)}
  octx.putImageData(ovImg,0,0)}
+// ---- FX döngüsü (§8, §9.3): tek rAF. FX.q boş, sayaç yok ve seçim nabzı yoksa durur; sekme gizliyken rAF zaten durur. drawOverlay hiçbir efekt karesinde çağrılmaz ----
+function fxAdd(e){if(!FX.on||!MOT())return null;e.t0=performance.now()+(e.at||0);FX.q.push(e);fxKick();return e}
+function fxKick(){if(!FX.raf)FX.raf=requestAnimationFrame(fxLoop)}
+function req(){FX.dirty=true;fxKick()}
+const selPulse=()=>FX.on&&MOT()===2&&ui.sel!=null&&!ui.modal&&!!S&&!!ART&&!document.hidden;
+function fxLoop(){FX.raf=0;const t=performance.now();let act=false;
+ if(FX.q.length){FX.q=FX.q.filter(e=>t<e.t0+e.dur);act=FX.q.length>0}
+ for(const k in FX.cnt){const C=FX.cnt[k],p=Math.min(1,(t-C.t0)/C.dur),e=C.x?(p>=1?1:1-Math.pow(2,-10*p)):1-(1-p)**3,el=document.querySelector(C.sel);if(el)el.textContent=C.f(C.a+(C.b-C.a)*e);
+  if(p>=1){delete FX.cnt[k];if(C.done)C.done()}else act=true}
+ const pu=selPulse();if(act||FX.dirty||(pu&&t-FX.lastR>30)){FX.dirty=false;FX.lastR=t;render()}if(act||pu)fxKick()}
+function fxCount(key,sel,a,b,dur,f,x,done){if(!FX.on||MOT()<2){const el=document.querySelector(sel);if(el)el.textContent=f(b);if(done)done();return}FX.cnt[key]={sel,a,b,t0:performance.now(),dur,f,x,done};fxKick()}
+// Atla: geçici efektler son karelerine (kaldırılır), sayaçlar son değere; tur başında ve her dokunuşta
+function fxSkip(){if(!FX.on)return;if(FX.q.length){FX.q=[];FX.dirty=true}for(const k in FX.cnt){const C=FX.cnt[k],el=document.querySelector(C.sel);if(el)el.textContent=C.f(C.b);if(C.done)C.done()}FX.cnt={};FX.shake=null;
+ const y=$('#yearCard');if(y)y.classList.remove('on');if(FX.endFin)FX.endFin();if(FX.dirty)fxKick()}
+// SVG sprite simgesi → tuval (48 px, renk gömülü); HUD ile birebir aynı silüet (§7.4). Yüklenene kadar null
+const ICO={};
+function icoImg(id,col){const k=id+col,o=ICO[k];if(o)return o.cv||null;const q=ICO[k]={cv:null},sy=document.getElementById('i-'+id);if(!sy)return null;const im=new Image();
+ im.onload=()=>{const cv=document.createElement('canvas');cv.width=cv.height=48;cv.getContext('2d').drawImage(im,0,0,48,48);q.cv=cv;req()};
+ im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${sy.getAttribute('viewBox')}" width="48" height="48" fill="${col}" color="${col}">${sy.innerHTML}</svg>`);return null}
+const wsP=(x,y)=>[(x-cam.x)*cam.z,(y-cam.y)*cam.z],rsP=i=>wsP(MAP.regions[i].lx,MAP.regions[i].ly),eio=t=>t<.5?4*t*t*t:1-(-2*t+2)**3/2,eout=t=>1-(1-t)**3;
+const hsh=(a,b)=>{let h=Math.imul(a*73856093^b*19349663,0x5bd1e995);h^=h>>>13;return((h>>>0)%1000)/1000};// efekt süsü için belirlenimci (Math.random/rnd dokunulmaz)
+// Seçim vurgusu (§8.2): seçili bölgenin sınırı bir kez küçük tuvale yazılır, her karede nabızla çizilir
+function selMask(){const i=ui.sel;if(i==null||!MAP||!MAP.regions[i]||MAP.regions[i].block)return null;const key=MAP.seed+':'+i+':'+MAP.n;if(FX.sel&&FX.sel.k===key)return FX.sel;
+ const G=mgeo(),b=G.bb,x0=b[i*4]-3,y0=b[i*4+1]-3,w=b[i*4+2]-x0+4,h=b[i*4+3]-y0+4,cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d'),im=cx.createImageData(w,h),D=im.data;
+ for(let pass=0;pass<2;pass++)for(let j=G.rbO[i];j<G.rbO[i+1];j++){const p=MAP.bP[G.rbL[j]],x=p%W-x0,y=(p-p%W)/W-y0,r=pass?1:2;
+  for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(pass&&(dx<0||dy<0))continue;const q=((y+dy)*w+x+dx)*4;if(q<0||q>=D.length)continue;if(pass){D[q]=255;D[q+1]=248;D[q+2]=225;D[q+3]=255}else if(!D[q+3]){D[q]=242;D[q+1]=179;D[q+2]=61;D[q+3]=80}}}
+ cx.putImageData(im,0,0);return FX.sel={k:key,cv,x:x0,y:y0}}
+function drawSel(c,t){const m=selMask();if(!m)return;c.globalAlpha=selPulse()?.55+.45*Math.sin(t*2*Math.PI/1600):1;c.drawImage(m.cv,m.x,m.y);c.globalAlpha=1}
+function fxDraw(c,t,L){for(const e of FX.q)if(e.L===L&&t>=e.t0)e.d(c,t-e.t0)}
+// Ordu oku (§8.6): ikinci derece Bezier, kontrol noktası orta noktanın %18 dik ötesinde; kalınlık asker sayısıyla, mürekkep haleli
+function drawArrow(c,from,to,col,n,p,al,flow){const A=rsP(from),B=rsP(to),dx=B[0]-A[0],dy=B[1]-A[1],C=[(A[0]+B[0])/2-dy*.18,(A[1]+B[1])/2+dx*.18],s=clamp(cam.z,.6,1.3),w=clamp(3+n/6,3,10)*s,te=.9*p;
+ const pt=t=>{const u=1-t;return[u*u*A[0]+2*u*t*C[0]+t*t*B[0],u*u*A[1]+2*u*t*C[1]+t*t*B[1]]},P=[];for(let k=0;k<=16;k++)P.push(pt(te*k/16));
+ c.globalAlpha=al;c.lineCap='round';c.lineJoin='round';const path=()=>{c.beginPath();c.moveTo(P[0][0],P[0][1]);for(const q of P)c.lineTo(q[0],q[1])};
+ path();c.lineWidth=w+4;c.strokeStyle='#10131A';c.stroke();path();c.lineWidth=w;c.strokeStyle=rgb(col);c.stroke();
+ const E=P[16],F=P[15],a=Math.atan2(E[1]-F[1],E[0]-F[0]),hl=14*s;c.beginPath();c.moveTo(E[0]+Math.cos(a)*hl*.6,E[1]+Math.sin(a)*hl*.6);c.lineTo(E[0]+Math.cos(a+2.4)*hl*.7,E[1]+Math.sin(a+2.4)*hl*.7);c.lineTo(E[0]+Math.cos(a-2.4)*hl*.7,E[1]+Math.sin(a-2.4)*hl*.7);c.closePath();
+ c.lineWidth=3;c.strokeStyle='#10131A';c.stroke();c.fillStyle=rgb(col);c.fill();
+ if(flow!=null){c.fillStyle='#F1F3F7';for(let j=0;j<3;j++){const q=pt(te*((flow+j/3)%1));c.beginPath();c.arc(q[0],q[1],Math.max(1.5,w*.32),0,7);c.fill()}}c.globalAlpha=1}
+function fxArrow(from,to,col,n,at,al,draw,hold){const D=draw||350,Hd=hold==null?500:hold;return fxAdd({at,dur:D+Hd+150,L:1,d:(c,e)=>{const m=MOT(),p=m===2?eio(Math.min(1,e/D)):1,fo=e>D+Hd?1-(e-D-Hd)/150:1;drawArrow(c,from,to,col,n,p,al*fo,m===2&&e>D&&e<D+Hd?(e-D)/Hd:null)}})}
+// Savaş efekti (§8.7): kılıçlar → genişleyen halka + 6 kıvılcım → sonuç işareti (✓/✕) 700 ms; azaltılmış harekette yalnız işaret
+function fxClash(to,win,at){const sw=icoImg('v-fetih','#F1F3F7'),mk=icoImg(win?'onay':'kapat',win?'#4CC38A':'#FF6B5E');return fxAdd({at,dur:1300,L:1,d:(c,e)=>{const[x,y]=rsP(to),m=MOT(),s=clamp(cam.z,.7,1.3),cy=y-8*s;
+ if(m===2&&e<400){if(e<240&&sw){const k=Math.min(1,e/120),z=(1.4-.4*k)*20*s;c.globalAlpha=e<120?k:1-(e-120)/120;c.drawImage(sw,x-z/2,cy-z/2,z,z);c.globalAlpha=1}
+  if(e>=120){const k=(e-120)/280,r=(8+40*k)*s;c.strokeStyle=`rgba(241,243,247,${1-k})`;c.lineWidth=3*(1-k)+.2;c.beginPath();c.arc(x,cy,r,0,7);c.stroke();c.lineWidth=2*(1-k)+.2;c.beginPath();
+   for(let j=0;j<6;j++){const a=j/6*6.283+hsh(to,j)*.9,r0=r*.55;c.moveTo(x+Math.cos(a)*r0,cy+Math.sin(a)*r0);c.lineTo(x+Math.cos(a)*(r0+10*s*(1-k)),cy+Math.sin(a)*(r0+10*s*(1-k)))}c.stroke()}}
+ const s0=m===2?400:0;if(e>=s0){const k=Math.min(1,(e-s0)/120),fo=e>1000?Math.max(0,1-(e-1000)/300):1,r=12*s*(m===2?.8+.2*k:1);c.globalAlpha=k*fo;c.beginPath();c.arc(x,cy,r,0,7);c.fillStyle='#151A23';c.fill();c.lineWidth=2;c.strokeStyle=win?'#4CC38A':'#FF6B5E';c.stroke();if(mk)c.drawImage(mk,x-r*.7,cy-r*.7,r*1.4,r*1.4);c.globalAlpha=1}}})}
+// Fetih renk dalgası (§8.9): eski görünüm (ART + eski OVL kesiti, bölge maskeli) saldırının geldiği yönden açılan daireyle silinir. OVL zaten yeni durumda: drawOverlay çağrılmaz
+function fxPre(to){if(!FX.on||!MOT()||FX.old[to]||!MAP||!MG||MG.m!==MAP)return;const b=MG.bb,x0=b[to*4],y0=b[to*4+1],w=b[to*4+2]-x0+1,h=b[to*4+3]-y0+1;if(w<1||h<1)return;
+ const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(OVL,x0,y0,w,h,0,0,w,h);FX.old[to]=cv}
+function fxWave(to,from,at,lose){const old=FX.old[to];if(!old||MOT()<2||!ART)return;const b=MG.bb,x0=b[to*4],y0=b[to*4+1],w=old.width,h=old.height,cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d');
+ cx.drawImage(ART,x0,y0,w,h,0,0,w,h);cx.drawImage(old,0,0);const im=cx.getImageData(0,0,w,h),D=im.data,ids=MAP.ids;for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(ids[(y0+y)*W+x0+x]!==to)D[(y*w+x)*4+3]=0;cx.putImageData(im,0,0);
+ let fl2=null;if(lose){fl2=document.createElement('canvas');fl2.width=w;fl2.height=h;const f=fl2.getContext('2d');f.drawImage(cv,0,0);f.globalCompositeOperation='source-in';f.fillStyle='rgba(255,107,94,.25)';f.fillRect(0,0,w,h)}
+ const g=MAP.regions[to],sF=from!=null?MAP.regions[from]:g,ox=g.lx+(sF.lx-g.lx)*.5,oy=g.ly+(sF.ly-g.ly)*.5,Rm=Math.max(Math.hypot(ox-x0,oy-y0),Math.hypot(ox-x0-w,oy-y0),Math.hypot(ox-x0,oy-y0-h),Math.hypot(ox-x0-w,oy-y0-h)),D2=lose?700:500;
+ fxAdd({dur:at+D2+(lose?320:0),L:0,d:(c,e)=>{const k=e<at?0:Math.min(1,(e-at)/D2),r=eio(k)*Rm;if(k<1){c.save();c.beginPath();c.rect(x0,y0,w,h);c.arc(ox,oy,r,0,7,true);c.clip();c.drawImage(cv,x0,y0);c.restore();
+   if(k>0){c.save();c.beginPath();c.rect(x0,y0,w,h);c.clip();c.strokeStyle='rgba(241,243,247,.6)';c.lineWidth=2/cam.z;c.beginPath();c.arc(ox,oy,r,0,7);c.stroke();c.restore()}}
+  else if(fl2){const q=(e-at-D2)/160;if(q<1||(q>=1.25&&q<2.25))c.drawImage(fl2,x0,y0)}}})}
+// Ganimet yüzen sayılar (§8.8): kaynak başına hap, 80 ms arayla, 900 ms'de 28 px süzülür; masaüstünde son 300 ms HUD çipine kayar
+function fxLoot(to,loot,at,neg){const ks=RES.map(r=>r.k).filter(k=>loot&&loot[k]>=1).slice(0,6),vr=view.getBoundingClientRect(),mob=isMob();
+ ks.forEach((k,j)=>{const ch=$(`#res [data-r=${k}]`),cr=ch&&!mob?ch.getBoundingClientRect():null,tx=cr?cr.left+cr.width/2-vr.left:null,ty=cr?cr.top+cr.height/2-vr.top:null,im=icoImg(k,RES.find(r=>r.k===k)&&getComputedStyle(document.documentElement).getPropertyValue('--r-'+k).trim()||'#fff'),txt=(neg?'−':'+')+fl(loot[k]);
+  fxAdd({at:at+j*80,dur:900,L:1,d:(c,e)=>{const[x0,y0]=rsP(to),m=MOT(),p=e/900,bx=x0+((j%3)-1)*58,by=y0-24-fl(j/3)*26;let x=bx,y=by+(neg?1:-1)*(m===2?28*eout(Math.min(1,p)):0);
+   if(m===2&&tx!=null&&!neg&&e>600){const q=eio((e-600)/300);x+=(tx-x)*q;y+=(ty-y)*q}
+   c.globalAlpha=p<.6?1:Math.max(0,1-(p-.6)/.4);c.font=`700 13px ${MAPF}`;const tw=c.measureText(txt).width,w=tw+30;c.beginPath();if(c.roundRect)c.roundRect(x-w/2,y-12,w,24,12);else c.rect(x-w/2,y-12,w,24);c.fillStyle='rgba(21,26,35,.9)';c.fill();c.lineWidth=1;c.strokeStyle='#2F394A';c.stroke();
+   if(im)c.drawImage(im,x-w/2+7,y-7,14,14);c.fillStyle=neg?'#FF6B5E':'#F1F3F7';c.textAlign='left';c.fillText(txt,x-w/2+24,y+.5);c.textAlign='center';c.globalAlpha=1}})})}
+function fxShake(){if(MOT()<2)return;FX.shake=performance.now();fxAdd({dur:190,L:-1,d:()=>{}})}
+// Oyuncu eylemi (saldırı/yağma) sonrası: ok → çarpışma → dalga → ganimet
+function fxFlush(){if(!FX.on)return;for(const b of FX.b){if(b.ao!==0)continue;fxArrow(b.from,b.to,FAC[0].col,b.n,0,1);fxClash(b.to,b.win,350);
+  if(b.win&&!b.raid&&S.regions[b.to].owner===0){fxWave(b.to,b.from,550);if(b.c0)setTimeout(fxShake,550)}if(b.win&&b.loot)fxLoot(b.to,b.loot,650)}FX.b=[];FX.old={}}
+// Tur geçişi (§8.11): rakip okları (önce oyuncuya yönelenler, en çok 6 sıralı + 6 birlikte), fetih dalgaları, yıl kartı. Toplam ≤ 1,2 sn; dokununca atlanır
+function fxTurn(){if(!FX.on)return;if(!MOT()||S.over){FX.b=[];FX.old={};return}
+ const L=FX.b.filter(b=>b.ao!==0&&(b.d0===0||b.win)).sort((a,b)=>(b.d0===0)-(a.d0===0)).slice(0,12);// en çok 6 sıralı (120 ms arayla), fazlası 6.yla birlikte
+ L.forEach((b,k)=>{const at=Math.min(k,5)*120,me=b.d0===0;fxArrow(b.from,b.to,FAC[b.ao].col,me?b.n*1.5:b.n,at,me?.9:.7,280,me?200:100);if(me)fxClash(b.to,!b.win,at+280);
+  if(b.win&&S.regions[b.to].owner!==b.d0)fxWave(b.to,b.from,at+300,me);if(me&&b.win&&b.c0)setTimeout(fxShake,at+300)});
+ FX.b=[];FX.old={};fxYear()}
+function fxYear(){const y=$('#yearCard');if(!y||MOT()<2)return;y.innerHTML=`<small>YIL</small><b>${S.turn}</b>`;y.classList.remove('on');void y.offsetWidth;y.classList.add('on');clearTimeout(fxYear.h);fxYear.h=setTimeout(()=>y.classList.remove('on'),720)}
 
 // ======================= KAMERA & GÖRÜNÜM =======================
 const view=$('#view'),vctx=view.getContext('2d');const cam={x:0,y:0,z:1};let VW=1,VH=1,DPR=1,pend=false;
@@ -1871,19 +2078,39 @@ function centerOn(i,z){const g=MAP.regions[i];if(!g)return;if(z&&isFinite(z))cam
 function visW(){return innerWidth>=768&&innerWidth<1100?Math.max(200,VW-(document.body.classList.contains('side-c')?56:360)):VW}
 function visH(){if(!isMob())return VH;const s=$('#sheet');return s?Math.max(120,Math.min(VH,s.getBoundingClientRect().top-view.getBoundingClientRect().top)):VH}
 function focusSel(){if(ui.sel!=null)centerOn(ui.sel,Math.max(cam.z,1.2))}
-function req(){if(!pend){pend=true;requestAnimationFrame(()=>{pend=false;render()})}}
-function render(){if(!ART||!S)return;const c=vctx;c.setTransform(DPR,0,0,DPR,0,0);c.fillStyle='#0B1622';c.fillRect(0,0,VW,VH);
- c.save();c.scale(cam.z,cam.z);c.translate(-cam.x,-cam.y);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(ART,0,0,W,H);c.drawImage(OVL,0,0);c.restore();
- drawIcons(c);ctxUpd()}
+function render(){if(!ART||!S)return;const c=vctx,t=performance.now();c.setTransform(DPR,0,0,DPR,0,0);c.fillStyle='#0B1622';c.fillRect(0,0,VW,VH);
+ if(FX.shake){const k=(t-FX.shake)/180;if(k<1)c.translate(Math.sin(k*40)*3*(1-k),Math.cos(k*33)*3*(1-k));else FX.shake=null}
+ c.save();c.scale(cam.z,cam.z);c.translate(-cam.x,-cam.y);c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';c.drawImage(ART,0,0,W,H);c.drawImage(OVL,0,0);drawSel(c,t);if(FX.q.length)fxDraw(c,t,0);c.restore();
+ drawIcons(c,t);if(FX.q.length)fxDraw(c,t,1);ctxUpd()}
 const MAPF='system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
-function drawIcons(c){const z=cam.z,k=clamp(z*1.05,.5,1.55),showName=z>.85;c.textAlign='center';c.textBaseline='middle';
- const order=MAP.regions.map((g,i)=>i).filter(i=>!MAP.regions[i].block).sort((a,b)=>MAP.regions[a].ly-MAP.regions[b].ly);
- for(const i of order){const g=MAP.regions[i],r=S.regions[i],sx=(g.lx-cam.x)*z,sy=(g.ly-cam.y)*z;if(sx<-70||sy<-70||sx>VW+70||sy>VH+70)continue;
-  if(r.capital)iCastle(c,sx,sy-6*k,k,FAC[r.owner].col,r.fort);else if(r.fort>=2)iFort(c,sx,sy-4*k,k,r.owner===NEUTRAL?null:FAC[r.owner].col,r.fort);else iVillage(c,sx,sy-3*k,k,r.fort);
-  if(g.feat)iFeat(c,g.feat,sx-24*k,sy-6*k,k);
-  iBadge(c,sx,sy+17*k,k,r,i,i===ui.sel);
-  if(r.owner===0&&r.mil){const bx=sx+17*k,by=sy+10*k,rr=6.5*k;c.beginPath();c.arc(bx,by,rr,0,7);c.fillStyle='#151A23';c.fill();c.lineWidth=1.5;c.strokeStyle='rgba(16,19,26,.9)';c.stroke();c.font=`800 ${Math.round(9*k)}px ${MAPF}`;c.fillStyle='#F2B33D';c.fillText(r.mil,bx,by+.5)}
-  if(showName||r.capital||i===ui.sel){const fs=Math.round(12*clamp(k,.8,1.3));c.font=`700 ${fs}px ${MAPF}`;c.lineWidth=3.2;c.strokeStyle='rgba(18,12,6,.85)';c.strokeText(g.name,sx,sy-30*k);c.fillStyle=r.owner===0?'#ffe2a0':'#fff6e4';c.fillText(g.name,sx,sy-30*k)}}}
+// LOD (§8.5): 0 <0,6 · 1 0,6-1 · 2 1-1,8 · 3 >1,8
+const LOD=()=>cam.z<.6?0:cam.z<1?1:cam.z<1.8?2:3,LBW=new Map(),UCOL={piy:'#A7B1C2',okc:'#4CC38A',suv:'#FF9447',kus:'#D99A5B',yen:'#FF6B5E'};
+// Olay işaretleri (§8.10): yağmalandı, karantina (veba), koalisyon üyesi başkenti
+function pinOf(i){const r=S.regions[i];if(r.raid>S.turn)return['yagma',`Yağmalandı · ${r.raid-S.turn} yıl yarı üretim`];if(r.qt>S.turn)return['olum',`Karantina · ${r.qt-S.turn} yıl`];
+ if(r.capital&&S.coal&&S.coal.on&&S.coal.mem.includes(r.owner))return['koalisyon','Koalisyon üyesi'];return null}
+function drawIcons(c,t){const z=cam.z,L=LOD(),k=clamp(z*1.05,.5,1.55),R=S.regions,G=MAP.regions,lab=[],tg=FX.tgt,go=FX.on&&MOT()===2;c.textAlign='center';c.textBaseline='middle';
+ if(!FX.ord||FX.ord.m!==MAP)FX.ord={m:MAP,a:G.map((g,i)=>i).filter(i=>!G[i].block).sort((a,b)=>G[a].ly-G[b].ly)};
+ for(const i of FX.ord.a){const g=G[i],r=R[i],sx=(g.lx-cam.x)*z,sy=(g.ly-cam.y)*z;if(sx<-70||sy<-70||sx>VW+70||sy>VH+70)continue;
+  if(r.capital)iCastle(c,sx,sy-6*k,k,FAC[r.owner].col,r.fort,r.owner);else if(L){if(r.fort>=2)iFort(c,sx,sy-4*k,k,r.owner===NEUTRAL?null:FAC[r.owner].col,r.fort,r.owner);else iVillage(c,sx,sy-3*k,k,r.fort)}
+  if(g.feat&&L)iFeat(c,g.feat,sx-24*k,sy-6*k,k);
+  iBadge(c,sx,sy+17*k,k,r,i,i===ui.sel,L);
+  if(L>=2&&r.owner===0&&r.mil){const bx=sx+17*k,by=sy+10*k,rr=6.5*k;c.beginPath();c.arc(bx,by,rr,0,7);c.fillStyle='#151A23';c.fill();c.lineWidth=1.5;c.strokeStyle='rgba(16,19,26,.9)';c.stroke();c.font=`800 ${Math.round(9*k)}px ${MAPF}`;c.fillStyle='#F2B33D';c.fillText(r.mil,bx,by+.5)}
+  if(L===3&&r.troops&&vis(i).exact){const w=28*k,x0=sx-w/2,y0=sy+28*k;let x=x0;c.fillStyle='rgba(16,19,26,.85)';c.fillRect(x0-1,y0-1,w+2,3*k+2);for(const u of UK){const v=r.u[u]/r.troops*w;if(v>0){c.fillStyle=UCOL[u];c.fillRect(x,y0,v,3*k);x+=v}}}
+  const P=pinOf(i);if(P&&L){const key=i+P[0];let dy=0;if(!(key in FX.pins)){FX.pins[key]=t;if(go)fxAdd({dur:260,L:-1,d:()=>{}})}const e=t-FX.pins[key];if(go&&e<240)dy=-12*(1-eout(e/240));iPin(c,sx-17*k,sy+5*k+dy,P[0],k)}
+  if(L>=2||r.capital||i===ui.sel||(L===1&&r.owner===0))lab.push({i,x:sx,y:sy-30*k,pr:i===ui.sel?3:r.owner===0||r.capital?2:1})}
+ // etiketler: çakışan düşük öncelikli etiket gizlenir (§8.5)
+ const fs=Math.round(12*clamp(k,.8,1.3)),put=[];c.font=`700 ${fs}px ${MAPF}`;c.lineWidth=2.8;c.strokeStyle='rgba(16,19,26,.85)';lab.sort((a,b)=>b.pr-a.pr);
+ for(const l of lab){const g=G[l.i],r=R[l.i],tx=r.capital?g.name.toLocaleUpperCase('tr-TR'):g.name,kk=fs+tx;let w=LBW.get(kk);if(w==null){w=c.measureText(tx).width*(r.capital?1.06:1);LBW.set(kk,w)}
+  const bx=[l.x-w/2-2,l.y-fs/2-1,l.x+w/2+2,l.y+fs/2+1];if(l.pr<3&&put.some(q=>bx[0]<q[2]&&bx[2]>q[0]&&bx[1]<q[3]&&bx[3]>q[1]))continue;put.push(bx);
+  if('letterSpacing' in c)c.letterSpacing=r.capital?'0.06em':'0px';c.strokeText(tx,l.x,l.y);c.fillStyle=r.owner===0?'#FFE2A0':'#F1F3F7';c.fillText(tx,l.x,l.y)}
+ if('letterSpacing' in c)c.letterSpacing='0px';
+ // hedef işaretleri (§8.3): saldırı %şans (z<0,7 yalnız ikon), taşıma, ateşkes/vasal gri
+ if(tg&&tg.length===MAP.n)for(let j=0;j<MAP.n;j++){const f=tg[j];if(!f)continue;const g=G[j],sx=(g.lx-cam.x)*z,sy=(g.ly-cam.y)*z;if(sx<-40||sy<-40||sx>VW+40||sy>VH+40)continue;iTgt(c,sx+20*k+10,sy+17*k,f,FX.tch[j]||0,z)}
+ if(FX.hov!=null&&ui.sel!=null&&tg&&tg[FX.hov]===1)drawArrow(c,ui.sel,FX.hov,FAC[0].col,S.regions[ui.sel].ready,1,.5,null)}
+function iTgt(c,x,y,f,ch,z){const id=f===1?'saldiri':f===2?'tasi':f===3?'ateskes':'vasal',im=icoImg(id,f>=3?'#A7B1C2':'#F1F3F7'),cc=ch>=.7?'#4CC38A':ch>=.4?'#F2B33D':'#FF6B5E',txt=f===1&&z>=.7?'%'+Math.round(ch*100):'';
+ c.font=`700 11px ${MAPF}`;const tw=txt?c.measureText(txt).width+7:0;c.beginPath();if(c.roundRect)c.roundRect(x-11,y-11,22+tw,22,11);else c.arc(x,y,11,0,7);c.fillStyle='#151A23';c.fill();c.lineWidth=1.5;c.strokeStyle=f===1?cc:'rgba(122,135,158,.9)';c.stroke();
+ if(im)c.drawImage(im,x-7,y-7,14,14);if(txt){c.fillStyle=cc;c.textAlign='left';c.fillText(txt,x+9,y+.5);c.textAlign='center'}}
+function iPin(c,x,y,id,k){const s=9*clamp(k,.8,1.2),im=icoImg(id,'#F1F3F7');c.beginPath();c.moveTo(x,y-s);c.lineTo(x+s,y);c.lineTo(x,y+s);c.lineTo(x-s,y);c.closePath();c.fillStyle='#151A23';c.fill();c.lineWidth=2;c.strokeStyle='#FF6B5E';c.stroke();if(im)c.drawImage(im,x-s*.62,y-s*.62,s*1.24,s*1.24)}
 // --- giriş: sürükle, tekerlek, dokunma ---
 const ptrs=new Map();let drag=null,pinch=null;
 function regionAtScreen(sx,sy){const x=fl(cam.x+sx/cam.z),y=fl(cam.y+sy/cam.z);if(x<0||y<0||x>=W||y>=H)return -1;return MAP.ids[y*W+x]}
@@ -1916,26 +2143,42 @@ view.addEventListener('wheel',e=>{e.preventDefault();const[x,y]=local(e);zoomAt(
 view.addEventListener('contextmenu',e=>{e.preventDefault();const[x,y]=local(e),i=regionAtScreen(x,y),s=ui.sel;if(i<0||s==null||s===i||S.over)return;
  if(canAttack(s,i))openAttack(s,i);else if(canMove(s,i))openMove(s,i);else{ui.sel=i;ui.tab='bolge';refresh()}});
 view.addEventListener('dblclick',e=>{const[x,y]=local(e),i=regionAtScreen(x,y);if(i>=0)centerOn(i,Math.max(cam.z*1.6,1.3))});
-view.addEventListener('pointerleave',()=>$('#tip').style.display='none');
-function hover(x,y){const t=$('#tip'),i=regionAtScreen(x,y);if(i<0||!S||!HOV.matches){t.style.display='none';return}const r=S.regions[i],g=MAP.regions[i];
+view.addEventListener('pointerleave',()=>{$('#tip').style.display='none';if(FX.hov!=null){FX.hov=null;req()}});
+function hover(x,y){const t=$('#tip'),i=regionAtScreen(x,y),hv=i>=0&&S&&FX.tgt&&FX.tgt[i]===1?i:null;if(FX.hov!==hv){FX.hov=hv;req()}if(i<0||!S||!HOV.matches){t.style.display='none';return}const r=S.regions[i],g=MAP.regions[i];
  let h;if(g.block)h=`<b>${g.name}</b><br>🏔️ Geçilmez sıradağlar`;
- else{h=`${fdot(r.owner)} <b>${g.name}</b> · ${facName(r.owner)}${persTag(r.owner)}${isVas(r.owner)?' · ⛓ vasal':''}${truceOn(r.owner)?' · 🤝 ateşkes':''}<br>${TER[g.terrain].ad} · asker ${vis(i).txt} · nüfus ${fl(r.pop)}`;if(g.feat)h+=`<br>${ic(g.feat,'k-brand')} ${FEAT[g.feat].ad}`;
+ else{h=`${fdot(r.owner)} <b>${g.name}</b> · ${facName(r.owner)}${persTag(r.owner)}${isVas(r.owner)?' · ⛓ vasal':''}${truceOn(r.owner)?' · 🤝 ateşkes':''}<br>${TER[g.terrain].ad} · asker ${vis(i).txt} · nüfus ${fl(r.pop)}`;if(g.feat)h+=`<br>${ic(g.feat,'k-brand')} ${FEAT[g.feat].ad}`;{const P=pinOf(i);if(P)h+=`<br>${ic(P[0],'k-bad')} ${P[1]}`}
   const s=ui.sel;if(s!=null&&canAttack(s,i)&&S.regions[s].ready>0){const ch=previewAtk(s,i,S.regions[s].rd).ch;h+=`<br><span style="color:${chanceCol(ch)}">⚔ saldırı şansı %${Math.round(ch*100)}</span>${crossTag(s,i)} · <span class=muted>sağ tık: saldır</span>`}
   else if(s!=null&&canMove(s,i)&&S.regions[s].ready>0)h+='<br>➜ <span class=muted>sağ tık: asker taşı</span>'}
  t.innerHTML=emo(h);t.style.display='block';t.style.left=Math.min(x+14,VW-260)+'px';t.style.top=(y+14)+'px'}
 
 // ======================= PANEL =======================
 const inertBg=on=>{for(const e of document.querySelectorAll('header,main'))e.inert=on};
-function modal(h,kind,wide){const m=$('#modal'),bg=$('#modalBg');m.innerHTML=emo(h);m.classList.toggle('wide',!!wide);bg.style.display='flex';m.scrollTop=0;bg.scrollTop=0;ui.modal=kind||'x';
- const t=m.querySelector('h3');if(t){t.id='mTitle';m.setAttribute('aria-labelledby','mTitle')}else m.removeAttribute('aria-labelledby');inertBg(true);fixR(m);tipHide();ctxUpd()}
+// §5.8: kapatılamaz türler tek yerde (Esc, kapat düğmesi); sihirbaz/bitiş/miras mobilde tam ekran sayfa
+const NOCL=['setup','over','bozuk','ev','miras'],FULLM=['wiz','over','miras'],mCan=k=>!!k&&!NOCL.includes(k)&&!(k==='wiz'&&!ART);
+const FOC='button:not([disabled]),a[href],input:not([type=hidden]):not([disabled]),select,textarea,summary,[tabindex]:not([tabindex="-1"])';
+function modal(h,kind,wide){const m=$('#modal'),bg=$('#modalBg'),k=kind||'x',was=ui.modal;mGhostOff();if(!was)ui.mRet=document.activeElement;
+ m.innerHTML=(mCan(k)&&!(k==='res'&&S&&S.over)?`<div class=mbar><button class="btn ico ghost" onclick="mEsc()" aria-label="Kapat">${ic('kapat')}</button></div>`:'')+emo(h);
+ m.classList.toggle('wide',!!wide);m.classList.toggle('full',FULLM.includes(k));m.classList.remove('late');bg.style.display='flex';m.scrollTop=0;bg.scrollTop=0;ui.modal=k;
+ m.setAttribute('role',k==='over'||k==='bozuk'?'alertdialog':'dialog');
+ const t=m.querySelector('h3');if(t){t.id='mTitle';m.setAttribute('aria-labelledby','mTitle')}else m.removeAttribute('aria-labelledby');inertBg(true);fixR(m);tipHide();ctxUpd();
+ if(was!==k&&!TEST){const f=m.querySelector(k==='ev'?'.evb:not([disabled])':k==='atk'||k==='mov'?'input[type=range]':'.wz-nav .btn.primary,.row .btn.primary,.btn.primary')||[...m.querySelectorAll(FOC)].find(e=>!e.closest('.mbar'));if(f)try{f.focus({preventScroll:true})}catch(e){}}}
+function mEsc(){if(!mCan(ui.modal))return;const k=ui.modal;closeModal();if(k==='rep')showEvent()}
+// Kapanış (modal-out 140 ms): durum anında kapanır (ui.modal, display), görsel bir hayalet kopyada söner
+function mGhost(){const m=$('#modal');if(!m||!m.firstChild)return;const g=document.createElement('div');g.className='mghost';g.setAttribute('aria-hidden','true');g.inert=true;const c=m.cloneNode(true);c.removeAttribute('role');g.appendChild(c);document.body.appendChild(g);FX.gh=g;setTimeout(()=>{if(g.isConnected)g.remove()},160)}
+function mGhostOff(){if(FX.gh){FX.gh.remove();FX.gh=null}}
 // 1d: oyunu bitiren savaşın sonuç penceresi nasıl kapanırsa kapansın (Tamam, Esc) bitiş ekranı ve miras gelir
-function closeModal(){const k=ui.modal;$('#modalBg').style.display='none';ui.modal=null;inertBg(false);tipHide();ctxUpd();if(k==='res'&&S&&S.over)afterModal()}
+function closeModal(){const k=ui.modal,bg=$('#modalBg');if(k&&FX.on&&MOT()===2&&bg.style.display!=='none')mGhost();bg.style.display='none';ui.modal=null;inertBg(false);tipHide();ctxUpd();
+ const r=ui.mRet;ui.mRet=null;if(k&&r&&r.isConnected&&r.focus&&!r.closest('[inert]'))try{r.focus({preventScroll:true})}catch(e){}if(k==='res'&&S&&S.over)afterModal()}
 // --- Olay penceresi: S.evQ[0] gösterilir; 1/2/3 tuşlarıyla seçilir; sonuç log'a yazılır ---
 function showEvent(){if(!S||S.over||!S.evQ.length)return;const q=S.evQ[0],E=EVM[q.id];if(!E){S.evQ.shift();return showEvent()}const t=EV_TUR[E.tur]||EV_TUR.secim;
- modal(`<div class=evm><h3>${ic(E.i||'olay')} ${E.ad} <span class="tag ${t[1]}">${t[0]}</span></h3><p class=muted style="margin:-6px 0 8px;font-size:12px">Yıl ${S.turn}${S.evQ.length>1?` · ${S.evQ.length-1} olay daha bekliyor`:''}</p><p>${E.txt?E.txt(q.d):''}</p>
- <div class=evo>${E.opts.map((o,k)=>{const ok=!o.ok||o.ok(q.d);return`<button class=btn ${ok?'':'disabled'} onclick="pickEvent(${k})"><b>${k+1}.</b> ${o.t}<small>${o.d}${ok?'':' · <span class=bad>şu an yapılamaz</span>'}</small></button>`}).join('')}</div>
+ const tc={iyi:'good',kotu:'bad',sistem:'info'}[E.tur]||'brand';
+ modal(`<div class="evm t-${tc}"><i class=evs aria-hidden=true></i><h3>${ic(E.i||'olay')} ${E.ad} <span class="tag ${t[1]}">${t[0]}</span></h3><p class=evsub>Yıl ${S.turn}${S.evQ.length>1?` · ${S.evQ.length-1} olay daha bekliyor`:''}</p><p class=evt>${E.txt?E.txt(q.d):''}</p>
+ <div class=evo>${E.opts.map((o,k)=>{const ok=!o.ok||o.ok(q.d);return`<button class="btn evb" ${ok?'':'disabled'} onclick="evPick(${k},this)"><span class=key aria-hidden=true>${k+1}</span><span class=evx><b>${o.t}</b><small>${o.d}${ok?'':' · <span class=bad>şu an yapılamaz</span>'}</small></span></button>`}).join('')}</div>
  <p class=muted style="font-size:11.5px;margin:8px 0 0">${HOV.matches?`Klavye: ${E.opts.map((o,k)=>k+1).join(' / ')} · `:''}Seçmeden yıl bitmez.</p></div>`,'ev')}
-function pickEvent(k){const r=applyEvent(k);if(!r)return;refresh();saveNow();toast(`${r.E.ad}: ${r.o.t}. ${String(r.m).replace(/<[^>]+>/g,'')}`);if(S.over)return afterModal();if(S.evQ.length)showEvent();else closeModal()}
+// event-pick (§9.2): seçilen kart altın dolar, diğerleri solar, 200 ms sonra uygulanır (az/yok harekette anında)
+function evPick(k,el){if(ui.evBusy||ui.modal!=='ev')return;el=el||document.querySelectorAll('#modal .evb')[k];if(!el||el.disabled)return;if(TEST||MOT()<2)return pickEvent(k);
+ ui.evBusy=true;el.classList.add('pk');const w=el.closest('.evm');if(w)w.classList.add('picked');setTimeout(()=>{ui.evBusy=false;if(ui.modal==='ev')pickEvent(k)},200)}
+function pickEvent(k){const r=applyEvent(k);if(!r)return;refresh();saveNow();toast(`${r.E.ad}: ${r.o.t}. ${String(r.m).replace(/<[^>]+>/g,'')}`,r.o.c==='bad'?'bad':'');if(S.over)return afterModal();if(S.evQ.length)showEvent();else closeModal()}
 function regLink(i){const r=S.regions[i];return`<button type=button class=lnk onclick="selectRegion(${i})">${fdot(r.owner)}${MAP.regions[i].name}</button>`}
 function selectRegion(i,rtab){ui.sel=i;ui.tab='bolge';if(rtab)ui.rtab=rtab;else if(S.regions[i].owner!==0)ui.rtab='genel';if(isMob()&&ui.sheet==='full')setSheet('half');centerOn(i);refresh()}
 function setTab(t){if(!S)return;ui.tab=t;if(document.body.classList.contains('side-c'))sideToggle();if(isMob()&&ui.sheet==='peek')setSheet('half');renderPanel()}
@@ -1950,7 +2193,7 @@ function vicBest(){const c=S.cfg,o=own().length,F=fetihNeed(),L=[{p:o/F,id:'feti
   L.push({p:Math.min(1,hn/hN)*.5+S.heg.count/VIC.hegemonya.hold*.5,id:'hegemonya',t:`Hegemonya <b>${hn}</b><small>/${hN}${S.heg.count?` · ${S.heg.count}y`:''}</small>`,col:'var(--info)'})}
  return L.sort((a,b)=>b.p-a.p)[0]}
 function renderHeader(){const R=$('#res'),Y=$('#yr');if(!S){R.innerHTML='';R._h='';Y.innerHTML='';return}const e=economy(),c=S.cfg;
- Y.innerHTML=`${ic('yil')}<small>Yıl</small><b>${S.turn}</b>`;Y.setAttribute('aria-label','Yıl '+S.turn);
+ Y.innerHTML=`${ic('yil')}<small>Yıl</small><b${FX.yr!=null&&FX.yr!==S.turn&&FX.on&&MOT()===2?' class=yrin':''}>${S.turn}</b>`;FX.yr=S.turn;Y.setAttribute('aria-label','Yıl '+S.turn);
  let h=RES.map(r=>{const v=e.net[r.k],s=S.res[r.k],cr=(r.k==='tahil'||r.k==='altin')&&s+v*2<0;
   return`<button class="hc${cr?' crit':''}" data-r=${r.k} onclick="resTap('${r.k}')" aria-label="${r.ad} ${fl(s)}, tur başına ${v<0?'eksi':'artı'} ${fmtD(v)}${cr?', kritik':''}" data-tip="${esc(`${r.ad} · ${v<0?'−':'+'}${fmtD(v)}/tur\n${r.ask}\n\nÜretim ${sgn(e.gross[r.k])}${e.up[r.k]?' · Ordu gideri −'+r1(e.up[r.k]):''}${cr?'\n⚠ 2 tur içinde tükenebilir':''}`)}">${ic(r.k)}<b>${fl(s)}</b>${trend(v)}${cr?ic('uyari','w'):''}</button>`}).join('')
   +`<span class=hsep></span><button class=hc data-r=nufus onclick="resTap('nufus')" aria-label="Nüfus ${fl(e.pop)} / ${fl(e.mpop)}" data-tip="Nüfus ${fl(e.pop)} / ${fl(e.mpop)}\nAskerler nüfustan çıkar. Nüfus tahıl stoğu varken büyür; çok asker almak işgücünü ve üretimi düşürür.">${ic('nufus')}<b>${fl(e.pop)}</b><small>/${fl(e.mpop)}</small></button>`
@@ -1959,10 +2202,15 @@ function renderHeader(){const R=$('#res'),Y=$('#yr');if(!S){R.innerHTML='';R._h=
  if(S.coal&&S.coal.on)h+=`<button class="hc warnc" onclick="setTab('ordu')" data-tip="Rakipler sana karşı koalisyon kurdu (${Math.max(0,S.coal.until-S.turn)} yıl)">${ic('koalisyon')}<b>Koalisyon</b></button>`;
  if(declOk())h+=`<button class="hc decl" onclick="askDeclare()" data-tip="Gücün rakiplerinin toplamının ${fmtX(DECL.r)} katı: oyunu şimdi bitirebilirsin">${ic('v-hegemonya')}<b>Zaferi ilan et</b></button>`;
  else{const v=vicBest();h+=`<button class="hc vic" onclick="setTab('hedef')" aria-label="En yakın zafer yolu: ${v.t.replace(/<[^>]+>/g,'')}" data-tip="${esc('Zafer yolları: '+pathTxt()+'\n(Hedef sekmesi)')}">${ring(v.p,v.col)}${ic(VIC[v.id].i)}${v.t}</button>`}
- if(R._h!==h){R.innerHTML=h;R._h=h;resMore()}
+ if(R._h!==h){R.innerHTML=h;R._h=h;resMore()}hudAnim(e);
  const bn=META&&META.equipped.banner&&COS[META.equipped.banner],T=$('.title');if(T)T.innerHTML=`${ic(bn?'sancak':'v-fetih')}FETİH`;
  {const b=$('#endBtn'),ev=!S.over&&S.evQ.length;b.disabled=!S.over&&S.phase!=='oyun';b.innerHTML=S.over?`${ic('kupa')}<span class=lg>Sonuç</span><span class=sm>Sonuç</span>`:ev?`${ic('olay')}<span class=lg>Olayı Çöz</span><span class=sm>Olay</span>`:`${ic('ileri-tur')}<span class=lg>Turu Bitir</span><span class=sm>Bitir</span>`;
   b.setAttribute('aria-label',S.over?'Sonuç ve miras ekranı':ev?'Bekleyen olayı çöz':'Turu bitir');if(S.over)b.dataset.tip='Sefer bitti: sonuç ve miras ekranını aç';else delete b.dataset.tip}}// 1d: oyun bitince düğme sessiz kalmaz, bitiş ekranını açar
+// HUD sayaçları (§5.4, §9.2 count + pulse): değişen çip 400 ms sayar, artışta yeşil, azalışta kırmızı nabız. Tek döngü (fxLoop)
+function hudAnim(e){const V={nufus:fl(e.pop),moral:Math.round(S.morale),asker:e.troops},t=performance.now(),go=FX.on&&MOT()===2;for(const r of RES)V[r.k]=fl(S.res[r.k]);FX.pu=FX.pu||{};
+ for(const k in V){const v=V[k],p=FX.hv[k],el=document.querySelector(`#res [data-r=${k}]`);FX.hv[k]=v;if(!el)continue;
+  if(go&&p!=null&&p!==v){const C=FX.cnt['h'+k],a=C?C.a+(C.b-C.a)*Math.min(1,(t-C.t0)/C.dur):p;FX.pu[k]={c:v>p?'up':'dn',t};el.classList.remove('up','dn');void el.offsetWidth;fxCount('h'+k,`#res [data-r=${k}] b`,a,v,400,Math.round,0)}
+  const P=FX.pu[k];if(P&&t-P.t<400&&!el.classList.contains(P.c))el.classList.add(P.c)}}
 function resMore(){const R=$('#res'),w=$('#resw');if(R&&w)w.classList.toggle('more',R.scrollWidth-R.scrollLeft-R.clientWidth>4)}
 // Kaynak çipine dokun: Ekonomi sekmesi, ilgili satır vurgulanır (mobilde çekmece yarıya açılır)
 function resTap(k){if(!S)return;setTab('eko');const row=$(`#panel [data-r=${k}]`);if(row){row.scrollIntoView({block:'nearest'});row.classList.add('flash');setTimeout(()=>row.classList.remove('flash'),1200)}}
@@ -1970,9 +2218,13 @@ function resTap(k){if(!S)return;setTab('eko');const row=$(`#panel [data-r=${k}]`
 function renderPanel(){const p=$('#panel');if(!S){p.innerHTML='';p._h='';return}
  const nd={tek:BR.some(b=>S.tech[b.id]<4&&S.res.bilgi>=tcost(S.tech[b.id])),hedef:declOk()};
  document.querySelectorAll('#tabs button').forEach(b=>{const t=b.dataset.t,on=t===ui.tab,n=b.querySelector('.nd');b.classList.toggle('on',on);b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;if(!!nd[t]!==!!n){if(n)n.remove();else b.insertAdjacentHTML('beforeend','<i class=nd></i>')}});
+ tabInk();if(p.dataset.tab&&p.dataset.tab!==ui.tab&&FX.on&&MOT()===2){p.classList.remove('swap');void p.offsetWidth;p.classList.add('swap')}p.dataset.tab=ui.tab;
  const key=ui.tab+ui.rtab+ui.sel,old=p.dataset.t;if(old)ui.scr[old]=p.scrollTop;
  const h=emo(({bolge:pRegion,eko:pEco,ordu:pArmy,hedef:pGoal,tek:pTech,kayit:pLog})[ui.tab]());
  if(h!==p._h){p.innerHTML=h;p._h=h;fixR(p)}if(old!==key){p.dataset.t=key;p.scrollTop=ui.scr[key]||0}renderPeek()}
+// tab-ink (§5.2): seçili sekmenin alt çizgisi transform ile kayar; daraltılmış tablet sütununda kenar çizgisine döner
+function tabInk(){const nav=$('#tabs'),on=nav&&nav.querySelector('button.on'),ink=nav&&nav.querySelector('.tink');if(!ink)return;const w=on?on.offsetWidth:0;
+ if(!w||document.body.classList.contains('side-c')){nav.classList.add('noink');return}nav.classList.remove('noink');ink.style.transform=`translateX(${on.offsetLeft}px) scaleX(${w/100})`}
 function renderPeek(){const el=$('#peek');if(!el||!S||!MAP)return;const i=ui.sel;let h;
  if(i!=null&&MAP.regions[i]){const r=S.regions[i],g=MAP.regions[i];h=g.block?`${ic('dag')}<b>${g.name}</b>`:`${fdot(r.owner)}<b>${g.name}</b>${r.capital?ic('baskent','k-brand'):''}<span class=pk>${ic('asker')}${vis(i).txt}</span><span class=pk>${ic('nufus','k-nufus')}${fl(r.pop)}</span>`}
  else{const o=own();h=`<b>Bölgelerin: ${o.length}</b><span class=pk>${ic('asker')}hazır ${o.reduce((s,k)=>s+S.regions[k].ready,0)}</span>`}
@@ -1995,7 +2247,7 @@ function sheetVis(){const s=$('#sheet');return ui.sheet==='peek'?72:ui.sheet==='
  g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();const k=SHEETS.indexOf(ui.sheet);setSheet(SHEETS[k===2?0:k+1])}});
  $('#res').addEventListener('scroll',resMore,{passive:true})})();
 // Tablet (768-1099): sağ panel haritanın üstünde; 56 px ikon sütununa daralır
-function sideToggle(){const c=document.body.classList.toggle('side-c'),b=$('#sideTgl');b.innerHTML=ic(c?'ok-sol':'ok-sag');b.setAttribute('aria-label',c?'Paneli aç':'Paneli daralt')}
+function sideToggle(){const c=document.body.classList.toggle('side-c'),b=$('#sideTgl');setTimeout(tabInk,0);b.innerHTML=ic(c?'ok-sol':'ok-sag');b.setAttribute('aria-label',c?'Paneli aç':'Paneli daralt')}
 // Mobil menü (≡): yeni sefer, yardım, miras, kayıt
 function showMenu(){modal(`<div class=menu><h3>${ic('v-fetih')} Fetih</h3>${S&&ART&&!S.over?`<button class="btn wide primary" onclick="closeModal()">${ic('oyna')} Oyuna dön</button>`:''}
  <button class="btn wide" onclick="askNew()">${ic('harita')} Yeni sefer</button><button class="btn wide" onclick="showHelp()">${ic('yardim')} Nasıl oynanır</button>
@@ -2036,6 +2288,8 @@ function pRegion(){const i=ui.sel;let h='';
  else h+=rgGenel(i);
  return h}
 function rgGenel(i){const g=MAP.regions[i],r=S.regions[i],mine=r.owner===0;let h=`<div class=kv style="margin-top:8px"><span>Birlikler</span><span>${mine||mil().spy?compTxt(r.u):'bileşim bilinmiyor'}</span></div>`;
+ // Son savaş kartı (§12 Aşama 4 riski: sonuç penceresi açılmadığında ayrıntı burada ve günlükte kalır)
+ const lb=ui.lastB;if(lb&&lb.t===S.turn&&(lb.to===i||lb.from===i))h=`<div class="card lastb${lb.win?'':' l'}"><b>${ic(lb.raid?'yagma':'saldiri')} Son savaş: ${lb.win?(lb.raid?'yağma başarılı':'fethedildi'):'püskürtüldü'}</b><small>${rName(lb.from)} → ${rName(lb.to)} · ${lb.sent} asker gönderildi, ${lb.lost} kayıp · düşman kaybı ${lb.dLost}${lb.cap?' · başkent alındı':''}</small>${lb.loot?`<small>Ganimet: ${lootLine(lb.loot,1)}</small>`:''}</div>`+h;
  if(mine){const wf=workforce(i);h+=`<div class=kv><span>👥 İşgücü</span><span class="${wf<1?'bad':''}">%${Math.round(wf*100)} (tesis üretimi)</span></div><div class=kv><span>Askere alınabilir nüfus</span><span>${draftable(i)}</span></div>`;
   if(r.capital&&S.cfg.alt)h+=`<div class=kv><span>🏛 Büyük Eser</span><span>${S.wonder.stage}/${VIC.medeniyet.stages}${S.wonder.build?` · ${S.wonder.build} yıl`:''} · <button type=button class=lnk onclick="setTab('hedef')">Hedefler ›</button></span></div>`;
   if(wf<1)h+=`<div class=warn>Nüfus azami değerin yarısının altında. Tesisler tam kapasite çalışmıyor. Asker almayı yavaşlat ya da tahıl stoğunu koru ki nüfus büyüsün.</div>`}
@@ -2203,7 +2457,7 @@ function rulesHtml(){const c=S.cfg,D=DIFFS[c.diff],Zs=SIZES[c.size];let h=`<h4>H
 
 // ======================= KURULUŞ / YARDIM / BAŞLANGIÇ =======================
 function showSetup(){const cap=capIdx(),g=MAP.regions[cap],fs=S.regions[cap].fields,sl=slots(cap),c=S.cfg,Dy=dynOf();
- let h=`<h3>👑 ${c.dyn==='klasik'?'Beyliğin':Dy.e+' '+Dy.ad} Kuruluşu</h3><div class=muted style="font-size:12px;margin:-4px 0 8px">${cfgLine(c)}</div>
+ let h=`${wzSteps(4)}<h3>👑 ${c.dyn==='klasik'?'Beyliğin':Dy.e+' '+Dy.ad} Kuruluşu</h3><div class=muted style="font-size:12px;margin:-4px 0 8px">${cfgLine(c)}</div>
  <p style="margin-top:0">Başkentin <b>${g.name}</b> (${TER[g.terrain].ad}${g.feat?' · '+FEAT[g.feat].ad:''}). Sana <b>${c.fund} akçelik kuruluş hazinesi</b> verildi. Bununla başkentine <b>kaynak tesisi</b> satın al. Rakipler ${c.grace}. yıla kadar sana saldırmaz.</p>
  <div class=rivals>${c.ais.map(f=>`<span class=chip title="${esc((aiDyn(f)?DYN[aiDyn(f)].aiPerk:'')+(S.ai[f].per!=='klasik'?(knowPers()?' · '+AIPERS[S.ai[f].per].d:' · Kişilik Haritacılık (Strateji I) ile görünür'):''))}">${fdot(f)}${facName(f)}${persTag(f)}</span>`).join('')}</div>
  <div class=fundbox>💰 Kalan hazine: <b>${S.fund}</b> akçe &nbsp;·&nbsp; Tesis yuvası: ${fs.length}/${sl}</div><div class=cards>`;
@@ -2227,9 +2481,10 @@ function showHelp(){const c=S?S.cfg:normCfg(CFG_KLASIK);modal(`<h3>⚔ Fetih: Na
 <div class=savebox><b style="font-size:12.5px">💾 Kayıt</b><span class=muted style="font-size:12px;flex:1">${ST.ok?'Oyun bu tarayıcıya otomatik kaydedilir.':'Tarayıcı kaydı kapalı.'}</span>${S?`<button class="btn sm" onclick="copyText(exportSave(),'Kayıt panoya kopyalandı.')">📋 Kaydı kopyala</button>`:''}<button class="btn sm" onclick="showImport()">📥 Kayıt yükle</button></div>
 <div class=row><button class="btn primary" onclick="closeModal();if(!S||!ART)startNew();else if(S.phase==='kurulus')showSetup()">${S&&ART?'Başla':'Tamam'}</button></div><div class=ver>Fetih v${GAME_VERSION} · kayıt v${SAVE_VER}</div>`,'help')}
 function askNew(){startNew()}
-function loadMsg(m){const l=$('#loading');if(l)l.textContent=m}
-async function boot(fn){if(boot.busy)return;boot.busy=true;$('#loading').style.display='flex';loadMsg('Harita kuruluyor…');await frame();try{return await fn()}finally{$('#loading').style.display=ART?'none':'flex';if(!ART)loadMsg('FETİH');boot.busy=false}}
-function freshStart(){resize();centerOn(capIdx(),Math.max(minZ(),1));refresh();saveNow()}
+function loadMsg(m){const l=$('#loadT'),L=$('#loading');if(l)l.textContent=m==='FETİH'?'':m;if(L){const v=m==='FETİH'?0:Math.min(.95,(+L.dataset.p||.05)+((.95-(+L.dataset.p||.05))*.22));L.dataset.p=v;L.style.setProperty('--lp',v)}}
+function loadDone(){const L=$('#loading');if(L){L.dataset.p=1;L.style.setProperty('--lp',1)}}
+async function boot(fn){if(boot.busy)return;boot.busy=true;const L=$('#loading');L.style.display='flex';L.dataset.p=.05;L.style.setProperty('--lp',.05);loadMsg('Harita kuruluyor…');await frame();try{return await fn()}finally{if(ART)loadDone();$('#loading').style.display=ART?'none':'flex';if(!ART)loadMsg('FETİH');boot.busy=false}}
+function freshStart(){view.style.filter='';FX.hv={};FX.old={};FX.pins={};fxSkip();resize();centerOn(capIdx(),Math.max(minZ(),1));refresh();saveNow()}
 
 // ======================= YENİ SEFER SİHİRBAZI (§12) =======================
 // Adım 0 karşılama · 1 hanedan · 2 kural kartları · 3 harita/boy/zorluk · 4 kuruluş (showSetup). Mevcut oyun ancak "Başlat"ta silinir.
@@ -2238,14 +2493,14 @@ const wzSh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=fl(Math.random(
 function wizInit(){const l=META.lastCfg,c={dyn:'boru',muts:[],map:'kita',size:'orta',diff:l?'kalfa':'cirak',dice:false,ferman:null,bonus:(META.equipped.bonus||[]).filter(b=>isOpen('bonus',b)).slice(0,bonusSlots()),target:l&&l.target&&!META.ach[l.target]?l.target:null};if(l)for(const k of['dyn','map','size','diff'])if(l[k])c[k]=l[k];
  for(const[k,cat,d]of[['dyn','dyn','boru'],['map','map','kita'],['size','size','orta'],['diff','diff','cirak']])if(!isOpen(cat,c[k]))c[k]=d;
  WZ.c=c;WZ.redrawn=false;WZ.seed='';wizDraw()}
-function wizDraw(){WZ.draw=wzSh(META.unlocked.mut.filter(m=>MUTS[m])).slice(0,3);WZ.c.muts=[];WZ.c.dice=false}
-function startNew(){if(boot.busy)return;if(!META)loadMeta();wizInit();WZ.step=0;wizShow()}
-function wizGo(n){WZ.step=clamp(n,0,3);wizShow();const m=$('#modal');if(m)m.scrollTop=0}
+function wizDraw(){WZ.draw=wzSh(META.unlocked.mut.filter(m=>MUTS[m])).slice(0,3);WZ.c.muts=[];WZ.c.dice=false;WZ.flip=true}
+function startNew(){if(boot.busy)return;if(!META)loadMeta();wizInit();WZ.step=0;WZ.last=null;wizShow()}
+function wizGo(n){n=clamp(n,0,3);if(n===2&&WZ.step!==2)WZ.flip=true;WZ.step=n;wizShow();const m=$('#modal');if(m)m.scrollTop=0}
 function wizSet(k,v){WZ.c[k]=v;if(k==='diff'&&mutBanned(WZ.c.muts,v)){WZ.c.muts=WZ.c.muts.slice(0,1);toast('Bu iki kart Destan zorlukta birlikte seçilemez.')}wizShow()}
-function wizUnlock(cat,id){if(unlockItem(cat,id)){toast('🔓 Açıldı!');if(cat==='mut'&&!WZ.draw.includes(id))WZ.draw.push(id)}wizShow()}
+function wizUnlock(cat,id){if(unlockItem(cat,id)){WZ.unl=cat+':'+id;toast('🔓 Açıldı!','good');if(cat==='mut'&&!WZ.draw.includes(id))WZ.draw.push(id)}wizShow()}
 function wizRandDyn(){const o=['klasik',...DYN6].filter(d=>isOpen('dyn',d)&&d!==WZ.c.dyn);if(o.length)WZ.c.dyn=o[fl(Math.random()*o.length)];wizShow()}
 function wizMut(m){const c=WZ.c;c.dice=false;if(c.muts.includes(m))c.muts=c.muts.filter(x=>x!==m);else{const n=c.muts.concat(m);if(n.length>2){toast('En fazla 2 kart seçebilirsin.');return}if(mutBanned(n,c.diff)){toast('Bu iki kart birlikte seçilemez.');return}c.muts=n}wizShow()}
-function wizDice(){const pool=META.unlocked.mut.filter(m=>MUTS[m]);let p;for(let k=0;k<50;k++){p=wzSh(pool).slice(0,2);if(!mutBanned(p,WZ.c.diff))break}WZ.draw=p.slice();WZ.c.muts=p;WZ.c.dice=true;wizShow()}
+function wizDice(){const pool=META.unlocked.mut.filter(m=>MUTS[m]);let p;for(let k=0;k<50;k++){p=wzSh(pool).slice(0,2);if(!mutBanned(p,WZ.c.diff))break}WZ.draw=p.slice();WZ.c.muts=p;WZ.c.dice=true;WZ.flip=true;wizShow()}
 function wizRedraw(){if(WZ.redrawn)return;WZ.redrawn=true;wizDraw();wizShow()}
 function wizAgain(c){c=c||META.lastCfg;launch(fl(Math.random()*1e9),normCfg({bonus:(META.equipped.bonus||[]).filter(b=>isOpen('bonus',b)),...c,daily:null,train:false,rematch:false}))}
 function quickStart(){launch(fl(Math.random()*1e9),normCfg(CFG_HIZLI))}
@@ -2256,10 +2511,13 @@ function wizStart(){const t=String(WZ.seed||'').trim();if(/^fth-/i.test(t)){cons
 // Yeni oyun: son ayar yalnız sıradan oyunlarda hatırlanır (günlük/rövanş/antrenman değil). S.gid: miras çifte ödül koruması için oyun kimliği.
 function launch(seed,cfg){if(boot.busy)return;if(!META)loadMeta();if(!cfg.daily&&!cfg.rematch&&!cfg.train){META.lastCfg={dyn:cfg.dyn,muts:cfg.muts.slice(),map:cfg.map,size:cfg.size,diff:cfg.diff,dice:cfg.dice,ferman:cfg.ferman,target:cfg.target};META.equipped.bonus=cfg.bonus.slice()}saveMeta();closeModal();
  boot(async()=>{await newGameAsync(seed,cfg);S.gid=Date.now().toString(36)+'-'+fl(Math.random()*1e9).toString(36);freshStart();showSetup()})}
-function wizShow(){const st=WZ.step,steps=['Hanedan','Kartlar','Harita','Kuruluş'];let h='<div class=wz>';
- if(st>0)h+=`<div class=wz-steps>${steps.map((s,k)=>`<span class="${k+1===st?'on':k+1<st?'done':''}">${k+1}. ${s}</span>`).join('')}</div>`;
- modal(h+[wz0,wz1,wz2,wz3][st]()+'</div>','wiz',true)}
+// Adım göstergesi (§6.4): numaralı daireler + çizgi, geçilen adım onay ikonlu. 4. adım kuruluş penceresidir
+function wzSteps(st){return`<div class=wz-steps role=list aria-label="Adım ${st}/4">${['Hanedan','Kartlar','Harita','Kuruluş'].map((s,k)=>{const c=k+1===st?'on':k+1<st?'done':'';return`<span class="${c}" role=listitem${c==='on'?' aria-current=step':''}><i>${k+1<st?ic('onay'):k+1}</i><em>${s}</em></span>`}).join('')}</div>`}
+function wizShow(){const st=WZ.step,a=WZ.last!=null&&WZ.last!==st?(st>WZ.last?' ar':' al'):'';WZ.last=st;
+ modal('<div class=wz>'+(st>0?wzSteps(st):'')+`<div class="wzb${a}">`+[wz0,wz1,wz2,wz3][st]()+'</div></div>','wiz',true);WZ.flip=false;WZ.unl=null}
 function wzNav(mid,next){return`<div class=wz-nav><button class=btn onclick="wizGo(${WZ.step-1})">‹ Geri</button>${mid||''}<span style="flex:1"></span>${next||`<button class="btn primary" onclick="wizGo(${WZ.step+1})">İleri ›</button>`}</div>`}
+// §5.11 kilitli kart: içerik okunur kalır, sağ üstte kilit; MP yetiyorsa kesik altın kenar + [Aç]. Seçilebilir kart klavyeyle de seçilir
+const pickA=(cat,id,on,op)=>`class="card pick ${on?'on':''} ${op?'':'lockd'+(lockCost(cat,id)&&META.mp>=lockCost(cat,id)?' can':'')}${WZ.unl===cat+':'+id?' unl':''}${WZ.flip&&cat==='mut'?' flip':''}" role=button tabindex=${op?0:-1} aria-pressed=${!!on}${op?'':' aria-disabled=true'}`,lkI=op=>op?'':`<span class=lk>${ic('kilit')}</span>`;
 const unlockBtn=(cat,id)=>{const c=lockCost(cat,id);return c&&META.mp>=c?`<button class="btn sm primary" onclick="event.stopPropagation();wizUnlock('${cat}','${id}')">🔓 Aç (${c} MP)</button>`:''};
 function wz0(){const can=!!(S&&ART&&!S.over),l=META.lastCfg;
  if(metaNew()&&!can)return`<h3 style="font-size:22px">⚔ Fetih</h3><p>Tek bir bölgeden başla: kaynak topla, ordunu büyüt, rakip devletleri fethet.</p>
@@ -2275,14 +2533,14 @@ function wz0(){const can=!!(S&&ART&&!S.over),l=META.lastCfg;
   <div class=ver>${ST.ok?'':'Tarayıcı kaydı kapalı · '}Fetih v${GAME_VERSION}</div>`}
 function wz1(){const c=WZ.c;let h=`<h3>Hanedanını seç</h3><div class="cards wzc wzc2">`;
  for(const d of['klasik',...DYN6]){const D=DYN[d],op=isOpen('dyn',d),A=D.ab&&ABIL[D.ab];
-  h+=`<div class="card pick ${c.dyn===d?'on':''} ${op?'':'lockd'}" ${op?`onclick="wizSet('dyn','${d}')"`:''} role=button><div><b>${ic(D.i)} ${D.ad}</b>${d==='klasik'?' <span class=tag>miras ×0,9</span>':''}</div><small class=muted>${D.tema}</small>
+  h+=`<div ${pickA('dyn',d,c.dyn===d,op)} ${op?`onclick="wizSet('dyn','${d}')"`:''}>${lkI(op)}<div><b>${ic(D.i)} ${D.ad}</b>${d==='klasik'?' <span class=tag>miras ×0,9</span>':''}</div><small class=muted>${D.tema}</small>
   <div class=det>${D.g.map(x=>`<small class=good>✔ ${x}</small>`).join('')}${D.z.map(x=>`<small class=bad>✖ ${x}</small>`).join('')}${A?`<small>★ <b>${A.ad}</b></small>`:''}</div><small class=muted>${startTxt(d)}</small>
   ${op?'':`<small class=muted>${lockTxt('dyn',d)}</small>${unlockBtn('dyn',d)}`}</div>`}
  const A=DYN[c.dyn].ab&&ABIL[DYN[c.dyn].ab];h+='</div><div class=mobdet>'+dynHtml(c.dyn)+'</div>'+(A?`<div class=feat>${ic(DYN[c.dyn].i)} ★ <b>${A.ad}:</b> ${A.d}</div>`:'');
  return h+wzNav(`<button class=btn onclick="wizRandDyn()">🎲 Rastgele</button>`)}
 function wz2(){const c=WZ.c,n=normCfg(c);let h=`<h3>Kural kartları</h3><p class=muted style="margin-top:0;font-size:12.5px">3 kart çekildi. Birini seç, istersen ikincisini de al. Kartlar oyunu değiştirir ve miras çarpanını artırır.</p><div class="cards wzc">`;
  for(const m of WZ.draw){const M=MUTS[m],t=MUT_TUR[M.tur],on=c.muts.includes(m);
-  h+=`<div class="card pick ${on?'on':''}" onclick="wizMut('${m}')" role=button><div><b>${ic(M.i)} ${M.ad}</b></div><div><span class="tag ${t[1]}">${t[0]}</span> <span class=muted style="font-size:12px">miras ×${fmtX(M.x)}</span></div><small>${M.d}</small>${on?'<small class=ok>✓ Seçildi</small>':''}</div>`}
+  h+=`<div ${pickA('mut',m,on,1)} onclick="wizMut('${m}')"${WZ.flip?` style="animation-delay:${WZ.draw.indexOf(m)*90}ms"`:''}><div><b>${ic(M.i)} ${M.ad}</b></div><div><span class="tag ${t[1]}">${t[0]}</span> <span class=muted style="font-size:12px">miras ×${fmtX(M.x)}</span></div><small>${M.d}</small>${on?'<small class=ok>✓ Seçildi</small>':''}</div>`}
  const dots=clamp(Math.round((n.mutX-.85)/.22)+1,1,5),lk=Object.keys(MUTS).filter(m=>!isOpen('mut',m));
  h+=`</div><div class=fundbox style="font-size:13.5px">Kart çarpanı <b>×${fmtX(n.mutX)}</b>${n.dice?' (zar +%10)':''} · toplam miras ×${fmtX(scoreX(n))} · zorluk ${'●'.repeat(dots)}${'○'.repeat(5-dots)}${mutWarn(c.muts)?' <span class="tag good">kolay</span>':''}</div>`;
  if(lk.length)h+=`<details style="font-size:12.5px"><summary class=muted style="cursor:pointer;padding:6px 0">🔒 Kilitli kartlar (${lk.length})</summary>${lk.map(m=>`<div class=item><div>${ic(MUTS[m].i)} <b>${MUTS[m].ad}</b><small>${MUTS[m].d}</small></div><span>${unlockBtn('mut',m)||`<small class=muted>${lockTxt('mut',m)}</small>`}</span></div>`).join('')}</details>`;
@@ -2295,14 +2553,20 @@ function wizBonus(b){const c=WZ.c,a=c.bonus||[];c.bonus=a.includes(b)?a.filter(x
 function wzTarget(){const L=ACH.filter(a=>a.lv&&!a.hid&&!META.ach[a.id]);if(!L.length)return'';return`<h4>🎯 Hedef başarım <span style="text-transform:none;letter-spacing:0">(isteğe bağlı, üst çubukta izlenir)</span></h4><select class=inp onchange="WZ.c.target=this.value||null"><option value="">Yok</option>${L.map(a=>`<option value="${a.id}" ${WZ.c.target===a.id?'selected':''}>${a.ad} (+${a.mp} MP): ${a.d}</option>`).join('')}</select>${WZ.c.diff==='cirak'?'<p class=muted style="font-size:12px;margin:4px 0 0">Çırak\'ta yalnız İlk Zafer, Ders Alındı, Altı Ocak ve Vakanüvis açılır.</p>':''}`}
 function segBtns(cat,T){return Object.keys(T).map(k=>{const op=isOpen(cat,k),on=WZ.c[cat]===k;return`<button class="btn ${on?'primary':''}" ${op?`onclick="wizSet('${cat}','${k}')"`:'disabled'} title="${esc(op?T[k].d:lockTxt(cat,k))}">${op?'':'🔒 '}${T[k].ad}${cat==='size'?`<br><small style="font-size:10.5px;opacity:.8">${op?T[k].d.split(',')[0]:lockCost(cat,k)+' MP'}</small>`:''}</button>`}).join('')}
 function wz3(){const c=WZ.c,n=normCfg(c);let h=`<h3>Harita, boy ve zorluk</h3><h4 style="margin-top:4px">Harita türü</h4><div class="cards wzc wzc2">`;
- for(const k in MAPTYPES){const T=MAPTYPES[k],op=isOpen('map',k);h+=`<div class="card pick ${c.map===k?'on':''} ${op?'':'lockd'}" ${op?`onclick="wizSet('map','${k}')"`:''} role=button><div><b>${ic(T.i)} ${T.ad}</b></div><small class=muted>${T.d}</small>${op?'':`<small class=muted>${lockTxt('map',k)}</small>${unlockBtn('map',k)}`}</div>`}
+ for(const k in MAPTYPES){const T=MAPTYPES[k],op=isOpen('map',k);h+=`<div ${pickA('map',k,c.map===k,op)} ${op?`onclick="wizSet('map','${k}')"`:''}>${lkI(op)}<div><b>${ic(T.i)} ${T.ad}</b></div><small class=muted>${T.d}</small>${op?'':`<small class=muted>${lockTxt('map',k)}</small>${unlockBtn('map',k)}`}</div>`}
  h+=`</div><h4>Oyun boyu</h4><div class=seg>${segBtns('size',SIZES)}</div><h4>Zorluk</h4><div class=seg>${segBtns('diff',DIFFS)}</div><p class=muted style="font-size:12px;margin:6px 0 0">${DIFFS[c.diff].d} Miras ×${fmtX(DIFFS[c.diff].mp)}.</p>
  <h4>Ferman <span style="text-transform:none;letter-spacing:0">(isteğe bağlı)</span></h4><div class=seg>${[['','Yok'],...Object.keys(VIC).map(k=>[k,ic(VIC[k].i)+' '+VIC[k].ad])].map(([k,a])=>`<button class="btn ${(c.ferman||'')===k?'primary':''}" onclick="wizSet('ferman','${k}')">${a}</button>`).join('')}</div><p class=muted style="font-size:12px;margin:6px 0 0">Kazanacağın yolu beyan et: o yoldan kazanırsan miras ×${fmtX(FERMAN.x)}. ${FERMAN.until}. yıla kadar bir kez değiştirebilirsin.</p>
  ${wzBonus()}${wzTarget()}<h4>Tohum ya da kod</h4><input id=wzSeed maxlength=40 placeholder="boş = rastgele · sayı ya da FTH-… kodu" value="${esc(WZ.seed)}" oninput="WZ.seed=this.value" class=inp autocomplete=off>
  <div class=fundbox style="font-size:13px">${cfgLine(n)}<br><span class=muted>Barış ${n.grace} yıl · hazine ${n.fund} akçe · ${n.ais.length} rakip · miras ×${fmtX(scoreX(n))}</span></div>${S&&ART&&!S.over?'<p class=muted style="font-size:12px;margin:0">Mevcut oyunun silinir (miras puanların korunur).</p>':''}`;
  return h+wzNav('',`<button class="btn primary" onclick="wizStart()">Seferi Başlat ▶</button>`)}
-window.addEventListener('resize',()=>{resize();resMore();setHint()});
-window.addEventListener('keydown',e=>{if(ui.modal==='ev'&&/^[1-9]$/.test(e.key)){e.preventDefault();pickEvent(+e.key-1);return}if(e.key==='Escape')tipHide();if(e.key==='Escape'&&ui.modal&&!['setup','over','bozuk','ev','miras'].includes(ui.modal)&&!(ui.modal==='wiz'&&!ART))closeModal()});
+window.addEventListener('resize',()=>{resize();resMore();setHint();tabInk()});
+window.addEventListener('keydown',e=>{fxSkip();if(ui.modal==='ev'&&/^[1-9]$/.test(e.key)){e.preventDefault();evPick(+e.key-1);return}if(e.key==='Escape')tipHide();if(e.key==='Escape'&&mCan(ui.modal))closeModal();
+ // odak tuzağı (§5.8): Tab pencere içinde döner
+ if(e.key==='Tab'&&ui.modal){const L=[...$('#modal').querySelectorAll(FOC)].filter(x=>x.offsetParent!==null||x===document.activeElement);if(!L.length)return;const a=L[0],z=L[L.length-1],c=document.activeElement;
+  if(!$('#modal').contains(c)){e.preventDefault();a.focus()}else if(e.shiftKey&&c===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&c===z){e.preventDefault();a.focus()}}});
+// herhangi bir dokunuş/tık efektleri son karelerine atlatır (§8.11); [role=button] kartlar Enter/Boşluk ile seçilir
+document.addEventListener('pointerdown',()=>fxSkip(),true);
+document.addEventListener('keydown',e=>{const t=e.target;if((e.key==='Enter'||e.key===' ')&&t&&t.matches&&t.matches('[role=button][onclick]:not(button)')){e.preventDefault();t.click()}});
 // 1d: kayıt hangi aşamada bozuk çıkarsa çıksın (ayrıştırma, harita uyuşmazlığı, çizim, ilk yenileme) aynı akış: ham kayıt yedeklenir, pencere açılır, yeni oyun
 async function start(){if(!storeCheck())note('st','⚠ Tarayıcı kaydı kapalı: ilerleme kaydedilmeyecek.'+(ST.rd?' (Var olan kayıt okunabiliyor ama üzerine yazılamıyor.)':''),'warn');try{loadMeta()}catch(e){onErr('Miras okunamadı: '+e.message,e.stack)}
  let ok=false;try{await boot(async()=>{resize();const r=readSave();

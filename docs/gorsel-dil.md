@@ -1162,3 +1162,44 @@ Uygulanan: Aşama 1 (token, tipografi, temel bileşenler), Aşama 2 (ikon sprite
 - `--tx-3` `--bg-3` üstünde 4,16 (yalnız hover anında `±0` eğilim metni); `--bad` `--brand-wash` üstünde 4,18 (seçili kartta kırmızı satır, nadir).
 - Dosya boyutu 329 KB: Aşama 4-8 için bütçe planı (§12) yeniden hesaplanmalı (sprite + CSS beklenenden ~+20 KB).
 - Animasyon, ses, nabız/sayaç (Aşama 6-7), odak tuzağı ve roving tabindex'in tamamı (Aşama 8) yapılmadı; ana sekmelerde ok tuşu gezinmesi ve `role=tab/aria-selected` eklendi.
+
+---
+
+## Uygulama notları (görsel 4-6)
+
+Uygulanan: Aşama 4 (pencere kalıbı, olay, saldırı, sonuç akışı, sihirbaz, bitiş, Miras, başarım kartı, ayar hazırlığı), Aşama 5 (sahiplik deseni + iç şerit, sınırlar, seçim nabzı, hedef işaretleri, sis, LOD, rozet/özellik sprite'ları, ok, savaş, dalga, ganimet, pinler), Aşama 6 (hareket düzeyi, sayaçlar, sekme, toast, pencere giriş/çıkış, yıl kartı, ödül/rütbe/kilit, olay kartı, yükleme). Oyun mantığı, denge, kayıt biçimi (`SAVE_VER` 8), RNG değişmedi: `baseline-v4` `rows` + `rowsOff` 12/12 birebir, `randLeak` 0, `fast:false` 3 tohum birebir. Dosya 329 → ~369 KB.
+
+**Mimari kararlar**
+- **Ayar:** `PREF` (`localStorage['fetih-ayar']`, `{v:1,battleModal,motion}`; TEST kipinde okunmaz/yazılmaz). Arayüz Aşama 8'de; şimdilik konsoldan `PREF.battleModal='hep'` (oturumluk) ya da `prefSet('battleModal','hep')` (kalıcı). `prefSet('motion','tam'|'az'|'yok')`; boşsa `prefers-reduced-motion` izlenir.
+- **Hareket düzeyi:** `MOT()` 2 tam / 1 az / 0 yok; `:root.rm` (az: tüm CSS animasyonları kapalı, pencere/toast/olay yalnız 100 ms opaklık) ve `:root.rm0` (hiç). Belgedeki `RM()` adı `RM` sabitiyle (kaynak haritası) çakıştığı için `MOT()`. `@media (prefers-reduced-motion)` kuralları sınıfa taşındı (açık ayar sistem ayarını ezebilsin diye).
+- **Tek rAF döngüsü:** `FX` durumu + `fxLoop`. `req()` artık döngüyü tetikler. Döngü yalnız efekt, sayaç ya da seçim nabzı varken döner (nabız ~30 fps'e kısılır, pencere açıkken durur). `drawOverlay` animasyon karelerinde çağrılmaz (ölçüldü: 0). TEST kipinde `FX.on=false`: efekt, sayaç, odak taşıma yok; testler etkilenmez.
+- **Savaş kancası:** `resolve()` içinde yalnız görsel kayıt (`fxPre`: hedefin eski OVL kesiti; `FX.b`: savaş kaydı). Oyun durumuna/RNG'ye dokunmaz; efekt süsleri `hsh()` ile belirlenimci (Math.random yok).
+- **Sahiplik katmanı:** dolgu %18 + 6 px desen (Kızıl /, Mavi nokta, Yeşil yatay, Mor \; oyuncu düz %22), 1 px mürekkep devlet sınırı (kabile tarafı kemik), 3 px iç şerit. Şerit için harita başına bir kez `mgeo()` (bölge kutusu, bölge başına sınır listesi, sınıra 1-3 px uzak piksellerin seyrek listesi ~113-134 bin piksel, ~0,9-1 MB; kurulum 13-40 ms). Kesik hedef çizgisi aynı listeyle OVL'de (seçim zaten `refresh` → `drawOverlay` tetikliyordu). Seçim sınırı OVL'den çıktı, `selMask` küçük tuvali ile FX'te nabız atar.
+- **Dalga:** OVL saldırı anında zaten yeni durumda; eski görünüm (ART + eski OVL kesiti, bölge maskeli) açılan dairenin dışında çizilir. Böylece dalga sonunda `drawOverlay` gerekmez.
+- **Harita ikonları:** `iFeat`, hedef işaretleri, pinler, savaş/ganimet ikonları SVG sprite simgesinden bir kez 48 px tuvale çizilir (`icoImg`, renk gömülü; `ICON_PATHS`/Path2D yerine: çok öğeli simgeler için daha az kod, HUD ile birebir silüet). Rozet `iBadge` sancak şekilli, sayı mürekkep. Kale/kale-köy bayrağı sahip deseni taşır.
+- **Sonuç penceresi (5.14):** varsayılan `onemli`: pencere yalnız oyun bitince, başkent alınınca ya da kayıp ≥ gönderilenin %60'ı olunca; aksi halde saldırı penceresi kapanır, toast + harita efekti + bölge panelinde "Son savaş" kartı (`ui.lastB`, kayda yazılmaz) + günlük. Not: püskürtülen saldırıda yalnız %20 geri çekildiği için **her yenilgi** %60 eşiğini aşar; pratikte pencere = başkent / bitiş / tüm yenilgiler / ağır kayıplı zaferler. `hep` modunda eski akış (Tamam, `afterModal` zinciri) aynen. `doAttack`, `doRaid`, `closeModal`→`afterModal` adları ve zinciri korundu.
+- **Pencere kapanışı:** `closeModal` durumu anında kapatır (`ui.modal=null`, `display:none`: test betikleri etkilenmez); görsel çıkış (140 ms) bir hayalet kopyada (`.mghost`). Yeni pencere açılırsa hayalet hemen silinir.
+- **Kapatılamaz türler** tek yerde (`NOCL`, `mCan`): Esc ve sağ üstteki kapat düğmesi aynı kuralı kullanır; oyunu bitiren `res` penceresinde kapat düğmesi yok (Tamam/Esc → `afterModal`). Odak tuzağı (Tab döngüsü) ve açılışta odak (olayda 1. seçenek, saldırıda sürgü), kapanışta açan öğeye dönüş.
+- **Olay seçimi:** `evPick` 200 ms altın dolma + diğerleri solar, sonra `pickEvent` (TEST ve az/yok harekette anında). 1/2/3 tuşları `evPick` üzerinden.
+- **Sayaçlar:** `hudAnim` kaynak/nüfus/moral/asker çiplerinde değişimi 400 ms sayar + `pulse-good/bad` (yalnız `background-color` ve sayı `scale`). Skor sayacı aynı döngüde (`fxCount`, 1200 ms ease-out-expo).
+- **Atlama:** her `pointerdown`/`keydown` ve her `endTurn` başında `fxSkip()`: efektler kaldırılır, sayaçlar son değere, bitiş vuruşları anında. Kuyruk birikmez.
+
+**Belgeden sapmalar**
+- Mobil üst sınır: sihirbaz, bitiş, Miras mobilde tam ekran sayfa (`#modal.full`); kuruluş penceresi %92 çekmece kaldı (harita görünsün) ama adım göstergesinin 4. adımını taşır.
+- Saldırı penceresinde birlik sürgüleri şans göstergesinin altına alındı; çarpanlar ve birim güçleri `<details>Ayrıntılar` içinde. Tahmini kayıp `winFr` ile (zarsız orta değer).
+- Yapay zekâ okları: yalnız oyuncuya yönelen ya da toprak değiştiren savaşlar (AI–kabile püskürtmeleri gösterilmez), en çok 12. Oyuncuya yönelen saldırıda çarpışma işareti; kaybedilen bölgede yavaş dalga + kırmızı yanıp sönme. Tur geçişinin ok/dalga kısmı ≤ ~1,2 sn; sonuç işareti (✓/✕) 1,3 sn'ye kadar kalır (girdi engellemez).
+- Rapor penceresi (`rep`) tur sonunda hemen açılır (testler buna güveniyor); yıl kartı ve oklar perdenin arkasında oynar.
+- Olay pinleri: yağmalandı (`raid`), karantina (`qt`), koalisyon üyesi başkenti. Koalisyon kesik çizgisi, nehir/köprü geçiş işareti, `crit-blink` (eksik kaynak), `end-glow` (Turu Bitir hazır), tablet çekmece `panel-in` (genişlik geçişi) yapılmadı.
+- LOD 0 (z < 0,6) masaüstünde erişilemez (en küçük zoom ~0,65); mobilde açılış görünümü.
+- Etiket çakışması: öncelik seçili > oyuncu/başkent > diğer; başkent etiketi büyük harf + `letterSpacing` (destekleyen tarayıcıda).
+
+**Ölçümler (başsız Chrome, bu makine)**
+- `drawOverlay` (Normal, 41. yıl, 30 çağrı ort.): 1440×880 5,7 → 5,6 ms; 375×812 4× CPU 18,45 → 19,08 ms (+%3,4; sınır %15). Uzun boy 92. yıl: 5,6 ms / 4× 21,6 ms.
+- `refresh` ort.: 1440 5,2 → 5,5-6,0 ms; 375 4× 19,9 → 20,3-21,4 ms.
+- Efekt sırasında (saldırı ok+çarpışma+dalga+ganimet; tur geçişi): kare aralığı p95 16,7-16,8 ms, `render` p95 1,4-2,1 ms, `drawOverlay` çağrısı 0; boşta (seçim/efekt yok) 1 sn'de 0 `render`. Uzun boy 4× CPU saldırıda en uzun kare 33,3 ms (1 kare).
+- Bellek: JS yığını 23 → ~30 MB (geometri listesi ~1 MB + ikon tuvalleri 16×9 KB + seçim/dalga kesitleri).
+
+**Bilinen riskler / yapılmayanlar**
+- Gerçek dokunmatik cihazda (iOS Safari, Android) denenmedi; tam ekran sayfa `100dvh`, hayalet kapanış ve `letterSpacing` yalnız Chrome'da görüldü.
+- `icoImg` SVG'yi `data:` görüntüsü olarak tuvale çizer; eski Safari'de SVG görüntüsü tuvali "kirletebilir" (yalnız `getImageData` etkilenir; görünüm tuvalinden okuma yapılmıyor).
+- Ses (Aşama 7-8) yok; ayarlar arayüzü, renk körü modunda desen alfası %40 ve klavye harita gezintisi Aşama 8.
