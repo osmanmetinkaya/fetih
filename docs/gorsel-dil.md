@@ -1124,3 +1124,41 @@ Notlar:
 - Ayarlar paneli **oyun dışında da** (sihirbaz açılışında, bitiş ekranında) erişilebilir: sihirbaz karşılamasında sağ üstte `i-ayarlar`.
 - `fetih-ayar` bozuk/eksikse sessizce varsayılana döner (mirastaki gibi şerit gösterilmez: kritik veri değil).
 - Ayarlar `exportSave` dışa aktarımına **dahil edilmez** (cihaza özgü: mobil yazı boyutu masaüstüne taşınmasın).
+
+---
+
+## Uygulama notları (görsel 1-3)
+
+Uygulanan: Aşama 1 (token, tipografi, temel bileşenler), Aşama 2 (ikon sprite'ı, emoji → ikon), Aşama 3 (HUD, mobil alt çekmece, tablet çekmecesi, FAB, bağlamsal eylem düğmesi). Oyun mantığı, kayıt biçimi (`SAVE_VER` 8), RNG ve test altyapısı değişmedi: `tests/baseline-v4.json` `rows` ve `rowsOff` 12/12 tohum birebir, `randLeak` 0, `checkMaps` 20/20 + 12/12, `evUnit` 43 satır 0 hata; `fast:false` (gerçek `refresh`/çizim yolu) 3 tohumda da birebir.
+
+**Mimari kararlar**
+- Emoji, **çıkışta** ikona çevrilir: `emo(html)` yalnız metin düğümlerine dokunur (`<textarea>` hariç), `title=` → `data-tip=`. Sinkler: `modal`, `renderPanel`, `renderHeader`, `toast`, `note`, `updAtk`, harita `#tip`, ipucu yöneticisi. Böylece kayıttaki eski günlük metinleri (emoji ile saklanır, `log()` değişmedi; bot `/^Kıtlık/` ile okur) ve `costTxt`/`lootLine`/`give()` çıktıları dokunulmadan ikonlu görünür. Anlamı bağlama göre değişen yerler (tesis/kaynak, hanedan, kart, harita türü, zafer yolu, birlik, teknoloji dalı, olay başlığı, bonus, sancak) kaynakta `ic(X.i)` ile yazıldı; `i` alanları tek blokta atanır (`KATMAN: SAHİPLİK` öncesi). `e` alanları silinmedi (`shareTxt`, günlük).
+- Panoya kopyalanan `shareTxt` emoji ile kalır (§7.3). Arayüzde kalan tek "simge" metin oku `→` (izinli).
+- `prodParts` etiketi oyun mantığı sıcak yolunda (`production`) çağrıldığı için emoji kaldı; gösterimde `emo()` çevirir.
+- Panel yeniden çizimi: içerik dizgesi aynıysa DOM'a dokunulmaz; kaydırma `ui.scr[sekme+altsekme+seçim]`'de tutulur. Çekmece durumu `ui.sheet` (DOM dışında) + `body[data-sheet]`; `aside` hiç yeniden yazılmaz. `refresh` ortalaması 1440×880'de 6,5 → 4,8 ms (40 tur, 60 ölçüm).
+- Mobilde `aside` sabit ve dönüştürülmemiş kap; yalnız iç `#sheet` `transform` ile kayar (FAB `position:fixed` bozulmasın diye). Yarım durumda gizli kalan alt kısım için `#panel` alt dolgusu büyütülür (son satır görünür alana kaydırılabilir).
+- Tablet (768-1099): panel haritanın üstüne biner (360 px), `#sideTgl` ile 56 px ikon sütununa daralır; `centerOn` görünen genişliği (`visW`) kullanır. Mobilde `centerOn` görünen yüksekliği (`visH`) kullanır.
+- Bağlamsal eylem: kendi bölgen seçiliyken saldırılabilir/taşınabilir komşuya dokununca hedef seçilir ve hedefin üstünde "Saldır %N / Taşı" hapı çıkar (`ui.ctx`); sağ tık masaüstünde aynen çalışır. Hedef seçiliyken tarama (`hatchFlags`) kaynak bölgeden çizilmeye devam eder.
+- İpucu yöneticisi (`#tipx`, `data-tip`): masaüstünde 350 ms hover / klavye odağı, dokunmatikte 450 ms uzun basış (sonraki tıklama yutulur). `hint` ve yardım metni cihaza göre (`(hover:none),(pointer:coarse)`).
+- Modal açıkken `header` ve `main` `inert`; başlık `aria-labelledby`; eylem satırı (`.row`) modalda yapışkan alt. Mobilde modal alt çekmece kalıbında (tutamaç çizgisi, `sheet-in`).
+
+**Belgeden sapmalar**
+- Kaynak çipine dokunma: ayrı popover/çekmece yerine Ekonomi sekmesi açılır ve ilgili satır vurgulanır (mobilde çekmece yarıya); ayrıntı masaüstünde hover, mobilde uzun basış ipucunda. Son 10 tur mini grafiği yok.
+- Ölçek token'ları `px` (mobil kırılımda yeniden tanımlı); `rem` + metin boyutu ayarı Aşama 8'e kaldı.
+- Sprite'taki `<title>` öğeleri gömülürken çıkarıldı (ikonlar her yerde `aria-hidden`; ~2,3 KB kazanç). `docs/ikonlar.svg` değişmedi.
+- Tablolar mobilde kart listesine dönmedi; `.tw` içinde yatay kaydırılır (panelin kendisi taşmıyor). Teknoloji ağacı mobilde dal başlığı üstte + 4 sütun.
+- Saldırı sonucu hâlâ modal (5.14'teki toast'a geçiş Aşama 4).
+- Masaüstünde ≡ menü düğmesi de görünür (mobildeki "Yeni sefer / Yardım / Miras / Kayıt" menüsü).
+- Sihirbaz mobilde tam ekran sayfa değil, %92 alt çekmece (Aşama 4).
+
+**Harita (Canvas) — Aşama 5'e notlar**
+- `FAC[].col` yeni sancak renkleri (§2.6) uygulandı; sahiplik dolgusu, desenler, iç şerit, rozet şekilleri (`iBadge` hâlâ kalkan, beyaz sayı) Aşama 5'te.
+- Kuruluş kademesi `⚑N` metni yerine rozet sağ üstünde `--bg-1` daire + `--brand` rakam çiziliyor (emoji kalmadı). Etiket ve rozet fontu Georgia → sistem yığını.
+- `iFeat` özel bölge işaretleri mevcut el çizimiyle korundu (emoji değil); `ICON_PATHS`/Path2D eşlemesi Aşama 5.
+- Harita arka planı `--bg-map` (#0B1622); bitiş grafiği renkleri token'a çekildi.
+
+**Bilinen riskler / yapılmayanlar**
+- Sürükleme ve uzun basış yalnız başsız Chrome'da CDP dokunma olaylarıyla sentetik test edildi; gerçek iOS/Android cihazda (Safari `dvh`, sayfa sıçraması, sessiz anahtar) denenmedi.
+- `--tx-3` `--bg-3` üstünde 4,16 (yalnız hover anında `±0` eğilim metni); `--bad` `--brand-wash` üstünde 4,18 (seçili kartta kırmızı satır, nadir).
+- Dosya boyutu 329 KB: Aşama 4-8 için bütçe planı (§12) yeniden hesaplanmalı (sprite + CSS beklenenden ~+20 KB).
+- Animasyon, ses, nabız/sayaç (Aşama 6-7), odak tuzağı ve roving tabindex'in tamamı (Aşama 8) yapılmadı; ana sekmelerde ok tuşu gezinmesi ve `role=tab/aria-selected` eklendi.
