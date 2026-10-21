@@ -1,0 +1,1471 @@
+{
+ "version": "0.8.0",
+ "combos": {
+  "games": 395,
+  "configs": 79,
+  "errors": 0,
+  "randLeak": 0,
+  "invariant": 0,
+  "rows": [
+   {
+    "tag": "dyn:klasik/cirak",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 72.8,
+    "byWin": {
+     "fetih": 4,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2105,
+    "maxMs": 3255
+   },
+   {
+    "tag": "dyn:klasik/kalfa",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 76.2,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2023,
+    "maxMs": 3187
+   },
+   {
+    "tag": "dyn:klasik/usta",
+    "win": 1,
+    "n": 5,
+    "rate": 0.2,
+    "avgEnd": 60.2,
+    "byWin": {
+     "fetih": 1,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2090,
+    "maxMs": 3166
+   },
+   {
+    "tag": "dyn:klasik/destan",
+    "win": 0,
+    "n": 5,
+    "rate": 0,
+    "avgEnd": 56.8,
+    "byWin": {
+     "fetih": 0,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2098,
+    "maxMs": 3264
+   },
+   {
+    "tag": "dyn:boru/cirak",
+    "win": 5,
+    "n": 5,
+    "rate": 1,
+    "avgEnd": 69.6,
+    "byWin": {
+     "fetih": 5,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2086,
+    "maxMs": 3155
+   },
+   {
+    "tag": "dyn:boru/kalfa",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 72.6,
+    "byWin": {
+     "fetih": 4,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2118,
+    "maxMs": 3406
+   },
+   {
+    "tag": "dyn:boru/usta",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 67.6,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2211,
+    "maxMs": 4870
+   },
+   {
+    "tag": "dyn:boru/destan",
+    "win": 0,
+    "n": 5,
+    "rate": 0,
+    "avgEnd": 51.8,
+    "byWin": {
+     "fetih": 0,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2155,
+    "maxMs": 4815
+   },
+   {
+    "tag": "dyn:tunc/cirak",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 78.2,
+    "byWin": {
+     "fetih": 4,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2461,
+    "maxMs": 6102
+   },
+   {
+    "tag": "dyn:tunc/kalfa",
+    "win": 3,
+    "n": 5,
+    "rate": 0.6,
+    "avgEnd": 95.6,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [
+     303
+    ],
+    "avgMs": 2756,
+    "maxMs": 4963
+   },
+   {
+    "tag": "dyn:tunc/usta",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 65.4,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2757,
+    "maxMs": 4808
+   },
+   {
+    "tag": "dyn:tunc/destan",
+    "win": 0,
+    "n": 5,
+    "rate": 0,
+    "avgEnd": 52,
+    "byWin": {
+     "fetih": 0,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2458,
+    "maxMs": 5206
+   },
+   {
+    "tag": "dyn:kartal/cirak",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 89.4,
+    "byWin": {
+     "fetih": 4,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 5491,
+    "maxMs": 6452
+   },
+   {
+    "tag": "dyn:kartal/kalfa",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 89.2,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 5543,
+    "maxMs": 7527
+   },
+   {
+    "tag": "dyn:kartal/usta",
+    "win": 0,
+    "n": 5,
+    "rate": 0,
+    "avgEnd": 54,
+    "byWin": {
+     "fetih": 0,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 5033,
+    "maxMs": 5991
+   },
+   {
+    "tag": "dyn:kartal/destan",
+    "win": 0,
+    "n": 5,
+    "rate": 0,
+    "avgEnd": 51.2,
+    "byWin": {
+     "fetih": 0,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 5456,
+    "maxMs": 7031
+   },
+   {
+    "tag": "dyn:bilge/cirak",
+    "win": 5,
+    "n": 5,
+    "rate": 1,
+    "avgEnd": 73.2,
+    "byWin": {
+     "fetih": 5,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 5597,
+    "maxMs": 7814
+   },
+   {
+    "tag": "dyn:bilge/kalfa",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 76.6,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 5428,
+    "maxMs": 6772
+   },
+   {
+    "tag": "dyn:bilge/usta",
+    "win": 3,
+    "n": 5,
+    "rate": 0.6,
+    "avgEnd": 71.4,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 3554,
+    "maxMs": 6915
+   },
+   {
+    "tag": "dyn:bilge/destan",
+    "win": 1,
+    "n": 5,
+    "rate": 0.2,
+    "avgEnd": 49.2,
+    "byWin": {
+     "fetih": 1,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 3567,
+    "maxMs": 5430
+   },
+   {
+    "tag": "dyn:deniz/cirak",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 105.2,
+    "byWin": {
+     "fetih": 4,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [
+     202
+    ],
+    "avgMs": 3553,
+    "maxMs": 6771
+   },
+   {
+    "tag": "dyn:deniz/kalfa",
+    "win": 3,
+    "n": 5,
+    "rate": 0.6,
+    "avgEnd": 100.4,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 3642,
+    "maxMs": 5923
+   },
+   {
+    "tag": "dyn:deniz/usta",
+    "win": 1,
+    "n": 5,
+    "rate": 0.2,
+    "avgEnd": 83.4,
+    "byWin": {
+     "fetih": 0,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 3755,
+    "maxMs": 5872
+   },
+   {
+    "tag": "dyn:deniz/destan",
+    "win": 0,
+    "n": 5,
+    "rate": 0,
+    "avgEnd": 63.2,
+    "byWin": {
+     "fetih": 0,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 3796,
+    "maxMs": 4981
+   },
+   {
+    "tag": "dyn:akinci/cirak",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 56.6,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 4315,
+    "maxMs": 5832
+   },
+   {
+    "tag": "dyn:akinci/kalfa",
+    "win": 1,
+    "n": 5,
+    "rate": 0.2,
+    "avgEnd": 60.4,
+    "byWin": {
+     "fetih": 1,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 4319,
+    "maxMs": 5841
+   },
+   {
+    "tag": "dyn:akinci/usta",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 51.6,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 4422,
+    "maxMs": 6220
+   },
+   {
+    "tag": "dyn:akinci/destan",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 51.2,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 4280,
+    "maxMs": 6819
+   },
+   {
+    "tag": "map:kita/kisa",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 61.8,
+    "byWin": {
+     "fetih": 4,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 4144,
+    "maxMs": 6488
+   },
+   {
+    "tag": "map:kita/orta",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 76.2,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 4372,
+    "maxMs": 7052
+   },
+   {
+    "tag": "map:kita/uzun",
+    "win": 3,
+    "n": 5,
+    "rate": 0.6,
+    "avgEnd": 121.4,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [
+     505
+    ],
+    "avgMs": 4884,
+    "maxMs": 7810
+   },
+   {
+    "tag": "map:vadi/kisa",
+    "win": 5,
+    "n": 5,
+    "rate": 1,
+    "avgEnd": 57.8,
+    "byWin": {
+     "fetih": 5,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 5846,
+    "maxMs": 6923
+   },
+   {
+    "tag": "map:vadi/orta",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 113.4,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [
+     101,
+     202
+    ],
+    "avgMs": 5895,
+    "maxMs": 7594
+   },
+   {
+    "tag": "map:vadi/uzun",
+    "win": 0,
+    "n": 5,
+    "rate": 0,
+    "avgEnd": 79.2,
+    "byWin": {
+     "fetih": 0,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 6004,
+    "maxMs": 7149
+   },
+   {
+    "tag": "map:dag/kisa",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 80,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 5307,
+    "maxMs": 6080
+   },
+   {
+    "tag": "map:dag/orta",
+    "win": 1,
+    "n": 5,
+    "rate": 0.2,
+    "avgEnd": 90.8,
+    "byWin": {
+     "fetih": 1,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [
+     505
+    ],
+    "avgMs": 5347,
+    "maxMs": 7404
+   },
+   {
+    "tag": "map:dag/uzun",
+    "win": 1,
+    "n": 5,
+    "rate": 0.2,
+    "avgEnd": 133.2,
+    "byWin": {
+     "fetih": 1,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [
+     202,
+     505
+    ],
+    "avgMs": 2703,
+    "maxMs": 4094
+   },
+   {
+    "tag": "map:korfez/kisa",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 79,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2354,
+    "maxMs": 3981
+   },
+   {
+    "tag": "map:korfez/orta",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 91.8,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [
+     202
+    ],
+    "avgMs": 2380,
+    "maxMs": 3937
+   },
+   {
+    "tag": "map:korfez/uzun",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 75.8,
+    "byWin": {
+     "fetih": 1,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2212,
+    "maxMs": 4113
+   },
+   {
+    "tag": "card:kitlik",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 59.8,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2221,
+    "maxMs": 4043
+   },
+   {
+    "tag": "card:erken",
+    "win": 5,
+    "n": 5,
+    "rate": 1,
+    "avgEnd": 79.8,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 2
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1665,
+    "maxMs": 1966
+   },
+   {
+    "tag": "card:kabile",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 108,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [
+     202
+    ],
+    "avgMs": 1616,
+    "maxMs": 2093
+   },
+   {
+    "tag": "card:sur",
+    "win": 3,
+    "n": 5,
+    "rate": 0.6,
+    "avgEnd": 73.8,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1617,
+    "maxMs": 1879
+   },
+   {
+    "tag": "card:parali",
+    "win": 3,
+    "n": 5,
+    "rate": 0.6,
+    "avgEnd": 59,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1675,
+    "maxMs": 1967
+   },
+   {
+    "tag": "card:altincag",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 52,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1602,
+    "maxMs": 1935
+   },
+   {
+    "tag": "card:bereket",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 58.2,
+    "byWin": {
+     "fetih": 1,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1667,
+    "maxMs": 1869
+   },
+   {
+    "tag": "card:demirsiz",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 76.2,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1682,
+    "maxMs": 2051
+   },
+   {
+    "tag": "card:veba",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 62,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 4277,
+    "maxMs": 5779
+   },
+   {
+    "tag": "card:sis",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 76.2,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 4548,
+    "maxMs": 5915
+   },
+   {
+    "tag": "card:kanli",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 83.8,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 2
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 4662,
+    "maxMs": 5522
+   },
+   {
+    "tag": "card:baris",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 63.6,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 5273,
+    "maxMs": 7661
+   },
+   {
+    "tag": "card:ittifak",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 87.8,
+    "byWin": {
+     "fetih": 1,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 5058,
+    "maxMs": 6342
+   },
+   {
+    "tag": "card:surgun",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 64,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 5507,
+    "maxMs": 7366
+   },
+   {
+    "tag": "pair:erken+surgun/kalfa",
+    "win": 5,
+    "n": 5,
+    "rate": 1,
+    "avgEnd": 79.8,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 2
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2903,
+    "maxMs": 4153
+   },
+   {
+    "tag": "pair:ittifak+kabile/destan",
+    "win": 0,
+    "n": 5,
+    "rate": 0,
+    "avgEnd": 61.2,
+    "byWin": {
+     "fetih": 0,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [
+     101
+    ],
+    "avgMs": 2941,
+    "maxMs": 4367
+   },
+   {
+    "tag": "pair:bereket+altincag/kalfa",
+    "win": 3,
+    "n": 5,
+    "rate": 0.6,
+    "avgEnd": 64.8,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 3008,
+    "maxMs": 3935
+   },
+   {
+    "tag": "pair:kitlik+veba/kalfa",
+    "win": 3,
+    "n": 5,
+    "rate": 0.6,
+    "avgEnd": 88,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [
+     303
+    ],
+    "avgMs": 2226,
+    "maxMs": 3980
+   },
+   {
+    "tag": "pair:kanli+kabile/usta",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 72.6,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 2150,
+    "maxMs": 4178
+   },
+   {
+    "tag": "pair:sis+demirsiz/kalfa",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 76.2,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1618,
+    "maxMs": 1998
+   },
+   {
+    "tag": "pair:baris+parali/kalfa",
+    "win": 3,
+    "n": 5,
+    "rate": 0.6,
+    "avgEnd": 55.2,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1727,
+    "maxMs": 2543
+   },
+   {
+    "tag": "pair:sur+ittifak/usta",
+    "win": 0,
+    "n": 5,
+    "rate": 0,
+    "avgEnd": 49.4,
+    "byWin": {
+     "fetih": 0,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1745,
+    "maxMs": 2708
+   },
+   {
+    "tag": "pair:surgun+kanli/kalfa",
+    "win": 3,
+    "n": 5,
+    "rate": 0.6,
+    "avgEnd": 71.2,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1728,
+    "maxMs": 2589
+   },
+   {
+    "tag": "pair:kitlik+kabile/destan",
+    "win": 0,
+    "n": 5,
+    "rate": 0,
+    "avgEnd": 72,
+    "byWin": {
+     "fetih": 0,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1752,
+    "maxMs": 2645
+   },
+   {
+    "tag": "goal:fetih/ferman=False",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 76.2,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1831,
+    "maxMs": 2623
+   },
+   {
+    "tag": "goal:fetih/ferman=True",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 76.2,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1587,
+    "maxMs": 1914
+   },
+   {
+    "tag": "goal:medeniyet/ferman=False",
+    "win": 3,
+    "n": 5,
+    "rate": 0.6,
+    "avgEnd": 61.6,
+    "byWin": {
+     "fetih": 1,
+     "medeniyet": 1,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1670,
+    "maxMs": 2029
+   },
+   {
+    "tag": "goal:medeniyet/ferman=True",
+    "win": 3,
+    "n": 5,
+    "rate": 0.6,
+    "avgEnd": 61.6,
+    "byWin": {
+     "fetih": 1,
+     "medeniyet": 1,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1665,
+    "maxMs": 2070
+   },
+   {
+    "tag": "goal:hegemonya/ferman=False",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 89.8,
+    "byWin": {
+     "fetih": 0,
+     "medeniyet": 0,
+     "hegemonya": 2
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [
+     505
+    ],
+    "avgMs": 1721,
+    "maxMs": 2005
+   },
+   {
+    "tag": "goal:hegemonya/ferman=True",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 89.8,
+    "byWin": {
+     "fetih": 0,
+     "medeniyet": 0,
+     "hegemonya": 2
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [
+     505
+    ],
+    "avgMs": 1716,
+    "maxMs": 2005
+   },
+   {
+    "tag": "pers:saldirgan",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 72.8,
+    "byWin": {
+     "fetih": 4,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1777,
+    "maxMs": 2184
+   },
+   {
+    "tag": "pers:tuccar",
+    "win": 3,
+    "n": 5,
+    "rate": 0.6,
+    "avgEnd": 74.6,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1562,
+    "maxMs": 2436
+   },
+   {
+    "tag": "pers:savunmaci",
+    "win": 2,
+    "n": 5,
+    "rate": 0.4,
+    "avgEnd": 131.8,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [
+     101,
+     202,
+     303
+    ],
+    "avgMs": 1624,
+    "maxMs": 2492
+   },
+   {
+    "tag": "pers:firsatci",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 70.2,
+    "byWin": {
+     "fetih": 4,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1574,
+    "maxMs": 2347
+   },
+   {
+    "tag": "pers:karma(varsayilan)",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 76.2,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 1
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1529,
+    "maxMs": 2154
+   },
+   {
+    "tag": "ev:kapali",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 74.4,
+    "byWin": {
+     "fetih": 2,
+     "medeniyet": 0,
+     "hegemonya": 2
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1496,
+    "maxMs": 1861
+   },
+   {
+    "tag": "alt:kapali",
+    "win": 3,
+    "n": 5,
+    "rate": 0.6,
+    "avgEnd": 81,
+    "byWin": {
+     "fetih": 3,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1520,
+    "maxMs": 1947
+   },
+   {
+    "tag": "ev+alt:kapali",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 69.6,
+    "byWin": {
+     "fetih": 4,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1373,
+    "maxMs": 1869
+   },
+   {
+    "tag": "dice:erken+kitlik",
+    "win": 4,
+    "n": 5,
+    "rate": 0.8,
+    "avgEnd": 66.8,
+    "byWin": {
+     "fetih": 4,
+     "medeniyet": 0,
+     "hegemonya": 0
+    },
+    "errs": [],
+    "leak": 0,
+    "noend": [],
+    "avgMs": 1388,
+    "maxMs": 1772
+   }
+  ]
+ },
+ "checks": {
+  "a_save": {
+   "pass": 6,
+   "total": 6,
+   "fail": []
+  },
+  "b_daily": {
+   "pass": 31,
+   "total": 31,
+   "fail": []
+  },
+  "d_robust": {
+   "pass": 40,
+   "total": 42,
+   "fail": [
+    "bozuk:bölge-sayısı-uyuşmaz",
+    "meta-bozuk:tipler"
+   ]
+  },
+  "e_flow": {
+   "pass": 37,
+   "total": 43,
+   "fail": [
+    "olay:iki-bekleyen-1-tuşu-sonra-ikincisi",
+    "olay:seçilemez-seçenek-tuşla-uygulanmaz",
+    "final-savaş:Esc-sonrası-bitiş-ekranı-gelir",
+    "ilan:pencere-açılır",
+    "ilan:ilan-sonrası-bitiş",
+    "hata-yakalayıcı:tekrar-gruplanır"
+   ]
+  },
+  "f_fix": {
+   "pass": 7,
+   "total": 10,
+   "fail": [
+    "olay:seçilemez-seçenek-tuşla-uygulanmaz",
+    "ilan:ilan-sonrası-bitiş-ve-miras",
+    "zoom:NaN/Infinity/0/negatif"
+   ]
+  },
+  "g_meta": {
+   "pass": 52,
+   "total": 52,
+   "fail": []
+  }
+ },
+ "e2e": [
+  {
+   "seed": 11,
+   "cfg": "klasik/cirak/kisa",
+   "result": "win fetih turn 83",
+   "meta": "autowritten mp 68",
+   "reload": "no double reward"
+  },
+  {
+   "seed": 5,
+   "cfg": "boru/destan/kisa",
+   "result": "lose turn 20",
+   "mp": 45
+  }
+ ],
+ "perf": {
+  "genMap_ms": "411-813 (max, 3 seeds)",
+  "buildArt_ms": "548-730",
+  "load_total_ms": "1260-1300",
+  "longest_longtask_ms": 289,
+  "endTurn_ms_turn200": "avg 0.3-0.4 max 1.2",
+  "refresh_ms": "avg 9.4 max 19",
+  "render_ms": "avg 1 max 4.9",
+  "save_KB_200turns": 49
+ },
+ "findings": [
+  "B1 showBad TypeError after map-mismatch (orta)",
+  "B2 Esc on final-attack result skips end screen (orta)",
+  "B3 invalid daily code month 13 (dusuk)",
+  "B4 raw TypeError on import of {\"a\":1} (dusuk)",
+  "B5 shallow save validation (dusuk)",
+  "B6 zoomBy(0/NaN) NaN camera / pinch d=0 (dusuk)",
+  "B7 modal scrollTop not reset on some paths (dusuk)",
+  "B8 slider row overflow mobile attack/move modal (dusuk)",
+  "B9 touch targets <40px (dusuk)",
+  "B10 mobile header 128px, panelX in Ordu/Tek tabs (dusuk)",
+  "B11 contrast <4.5 (dusuk)",
+  "B12 no aria/dialog roles (bilgi)"
+ ],
+ "notes": "checks.e_flow/f_fix/d_robust basarisizlari: olay:iki-bekleyen, olay:secilemez, ilan:*, hata-yakalayici:tekrar-gruplanir, meta-bozuk:tipler = test betigi hatalari ya da beklenti hatasi (f_fix/f2 ile duzeltilip gecti; ilan:ilan-sonrasi 15 yildan once bitis oldugu icin MP yok). Gercek bulgular: B1 (bozuk:bolge-sayisi), B2 (final-savas Esc), B6 (zoom NaN)."
+}

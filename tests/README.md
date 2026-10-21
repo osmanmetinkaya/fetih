@@ -69,6 +69,7 @@ JSON.stringify(r.rows.map(({ms,...x})=>x)) === JSON.stringify(b.rows)
 ```
 
 - `baseline-v3.json`: Faz 1b varsayılanı (Klasik + kart yok + Kıta + Normal + Çırak, olaylar açık), 12 tohum; ayrıca `eq1a` (olaylar/alternatif zaferler kapalıyken `baseline-v2` ile birebir eşitlik) ve olay birim testi özeti.
+- `baseline-v4.json`: Faz 1d (0.8.1) denge değişikliğinden sonraki taban: `rows` (varsayılan ayar, olaylar açık) ve `rowsOff` (`ev:false, alt:false`). baseline-v2/v3 eşitliği 1d'den beri bilerek tutmaz; oyun mantığına dokunmayan değişiklikten sonra v4'ün iki satır kümesi birebir aynı çıkmalı. `matrix1d`: 48 tohumluk önce/sonra ölçümü.
 - `matrix-1b.json`: Faz 1b denge matrisi (48/96 tohum): zorluklar, hanedanlar, kişilikler, 14 kart, zafer yolu botları, kaplumbağa, harita/boy, olay istatistikleri, kişilik ayrışması (D6).
 - `matrix-1a.json`: Faz 1a denge matrisi (hanedan × Kalfa, harita türleri, tekil kartlar, zorluklar).
 - `_eski/index.html`: Faz 0 oyununun değişmemiş kopyası (eşdeğerlik ve v5 kayıt göçü testleri için). `runSim({src:'_eski/index.html?test=1'})` ile eski oyun koşturulur.

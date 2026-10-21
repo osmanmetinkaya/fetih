@@ -1046,3 +1046,47 @@ Kabul: Kalfa / Çırak = 49,2 / 23,1 = **2,13 ≥ 1,5** (ilk 2 oyunun 0,6 çarpa
 - Miras ilerlemesi botun "en ucuz açılımı hemen al" politikasıyla ölçüldü; kartlar hızlı tükeniyor (10. oyunda 12-14/14, hedef ~9).
 - Günlük oyun ayrı kayıt yuvasında değil; günlüğü başlatan oyuncu süren oyununu kaybeder (uyarı var).
 - Zafer İlanı 1,5× eşiği, savaşı kazanmaya yakın ama bitmemiş oyunları erken "zafer" yapabiliyor (+8 puan botta).
+
+## Uygulama notları (1d)
+
+Sürüm 0.8.1, kayıt biçimi değişmedi (SAVE_VER 8). Kaynak: `tests/qa-1c.md` (B1-B7) ve `tests/economy-1c.md` (öneri 1, 2, 3, 4, 9, 10). B8-B12 (mobil yerleşim, dokunma hedefi, kontrast, aria) görsel yeniden yazım aşamasına bırakıldı. Ekonomi raporunun 6, 7, 8, 11, 12. maddeleri uygulanmadı.
+
+### Hata düzeltmeleri
+- **B1:** `readSave` ham metni her durumda döndürür; harita uyuşmazlığı, çizim ya da ilk yenileme hatası da aynı bozuk kayıt akışına girer (ham kayıt `fetih-save-bozuk`'a yedeklenir, pencere açılır, Tamam → sihirbaz). `start()` bütünüyle try/catch içinde, yükleme perdesi her yolda "Harita kuruluyor…"dan çıkar.
+- **B2:** `closeModal()` oyunu bitiren savaşın sonuç penceresini (`res`) kapatınca bitiş ekranını açar (Tamam ve Esc aynı yol). Oyun bitince "Turu Bitir" düğmesi "Sonuç 🏁" olur ve bitiş ekranını açar; `openAttack` da açar. Miras ödülü oyun kimliğiyle korunduğu için ikinci kez verilmez.
+- **B3:** `dayOk()`: günlük kod gerçek takvim günü olmalı (ay 13, 30 Şubat reddedilir; 29 Şubat 2028 kabul). `startDaily` de denetler.
+- **B4/B5:** `parseSave` göçten önce şekli denetler ("Bu bir Fetih oyun kaydı değil"); göçte TypeError olursa anlaşılır Türkçe ileti. `validSave`: kaynaklar sonlu (>−1), moral sayı, tur ≥1, teknoloji 0-4, birlik/hazır/asker/nüfus/sur/kuruluş sonlu ve ≥0, tesis türü geçerli ve seviye ≥0.
+- **B6:** `zoomAt` sonlu ve pozitif olmayan çarpanı yok sayar; `clampCam` NaN kamerayı onarır; `minZ` 0 dönmez; pinch başlangıç mesafesi <8 px ise ölçek parmaklar ayrılınca kurulur. `setPointerCapture` try içinde.
+- **B7:** `modal()` her açılışta `#modal` ve `#modalBg` kaydırmasını sıfırlar.
+
+### Denge
+| Değer | 0.8.0 | 0.8.1 |
+|---|---|---|
+| Yeniçeri | 10🪙 3🌾 3⚒️, w 3 | 7🪙 2🌾 2⚒️, w 2 |
+| Kışla | odun 40, taş 25, altın 35 | 30 / 18 / 28 |
+| Talimhane | 60 / 50 / 60 / demir 15 | 28 / 20 / 32 / demir 20 |
+| Ordugâh | 90 / 80 / 100 / demir 30 | 32 / 26 / 40 / demir 40 |
+| Harbiye | taş 130, altın 160, demir 50, bilgi 20 | 55 / 70 / 70 / 20 |
+| Tesis yükseltme üssü | (lv+1)^1,7 | (lv+1)^1,4 |
+| Saldırıda asker başı demir | 0,2 (Tunç 0,15, Demir Kıtlığı 0,12) | 0,3 (0,22, 0,18) |
+| Zaferi ilan et | 1,5× / %30 | 1,25× / %25 |
+
+Kademe maliyetleri önce önerilen değerlerle (Ordugâh 60/50/70/50, Harbiye 80/100/90/20, Talimhane 45/35/50/25) ölçüldü: Kalfa'da Ordugâh yalnız %17-19, Harbiye %2-6 oldu. Duyarlılık (Kalfa, 48 tohum): kademe 2-4 maliyeti ×0,7 → Ordugâh %31; 2-5 ×0,5 → %50; kazanma oranı her durumda %46-52 (kademe maliyeti kazanmayı neredeyse etkilemiyor). Bu yüzden ~×0,65 düzeyine inildi. Kademe kapısının asıl sınırı oyun süresi: Kalfa'da oyunların yarısı 70. yıldan önce bitiyor.
+
+### Ölçüm (48 tohum, Klasik, olay/alternatif zafer açık, azami 150 tur; önce 0.8.0 → sonra 0.8.1)
+| | Kazanma | Ordugâh % (ilk yıl) | Harbiye % (ilk yıl) | Sv4+ tesisli oyun | Demir t40 / t60 |
+|---|---|---|---|---|---|
+| Çırak | %92 → %94 | 10 (84) → 60 (57) | 0 → 29 (71) | %31 → %81 | 192/320 → 139/207 |
+| Kalfa | %54 → %54 | 15 (98) → 42 (67) | 4 (89) → 19 (81) | %19 → %73 | 171/319 → 113/159 |
+| Usta | %15 → %17 | 0 → 19 (83) | 0 → 8 (73) | %15 → %46 | 151/249 → 110/161 |
+| Destan | %8 → %10 | 4 → 10 (76) | 0 → 8 (104) | %27 → %42 | 153/294 → 116/270 |
+
+Hanedan × Kalfa (önce → sonra): Börü 48→44, Tunç 38→31, Kartal 31→33, Bilge 40→52, Deniz 65→67, Akıncı 60→60. Tunç ve Kartal bandın (%35) altında; önceden de öyleydi (fark gürültü içinde, ±14 puan).
+Zaferi ilan et: Kalfa'da kazanılan oyunların 24/26'sında açılıyor, doğal zaferden ort. 12,7 yıl önce (önce 8,7). Kaybedilen oyunlarda açılma: Kalfa 1/22, Usta 0/40, Destan 1/43, hanedanlarda 0-1 (önce 0-3).
+Yeniçeri (serbest kademe testi: her bölge Harbiye, Askeri Üretim 4, tek tür): Yeniçeri %52 → %81, piyade %98 → %100. Referans botta Yeniçeri payı %3,4 (Yeniçeri'ye geçen bot), botun kendisi hâlâ Yeniçeri üretmiyor.
+
+### Açık riskler
+- Usta (%17) hedef aralığın (%25-35) altında; 0.8.0'da da %15'ti, bu iş zorluk ayarına dokunmadı.
+- Kademe ve Yeniçeri ucuzladı: insan oyuncu Harbiye'ye bottan çok daha erken ulaşabilir; kartopu insan oyununda ölçülmedi.
+- Kuşatma kullanımı ölçülmedi (bot üretmiyor).
+- Eski taban çizgileri (baseline-v2/v3) bilerek bozuldu; yeni taban `tests/baseline-v4.json`.
