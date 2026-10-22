@@ -7,11 +7,11 @@ const DEF_SEEDS=[11,22,33,44,55,66,77,88,99,111,123,234];
 const DEF_BOT={wStart:{tarla:1.6,pazar:1.5,medrese:2},wNew:{medrese:1.4,pazar:1.2,tarla:1.3},techMax:4,
  upTahil:80,newTahil:60,milAltin:60,milFrontOwn:4,suvAt:3,surMax:2,surTas:60,resMul:4,resAdd:20,okcMil:2,okcP:.3,popKeep:.5,minReady:4,atkCh:.75,
  // 1b: olay seçimi ('first' = ilk seçilebilir seçenek, 'random' = bot üreteciyle rastgele) ve zafer yolu politikaları
- evPick:'first',medStop:99,medCh:.9,turtle:false,turtleAt:12,wNewMed:{medrese:1.8,tasocagi:1.4,kereste:1.2,pazar:1.2,tarla:1.3},hegCh:.6};
+ evPick:'first',endAt:.75,endCh:.6,endMove:true,medStop:99,medCh:.9,turtle:false,turtleAt:12,wNewMed:{medrese:1.8,tasocagi:1.4,kereste:1.2,pazar:1.2,tarla:1.3},hegCh:.6};
 // Oyun ayarı: dynasty (klasik|boru|tunc|kartal|bilge|deniz|akinci), cards ([kart id'leri]), mapType (kita|vadi|dag|korfez), difficulty (cirak|kalfa|usta|destan), size (kisa|orta|uzun).
 // Varsayılan = Klasik + kart yok + Kıta + Normal + Çırak (Faz 0 oyunu).
 // 1b: goal (fetih|medeniyet|hegemonya: botun izlediği yol), ferman (true: goal'u ferman olarak beyan et), pers (bütün rakiplere tek kişilik), ev/alt (false: olaylar / alternatif zaferler kapalı; Faz 1a karşılaştırması için)
-const DEF={seeds:DEF_SEEDS,maxTurns:140,src:'../index.html?test=1&t='+Date.now(),seedRandom:true,fast:true,slice:8,bot:{},onProgress:null,timeoutMs:15000,
+const DEF={seeds:DEF_SEEDS,maxTurns:240,src:'../index.html?test=1&t='+Date.now(),seedRandom:true,fast:true,slice:8,bot:{},onProgress:null,timeoutMs:15000,
  dynasty:'klasik',cards:[],mapType:'kita',difficulty:'cirak',size:'orta',dice:false,goal:'fetih',ferman:false,pers:null,ev:true,alt:true,meta:false,declare:false,cfgExtra:null};
 
 // ---- iframe içinde çalışan kod (toString ile iframe'e aktarılır; serbest adlar oyunun globallerine bağlanır) ----
@@ -31,7 +31,7 @@ function botFactory(){
  return async function bot2(seed,maxT,C,tick,cfg){newGame(seed,cfg);const cap=capIdx(),brnd=mulberry32(seed*7919+13),goal=C.goal||'fetih',v1b=typeof evAuto==='function',med=goal==='medeniyet'&&v1b,heg=goal==='hegemonya'&&v1b;
   const pick=Object.keys(FIELD).map(k=>({k,v:fieldOut(cap,{t:k,lv:1})*(C.wStart[k]||1)})).sort((a,b)=>b.v-a.v);
   for(const p of pick){if(S.fund>=FC(p.k))buyStart(p.k)}if(!S.regions[cap].fields.length&&typeof autoSetup==='function')autoSetup();finishSetup();closeModal();
-  let t25=null,t50=null,t75=null,acts=0,fam=0,coal=0,akin=0,dec=null;const P=MAP.playN,errs=[],wNew=med?C.wNewMed:C.wNew;
+  let t25=null,t50=null,t75=null,t100=null,acts=0,fam=0,coal=0,akin=0,dec=null;const P=MAP.playN,errs=[],wNew=med?C.wNewMed:C.wNew;
   // Medeniyet: Büyük Eser için kaynak ayır (eşik geçildiyse sıradaki aşamanın bedeli harcanmaz)
   const wRes=()=>{if(!med||S.wonder.stage>=5||S.wonder.build||S.medClosed!=null||S.tech.eko<2||(!S.wonder.stage&&own().length<10))return null;return wonderCost()};
   const okSpend=c=>{const r=wRes();if(!r)return true;for(const k in c)if(k!=='tahil'&&k!=='altin'&&r[k]&&S.res[k]-c[k]<r[k])return false;return true};
@@ -48,15 +48,19 @@ function botFactory(){
    const reserve=e.up.altin*C.resMul+C.resAdd+altRes();own().forEach(i=>{const r=S.regions[i];if(r.mil&&S.res.altin>reserve){recruit(i,r.mil>=C.okcMil&&brnd()<C.okcP?'okc':'piy',Math.max(0,Math.floor(S.regions[i].pop-maxPop(i)*C.popKeep)));acts++}});
    // Hegemonya: tutulmayan eski başkentlere uzaklık (çok kaynaklı BFS); saldırı ve asker kaydırma buna göre
    let dT=null;const hc=heg?hegHeld().filter(x=>x.st==='own').map(x=>x.i):[];if(heg){const tg=hegHeld().filter(x=>x.st==='x').map(x=>x.i);dT=S.heg.count>0&&hc.length?bfs(hc):tg.length?bfs(tg):null}
+   // 0.9.1 son aşama (Fetih = bütün bölgeler): toprağın ≥ endAt ya da yaşayan rakip yoksa saldırı eşiği endCh, boştaki asker kalan bölgelere doğru kayar
+   const FL=typeof fetihLeft==='function'?fetihLeft():null,endG=!!FL&&!med&&(own().length>=P*C.endAt||!S.cfg.ais.some(f=>aliveAI(f)&&!isVas(f)));if(endG&&!heg&&C.endMove&&FL.length){dT=new Array(MAP.n).fill(99);const q=FL.slice();for(const x of q)dT[x]=0;while(q.length){const c=q.shift();for(const j of MAP.regions[c].adj)if(dT[j]===99&&S.regions[j].owner!==BLOCK){dT[j]=dT[c]+1;q.push(j)}}}
    const heldCap=i=>hc.includes(i);if(heg)for(const i of hc){while(S.regions[i].fort<maxFort(i)&&canPay(surCost(i))){const f0=S.regions[i].fort;buildSur(i);if(S.regions[i].fort===f0)break;acts++}}
    const mayAtk=()=>!med||(C.turtle?own().length<C.turtleAt:true);
-   const atk=i=>{const r=S.regions[i];if(heldCap(i))return;const tg=MAP.regions[i].adj.filter(j=>S.regions[j].owner>0&&(typeof canAttack!=='function'||canAttack(i,j))).map(j=>({j,p:previewAtk(i,j,{...r.rd})})).sort((a,b)=>dT?(dT[a.j]-dT[b.j])||(b.p.ch-a.p.ch):b.p.ch-a.p.ch);
-    for(const t of tg){if(r.ready<C.minReady||!mayAtk())break;if(S.regions[t.j].owner===0)continue;const p=previewAtk(i,t.j,{...r.rd});
-     const th=med&&own().length>=C.medStop?C.medCh:heg&&dT&&dT[t.j]===0?C.hegCh:C.atkCh;if(p.ch>th){const x=resolve(0,i,t.j,{...r.rd});if(x&&x.akin)akin++;acts+=2;checkEnd()}}};
+   // son aşamada: önce başkentler; başka düşman komşusu varsa kaynakta garnizon (%30) kalır (yoksa boşalan bölgeyi rakip başkenti geri alır, sonsuz gel-git)
+   const send=(i,j)=>{const r=S.regions[i];if(!endG||!C.endMove)return{...r.rd};const oth=MAP.regions[i].adj.some(q=>q!==j&&S.regions[q].owner>0);return oth&&r.ready>=10?takeProp({...r.rd},Math.ceil(r.ready*.7)):{...r.rd}};
+   const atk=i=>{const r=S.regions[i];if(heldCap(i))return;const tg=MAP.regions[i].adj.filter(j=>S.regions[j].owner>0&&(typeof canAttack!=='function'||canAttack(i,j))).map(j=>({j,p:previewAtk(i,j,{...r.rd})})).sort((a,b)=>dT?(dT[a.j]-dT[b.j])||(endG&&C.endMove?(S.regions[b.j].capital-S.regions[a.j].capital):0)||(b.p.ch-a.p.ch):b.p.ch-a.p.ch);
+    for(const t of tg){if(r.ready<C.minReady||!mayAtk())break;if(S.regions[t.j].owner===0)continue;const A=send(i,t.j),p=previewAtk(i,t.j,{...A});
+     const th=med&&own().length>=C.medStop?C.medCh:heg&&dT&&dT[t.j]===0?C.hegCh:endG?Math.min(C.atkCh,C.endCh):C.atkCh;if(p.ch>th){const x=resolve(0,i,t.j,A);if(x&&x.akin)akin++;acts+=2;checkEnd()}}};
    const o0=own();o0.forEach(atk);
    // yeni fethedilen ve hazır askeri olan bölgeler (Börü Akın'ı); Klasik'te böyle bölge yoktur
    own().filter(i=>!o0.includes(i)&&S.regions[i].ready>=C.minReady).forEach(atk);
-   own().forEach(i=>{const r=S.regions[i];const fr=MAP.regions[i].adj.some(j=>S.regions[j].owner!==0);if(!fr&&r.ready>0){
+   own().forEach(i=>{const r=S.regions[i];const fr=MAP.regions[i].adj.some(j=>S.regions[j].owner!==0&&!(endG&&C.endMove&&(isVas(S.regions[j].owner)||S.regions[j].owner===BLOCK)));if(!fr&&r.ready>0){
     let j=MAP.regions[i].adj.find(j=>S.regions[j].owner===0&&MAP.regions[j].adj.some(q=>S.regions[q].owner!==0));
     if(dT){const nb=MAP.regions[i].adj.filter(q=>S.regions[q].owner===0&&dT[q]<dT[i]).sort((a,b)=>dT[a]-dT[b]);if(nb.length)j=nb[0]}
     if(heg&&heldCap(i))j=null;
@@ -65,12 +69,12 @@ function botFactory(){
    const c0=S.coal&&S.coal.on;endTurn();closeModal();if(v1b){evAuto(C.evPick==='random'?brnd:'first');closeModal()}
    // 1c: ilk "Zaferi ilan et" anı ve o anda bitirilseydi skoru (meta:true; bot ilan etmez, oynamayı sürdürür). C.declare:true → bot ilk fırsatta ilan eder
    if(C.meta&&typeof declOk==='function'&&!S.over&&dec==null&&declOk()){dec=declProbe();if(C.declare){S.over='win';S.winBy='ilan';S.stats.declared=S.turn}}
-   fam+=S.stats?0:famineNow();if(S.coal&&S.coal.on&&!c0)coal++;const n=own().length;if(n>=P*.25&&!t25)t25=S.turn;if(n>=P*.5&&!t50)t50=S.turn;if(n>=P*.75&&!t75)t75=S.turn;
+   fam+=S.stats?0:famineNow();if(S.coal&&S.coal.on&&!c0)coal++;const n=own().length;if(n>=P*.25&&!t25)t25=S.turn;if(n>=P*.5&&!t50)t50=S.turn;if(n>=P*.75&&!t75)t75=S.turn;if(FL&&!t100&&!fetihLeft().length)t100=S.turn;
    const bad=check(seed);if(bad.length&&errs.length<5)errs.push({tur:S.turn,tip:'invariant',m:bad.slice(0,4).join(', ')});
    if(tick&&k%tick.every===tick.every-1)await tick.fn(S.turn)}
   const st=S.stats,aiS={};if(v1b)for(const f of S.cfg.ais){const a=S.ai[f],q=aiS[a.per]=aiS[a.per]||{n:0,atk:0,lost:0,end:0};q.n++;q.atk+=a.atk||0;q.lost+=a.lost||0;q.end+=S.regions.filter(r=>r.owner===f).length}
   const mx=C.meta&&typeof scoreOf==='function'?(()=>{const sc=scoreOf(S),m=mpCalc(S,{games:5}),M1=mpCalc(S,{games:0});return{score:sc.v,raw:sc.p.raw,mp:m.game,mpNew:M1.game,share:+m.share.toFixed(3),dec,stats:{surBuilt:st.surBuilt,recruited:st.recruited,famine:st.famine,capLost:st.capLost,coalBroken:st.coalBroken,plagues:st.plagues,loot:Math.round(st.loot),maxHarb:st.maxHarb,evN:st.evN,akinN:st.akinN}}})():null;
-  return{...(mx?{meta:mx}:{}),seed,end:S.turn,over:S.over||'-',winBy:S.winBy||null,own:own().length,playN:P,t25,t50,t75,famine:st?st.famine:fam,coal,akin,acts:+(acts/S.turn).toFixed(2),
+  return{...(mx?{meta:mx}:{}),seed,end:S.turn,over:S.over||'-',winBy:S.winBy||null,own:own().length,playN:P,t25,t50,t75,t100,left:typeof fetihLeft==='function'?fetihLeft().length:null,aisEnd:v1b?S.cfg.ais.filter(f=>aliveAI(f)&&!isVas(f)).length:null,famine:st?st.famine:fam,coal,akin,acts:+(acts/S.turn).toFixed(2),
    ev:st?st.events:null,evN:st?st.evN:null,choices:st?st.choices:null,coalBroken:st?st.coalBroken:null,coalJoin:st?st.coalJoin:null,wonder:v1b?S.wonder.stage:null,aiWonder:v1b?S.aiW.stage:null,medClosed:v1b?S.medClosed!=null:null,
    tech:v1b?techCount():null,hegMax:st?st.hegMax:null,hegHeld:st?st.hegHeld:null,w1:st?st.wonderT:null,wT:st?st.wT||[]:null,capLost:st?st.capLost:null,vassals:st?st.vassals:null,maxReg:st?st.maxRegions:null,atkWon:st?st.atkWon:null,atkLost:st?st.atkLost:null,defWon:st?st.defWon:null,defLost:st?st.defLost:null,
    pers:v1b?S.cfg.ais.map(f=>S.ai[f].per):null,aiS,errors:errs}}
@@ -141,15 +145,15 @@ async function runSim(opts={}){
  const avg=a=>a.length?+(a.reduce((s,v)=>s+v,0)/a.length).toFixed(1):null;
  const sum={n:rows.length,win:wins.length,lose:rows.filter(r=>r.over==='lose').length,winRate:rows.length?+(wins.length/rows.length).toFixed(3):0,
   avgEnd:avg(ends),avgWinEnd:avg(wins.map(r=>r.end)),minWinEnd:wins.length?Math.min(...wins.map(r=>r.end)):null,maxWinEnd:wins.length?Math.max(...wins.map(r=>r.end)):null,
-  avgT50:avg(rows.map(r=>r.t50).filter(v=>v!=null)),byWin:{fetih:wins.filter(r=>(r.winBy||'fetih')==='fetih').length,medeniyet:wins.filter(r=>r.winBy==='medeniyet').length,hegemonya:wins.filter(r=>r.winBy==='hegemonya').length},avgEv:avg(rows.map(r=>r.ev).filter(v=>v!=null)),evPer75:(()=>{const a=rows.filter(r=>r.ev!=null&&r.end);return a.length?+(a.reduce((s,r)=>s+r.ev*75/r.end,0)/a.length).toFixed(1):null})(),coalBroken:rows.reduce((s,r)=>s+(r.coalBroken||0),0),avgT25:avg(rows.map(r=>r.t25).filter(v=>v!=null)),avgFamine:avg(rows.map(r=>r.famine||0)),avgActs:avg(rows.map(r=>r.acts||0)),coalGames:rows.filter(r=>r.coal).length,errors:errN,fatal,randLeak:LEAK.n,
+  avgT50:avg(rows.map(r=>r.t50).filter(v=>v!=null)),avgT75:avg(rows.map(r=>r.t75).filter(v=>v!=null)),avgT100:avg(rows.map(r=>r.t100).filter(v=>v!=null)),avg75to100:avg(rows.filter(r=>r.t100&&r.t75).map(r=>r.t100-r.t75)),unfinished:rows.filter(r=>r.over==='-').length,byWin:{fetih:wins.filter(r=>(r.winBy||'fetih')==='fetih').length,medeniyet:wins.filter(r=>r.winBy==='medeniyet').length,hegemonya:wins.filter(r=>r.winBy==='hegemonya').length},avgEv:avg(rows.map(r=>r.ev).filter(v=>v!=null)),evPer75:(()=>{const a=rows.filter(r=>r.ev!=null&&r.end);return a.length?+(a.reduce((s,r)=>s+r.ev*75/r.end,0)/a.length).toFixed(1):null})(),coalBroken:rows.reduce((s,r)=>s+(r.coalBroken||0),0),avgT25:avg(rows.map(r=>r.t25).filter(v=>v!=null)),avgFamine:avg(rows.map(r=>r.famine||0)),avgActs:avg(rows.map(r=>r.acts||0)),coalGames:rows.filter(r=>r.coal).length,errors:errN,fatal,randLeak:LEAK.n,
   ms:Math.round(performance.now()-t0),gameVersion:FRAME&&FRAME.ver,opts:{seeds:o.seeds,maxTurns:o.maxTurns,fast:o.fast,dynasty:o.dynasty,cards:o.cards,mapType:o.mapType,difficulty:o.difficulty,size:o.size,dice:o.dice,goal:o.goal,ferman:o.ferman,pers:o.pers,ev:o.ev,alt:o.alt,bot:C}};
  const res={summary:sum,rows,when:new Date().toISOString()};window.SIM_RESULT=res;
  if(out)out.innerHTML=summaryHtml(sum)+table(rows);say(fatal?'Hata: '+fatal:`Bitti: ${sum.win}/${sum.n} kazanma, ${(sum.ms/1000).toFixed(1)} sn`);return res}
 
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-function table(rows){return'<table><tr><th>Tohum</th><th>Bitiş turu</th><th>Sonuç</th><th>Yol</th><th>Olay</th><th>Bölge</th><th>%25</th><th>%50</th><th>%75</th><th>Kıtlık</th><th>Eylem/tur</th><th>Hata</th><th>ms</th></tr>'+
- rows.map(r=>`<tr class="${r.over}"><td>${r.seed}</td><td>${r.end??'—'}</td><td>${r.over}</td><td>${r.winBy??'—'}</td><td>${r.ev??'—'}</td><td>${r.own??'—'}/${r.playN??'—'}</td><td>${r.t25??'—'}</td><td>${r.t50??'—'}</td><td>${r.t75??'—'}</td><td>${r.famine??'—'}</td><td>${r.acts??'—'}</td><td title="${esc((r.errors||[]).map(e=>e.tip+' @'+(e.tur??'?')+': '+e.m).join('\n'))}">${(r.errors||[]).length}</td><td>${r.ms}</td></tr>`).join('')+'</table>'}
-function summaryHtml(s){return`<p class=sum><b>Kazanma:</b> ${s.win}/${s.n} (${Math.round(s.winRate*100)}%) · <b>Kayıp:</b> ${s.lose} · <b>Yol:</b> ⚔${s.byWin.fetih} 📜${s.byWin.medeniyet} 👑${s.byWin.hegemonya} · <b>Olay/75 tur:</b> ${s.evPer75} · <b>Ort. bitiş:</b> ${s.avgEnd} · <b>Kazanılan oyunlarda tur:</b> ${s.avgWinEnd} (${s.minWinEnd}–${s.maxWinEnd}) · <b>Ort. %50:</b> ${s.avgT50} · <b>Ort. kıtlık:</b> ${s.avgFamine} · <b>Eylem/tur:</b> ${s.avgActs} · <b>Hata:</b> ${s.errors} · ${(s.ms/1000).toFixed(1)} sn</p>${s.fatal?`<pre class=bad>${esc(s.fatal)}</pre>`:''}`}
+function table(rows){return'<table><tr><th>Tohum</th><th>Bitiş turu</th><th>Sonuç</th><th>Yol</th><th>Olay</th><th>Bölge</th><th>%25</th><th>%50</th><th>%75</th><th>%100</th><th>Kalan</th><th>Kıtlık</th><th>Eylem/tur</th><th>Hata</th><th>ms</th></tr>'+
+ rows.map(r=>`<tr class="${r.over}"><td>${r.seed}</td><td>${r.end??'—'}</td><td>${r.over}</td><td>${r.winBy??'—'}</td><td>${r.ev??'—'}</td><td>${r.own??'—'}/${r.playN??'—'}</td><td>${r.t25??'—'}</td><td>${r.t50??'—'}</td><td>${r.t75??'—'}</td><td>${r.t100??'—'}</td><td>${r.left??'—'}</td><td>${r.famine??'—'}</td><td>${r.acts??'—'}</td><td title="${esc((r.errors||[]).map(e=>e.tip+' @'+(e.tur??'?')+': '+e.m).join('\n'))}">${(r.errors||[]).length}</td><td>${r.ms}</td></tr>`).join('')+'</table>'}
+function summaryHtml(s){return`<p class=sum><b>Kazanma:</b> ${s.win}/${s.n} (${Math.round(s.winRate*100)}%) · <b>Kayıp:</b> ${s.lose} · <b>Yol:</b> ⚔${s.byWin.fetih} 📜${s.byWin.medeniyet} 👑${s.byWin.hegemonya} · <b>Olay/75 tur:</b> ${s.evPer75} · <b>Ort. bitiş:</b> ${s.avgEnd} · <b>Kazanılan oyunlarda tur:</b> ${s.avgWinEnd} (${s.minWinEnd}–${s.maxWinEnd}) · <b>Ort. %50:</b> ${s.avgT50} · <b>%75→%100:</b> ${s.avg75to100} tur · <b>Bitmeyen:</b> ${s.unfinished} · <b>Ort. kıtlık:</b> ${s.avgFamine} · <b>Eylem/tur:</b> ${s.avgActs} · <b>Hata:</b> ${s.errors} · ${(s.ms/1000).toFixed(1)} sn</p>${s.fatal?`<pre class=bad>${esc(s.fatal)}</pre>`:''}`}
 
 // Harita özeti: aynı tohum + ayar → aynı özet. map-hashes.json Faz 0 genMap çıktısıdır.
 function mapHash(M){let h=2166136261>>>0;const add=v=>{h^=(v&0xffff);h=Math.imul(h,16777619)>>>0;h^=(v>>>16)&0xffff;h=Math.imul(h,16777619)>>>0};const s=str=>{for(const c of String(str))add(c.charCodeAt(0))};

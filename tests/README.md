@@ -28,7 +28,7 @@ await evUnit(7)    // olay birim testi: 18 olay + Biat Teklifi, her seçenek ayr
 | Ad | Varsayılan | Açıklama |
 |---|---|---|
 | `seeds` | 12 tohum | Harita tohumları |
-| `maxTurns` | 140 | Tohum başına azami tur (Uzun boyda 180 öner) |
+| `maxTurns` | 240 | Tohum başına azami tur (0.9.1'den beri Fetih = bütün bölgeler; Uzun boyda 280 öner) |
 | `dynasty` | `klasik` | Hanedan: `klasik`, `boru`, `tunc`, `kartal`, `bilge`, `deniz`, `akinci` |
 | `cards` | `[]` | Kural kartları (en fazla 2): `kitlik`, `erken`, `kabile`, `sur`, `parali`, `altincag`, `bereket`, `demirsiz`, `veba`, `sis`, `kanli`, `baris`, `ittifak`, `surgun` |
 | `mapType` | `kita` | Harita türü: `kita`, `vadi`, `dag`, `korfez` |
@@ -37,7 +37,7 @@ await evUnit(7)    // olay birim testi: 18 olay + Biat Teklifi, her seçenek ayr
 | `fast` | `true` | `refresh()` yalnızca görüşü günceller (çizim/panel atlanır). Oyun mantığını değiştirmez. |
 | `slice` | 8 | Kaç turda bir tarayıcıya nefes aldırılacağı. `0`: turlar arasında hiç bekleme yok, tohumlar arasında MessageChannel ile nefes (gizli sekmede hızlı) |
 | `seedRandom` | `true` | Yalnızca **eski** sürümler (oyunda `rnd()` yoksa, ör. `src:'_eski/index.html?test=1'`) için `Math.random`'ı tohumla sabitler |
-| `bot` | bkz. `SIM_DEFAULTS.bot` | Bot eşikleri (`atkCh:.75`, `upTahil:80`, `okcP:.3`…). 1b: `evPick` (`'first'` ilk seçilebilir seçenek, `'random'` bot üreteciyle), `turtle:true` (Medeniyet botu 12 bölgede saldırıyı keser) |
+| `bot` | bkz. `SIM_DEFAULTS.bot` | Bot eşikleri (`atkCh:.75`, 0.9.1 son aşama: `endAt:.75` (toprak payı ya da yaşayan rakip kalmayınca), `endCh:.6` (son aşamada saldırı eşiği), `endMove:true` (boştaki asker kalan bölgelere BFS ile kayar, önce başkentler, başka düşman komşusu varsa %30 garnizon kalır, vasal/dağ komşusu cephe sayılmaz; `false` + `endCh:.75` eski bot), `upTahil:80`, `okcP:.3`…). 1b: `evPick` (`'first'` ilk seçilebilir seçenek, `'random'` bot üreteciyle), `turtle:true` (Medeniyet botu 12 bölgede saldırıyı keser) |
 | `goal` | `fetih` | Bot politikası: `fetih` (eski bot), `medeniyet` (Büyük Eser için taş/odun/bilgi ayırır, altın eksikse otomatik üretimi durdurur, 18 teknolojiden sonra bilgiyi esere saklar), `hegemonya` (tutulmayan eski başkentlere doğru saldırır ve asker kaydırır, tuttuğu başkentlerde sur kurar, geri sayımda oraya yığar) |
 | `ferman` | `false` | `true`: `goal` ferman olarak beyan edilir |
 | `pers` | — | Bütün rakiplere tek kişilik (`saldirgan`, `tuccar`, `savunmaci`, `firsatci`) |
@@ -54,7 +54,7 @@ Faz 1a'dan beri oyun içi bütün rastgelelik (savaş zarları, rakip birlik kar
 
 ## Çıktı
 
-Tohum başına: bitiş turu, sonuç (`win`/`lose`/`-`), zafer yolu (`winBy`), olay sayısı ve kimlikleri (`ev`, `evN`), koalisyon kırma (`coalBroken`), Büyük Eser aşaması (`wonder`), rakibin eser yarışı (`aiWonder`, `medClosed`), teknoloji, Hegemonya sayacının en yükseği (`hegMax`), vasal sayısı, kişilik başına rakip saldırı/kayıp (`aiS`), son bölge sayısı, %25/%50/%75 toprağa ulaşılan tur, kıtlık sayısı, koalisyon sayısı, Akın kullanımı, tur başına eylem, hatalar.
+Tohum başına: bitiş turu, sonuç (`win`/`lose`/`-`), zafer yolu (`winBy`), olay sayısı ve kimlikleri (`ev`, `evN`), koalisyon kırma (`coalBroken`), Büyük Eser aşaması (`wonder`), rakibin eser yarışı (`aiWonder`, `medClosed`), teknoloji, Hegemonya sayacının en yükseği (`hegMax`), vasal sayısı, kişilik başına rakip saldırı/kayıp (`aiS`), son bölge sayısı, %25/%50/%75 toprağa ulaşılan tur, `t100` (bütün bölgeler sende ya da vasalında), `left` (Fetih'e kalan bölge), `aisEnd` (yaşayan, vasal olmayan rakip), kıtlık sayısı, koalisyon sayısı, Akın kullanımı, tur başına eylem, hatalar.
 Her turdan sonra tutarlılık denetimi yapılır: `troops === sumU(u)`, birimler negatif/NaN değil, kaynaklar ve moral sayı, nüfus ≥ 0. İhlal `invariant`, yakalanan istisna `istisna` hatası olarak yazılır.
 
 ## Taban çizgileri
@@ -73,5 +73,7 @@ JSON.stringify(r.rows.map(({ms,...x})=>x)) === JSON.stringify(b.rows)
 - `matrix-1b.json`: Faz 1b denge matrisi (48/96 tohum): zorluklar, hanedanlar, kişilikler, 14 kart, zafer yolu botları, kaplumbağa, harita/boy, olay istatistikleri, kişilik ayrışması (D6).
 - `matrix-1a.json`: Faz 1a denge matrisi (hanedan × Kalfa, harita türleri, tekil kartlar, zorluklar).
 - `_eski/index.html`: Faz 0 oyununun değişmemiş kopyası (eşdeğerlik ve v5 kayıt göçü testleri için). `runSim({src:'_eski/index.html?test=1'})` ile eski oyun koşturulur.
+
+- `baseline-v5.json`: 0.9.1 (Fetih zaferi = haritadaki bütün oynanabilir bölgeler sende ya da vasalında; %75 ve "bütün rakipleri yık" artık bitirmez; `maxTurns` 240 ve son aşama botu). **v4 ile eşdeğerlik bilerek bozulur** (bitiş kuralı ve bot değişti). `rows` (varsayılan ayar) ve `rowsOff` (`ev:false, alt:false`); oyun mantığına dokunmayan değişiklikten sonra ikisi birebir aynı çıkmalı. `matrix.before/after`: 48 tohumluk önce (0.9.0, eski sim, 140 tur) / sonra ölçümü; ayrıca `det`, `maps`, `evUnit`, `audioCtx` (sim'de oluşan AudioContext sayısı, 0).
 
 Denge değişikliğinden sonra yeni taban çizgisi kaydedilmeli.
