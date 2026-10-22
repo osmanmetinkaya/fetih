@@ -44,6 +44,7 @@ await evUnit(7)    // olay birim testi: 18 olay + Biat Teklifi, her seçenek ayr
 | `ev` / `alt` | `true` | `false`: olaylar / alternatif zaferler (vasal, eser yarışı dahil) kapalı. İkisi kapalıyken Klasik/Çırak satırları `baseline-v2.json` ile birebir aynıdır |
 | `meta` | `false` | 1c: satıra `meta` eklenir: skor, ham skor, MP (`mpCalc`, oturmuş oyuncu; `mpNew`: ilk 2 oyun), en yüksek bölge oranı, ilk "Zaferi ilan et" anı ve o anki skor (`dec`), başarım sayaçları. Kapalıyken satırlar eski taban çizgileriyle birebir aynı kalır |
 | `declare` | `false` | `meta` ile: bot ilk fırsatta zaferi ilan eder |
+| `altChoice` | — | 0.9.2 zafer kararı (Medeniyet/Hegemonya koşulu sağlanınca çıkan pencere, `S.altQ`): `'devam'` (fetihe devam, kilometre taşı `S.altM`) ya da `'bitir'` (zaferi al). Boşsa `goal:'fetih'` → `'devam'`, `medeniyet`/`hegemonya` → `'bitir'`. Bekleyen karar olay gibi tur sonunda otomatik çözülür. Satırda `alt` ([{p,t,k}]) ve `mile` (kilometre taşı yolları), özette `altGames`, `altN`, `altBy`, `mileWin` |
 | `cfgExtra` | — | Oyun ayarına ek alanlar (ör. `{daily:'2026-10-19'}`, `{bonus:['hazine']}`) |
 
 Varsayılan ayar (Klasik + kart yok + Kıta + Normal + Çırak) Faz 0 oyunudur.
@@ -75,5 +76,7 @@ JSON.stringify(r.rows.map(({ms,...x})=>x)) === JSON.stringify(b.rows)
 - `_eski/index.html`: Faz 0 oyununun değişmemiş kopyası (eşdeğerlik ve v5 kayıt göçü testleri için). `runSim({src:'_eski/index.html?test=1'})` ile eski oyun koşturulur.
 
 - `baseline-v5.json`: 0.9.1 (Fetih zaferi = haritadaki bütün oynanabilir bölgeler sende ya da vasalında; %75 ve "bütün rakipleri yık" artık bitirmez; `maxTurns` 240 ve son aşama botu). **v4 ile eşdeğerlik bilerek bozulur** (bitiş kuralı ve bot değişti). `rows` (varsayılan ayar) ve `rowsOff` (`ev:false, alt:false`); oyun mantığına dokunmayan değişiklikten sonra ikisi birebir aynı çıkmalı. `matrix.before/after`: 48 tohumluk önce (0.9.0, eski sim, 140 tur) / sonra ölçümü; ayrıca `det`, `maps`, `evUnit`, `audioCtx` (sim'de oluşan AudioContext sayısı, 0).
+
+- `baseline-v6.json`: 0.9.2 (Medeniyet/Hegemonya oyunu kendiliğinden bitirmez; karar penceresi, fetih botu `'devam'`). `rows` (varsayılan ayar, 12 tohum) v5'ten yalnız Hegemonya koşulunu sağlayan 3 tohumda (22, 44, 99) ayrılır; `rowsOff` (`ev:false, alt:false`) v5 ile birebir aynı. `matrix`: 48 tohum (1001-1048; yol botları 2001-2024, Kalfa) 0.9.1 → 0.9.2; `det`, `maps`, `evUnit`, `audioCtx`.
 
 Denge değişikliğinden sonra yeni taban çizgisi kaydedilmeli.

@@ -343,6 +343,7 @@ tr.flash td,h4.flash{background:var(--brand-wash);transition:background .3s}
 .evo .evx{flex:1;min-width:0}.evo .evx b{color:var(--tx-1)}
 @media (hover:hover){.evo .btn.evb:hover:not(:disabled){border-color:var(--brand)}}
 .evo .btn.evb:focus-visible{border-color:var(--brand)}
+.evo .btn.evb.alt1{border-color:var(--brand);background:var(--brand-wash)}
 .evm.picked .evb{opacity:.4}.evm.picked .evb.pk{opacity:1;background:var(--brand-wash);border-color:var(--brand)}
 /* saldırı penceresi §5.14 */
 .atkh{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.atkh .dot{width:16px;height:16px}
@@ -540,7 +541,7 @@ input[type=checkbox]::before{content:'';position:absolute;inset:-9px -2px}
 'use strict';
 // ======================= SABİTLER =======================
 const W=1600,H=1100,NEUTRAL=5,BLOCK=-1,WOOD=8,SAVE='fetih-save',META_KEY='fetih-meta-v1';
-const GAME_VERSION='0.9.1',SAVE_VER=8,SAVE_OLD=['fetih-save-v4'],SAVE_BAD='fetih-save-bozuk',TEST=/[?&]test\b/.test(location.search);
+const GAME_VERSION='0.9.2',SAVE_VER=8,SAVE_OLD=['fetih-save-v4'],SAVE_BAD='fetih-save-bozuk',TEST=/[?&]test\b/.test(location.search);
 const ROM=['','I','II','III','IV','V'];
 const FAC=[
  {ad:'Beyliğin',col:[245,184,41]},
@@ -744,9 +745,9 @@ const ACH=[
  {id:'ilk_zafer',ad:'İlk Zafer',d:'Herhangi bir zafer.',mp:15,c:1,t:s=>s.over==='win'},
  {id:'ders',ad:'Ders Alındı',d:'İlk yenilgi (15. yıldan sonra).',mp:5,c:1,t:s=>s.over==='lose'&&s.turn>=15},
  {id:'alti_hanedan',ad:'Altı Ocak',d:'Altı hanedanın her biriyle en az bir zafer.',mp:60,c:1,cos:'alti',pr:M=>[DYN6.filter(d=>M.stats.byDyn[d]&&M.stats.byDyn[d].w>0).length,6]},
- {id:'kulliye',ad:'Külliye',d:'Medeniyet zaferi.',mp:20,t:s=>s.over==='win'&&s.winBy==='medeniyet',lv:s=>({t:`Eser ${s.wonder.stage}/5 · tek. ${techCount()}/18`,ok:s.medClosed!=null?false:null}),miss:s=>s.winBy!=='medeniyet'&&s.wonder.stage>=3?`Külliye: Büyük Eser ${s.wonder.stage}/5 aşamada kaldı`:null},
- {id:'hegemon',ad:'Taç ve Haraç',d:'Hegemonya zaferi.',mp:20,t:s=>s.over==='win'&&s.winBy==='hegemonya',lv:s=>({t:`${hegHeld().filter(x=>x.st!=='x').length}/${hegNeed()} başkent · ${s.heg.count}/10 yıl`,ok:null}),miss:s=>s.winBy!=='hegemonya'&&s.stats.hegMax>=4?`Taç ve Haraç: geri sayım ${s.stats.hegMax}/10 yılda kesildi`:null},
- {id:'uc_yol',ad:'Üç Yol',d:'Fetih, Medeniyet ve Hegemonya zaferlerinin üçü de.',mp:40,pr:M=>[['fetih','medeniyet','hegemonya'].filter(p=>M.stats.byPath[p]>0).length,3]},
+ {id:'kulliye',ad:'Külliye',d:'Medeniyet zaferi (ya da kilometre taşı ve zafer).',mp:20,t:s=>pathWon(s,'medeniyet'),lv:s=>({t:`Eser ${s.wonder.stage}/5 · tek. ${techCount()}/18`,ok:s.medClosed!=null?false:null}),miss:s=>!pathWon(s,'medeniyet')&&s.wonder.stage>=3&&!(s.altM&&s.altM.medeniyet!=null)?`Külliye: Büyük Eser ${s.wonder.stage}/5 aşamada kaldı`:null},
+ {id:'hegemon',ad:'Taç ve Haraç',d:'Hegemonya zaferi (ya da kilometre taşı ve zafer).',mp:20,t:s=>pathWon(s,'hegemonya'),lv:s=>({t:`${hegHeld().filter(x=>x.st!=='x').length}/${hegNeed()} başkent · ${s.heg.count}/10 yıl`,ok:null}),miss:s=>!pathWon(s,'hegemonya')&&s.stats.hegMax>=4&&!(s.altM&&s.altM.hegemonya!=null)?`Taç ve Haraç: geri sayım ${s.stats.hegMax}/10 yılda kesildi`:null},
+ {id:'uc_yol',ad:'Üç Yol',d:'Fetih, Medeniyet ve Hegemonya zaferlerinin üçü de (kazanılan oyundaki kilometre taşı da sayılır).',mp:40,pr:M=>[['fetih','medeniyet','hegemonya'].filter(p=>M.stats.byPath[p]>0||(M.stats.byMile||{})[p]>0).length,3]},
  {id:'ferman',ad:'Fermanın Sözü',d:'Ferman ilan et, değiştirmeden o yoldan kazan.',mp:10,t:s=>fermanOk(s)&&!s.fermanCh,lv:s=>({t:s.ferman?`Ferman: ${VIC[s.ferman].ad}${s.fermanCh?' (değişti)':''}`:'Ferman yok',ok:!s.ferman||s.fermanCh?false:null})},
  {id:'kanli_kurulus',ad:'Kanlı Kuruluş',d:'Erken Savaş kartıyla zafer.',mp:15,t:s=>s.over==='win'&&s.cfg.muts.includes('erken'),lv:s=>({t:s.cfg.muts.includes('erken')?'Erken Savaş ✔':'Erken Savaş kartı gerekir',ok:s.cfg.muts.includes('erken')?null:false})},
  {id:'vebali',ad:'Vebalı Yıllar',d:'Kara Veba kartıyla, en az 2 vebadan sonra zafer.',mp:15,t:s=>s.over==='win'&&s.cfg.muts.includes('veba')&&s.stats.plagues>=2},
@@ -970,7 +971,7 @@ const META_VER=2,META_BAD='fetih-meta-bozuk';
 const META_DEFAULT={v:META_VER,mp:0,mpTotal:0,mpSpent:0,games:0,wins:0,firstDone:false,
  unlocked:{dyn:['klasik','boru','tunc','kartal'],mut:['kitlik','erken','kabile','sur','parali','altincag','bereket'],map:['kita','vadi'],size:['kisa','orta'],diff:['cirak','kalfa'],bonus:[],cos:[]},
  equipped:{bonus:[],banner:null},ach:{},
- stats:{byDyn:{},byPath:{fetih:0,medeniyet:0,hegemonya:0,ilan:0},byMap:{},byDiff:{},best:{dyn:{},map:{}},bestScore:0,fastestWin:null,totalLoot:0,capsTaken:0,maxHarbors:0,maxLootGame:0,evSeen:[],abil:{akin:0,yagma:0,harac:0}},
+ stats:{byDyn:{},byPath:{fetih:0,medeniyet:0,hegemonya:0,ilan:0},byMile:{medeniyet:0,hegemonya:0},byMap:{},byDiff:{},best:{dyn:{},map:{}},bestScore:0,fastestWin:null,totalLoot:0,capsTaken:0,maxHarbors:0,maxLootGame:0,evSeen:[],abil:{akin:0,yagma:0,harac:0}},
  daily:{last:null,streak:0,best:0,seals:0,started:{},hist:{},weeks:{}},history:[],done:[],lastCfg:null,seenHelp:false};
 let META=null,META_RO=false,META_RAW='';
 // Eksik ya da yanlış tipli alanları varsayılanla tamamlar (iç içe). v1 → v2: yeni alanlar eklenir, varsayılan açılımlar (Nehir Vadisi) eklenir.
@@ -1332,7 +1333,9 @@ function def1b(s,mig){const c=s.cfg,R=s.regions,d=(k,v)=>{if(s[k]==null||typeof 
  d('aiW',{});if(s.aiW.f===undefined)s.aiW.f=null;for(const k of['stage','next'])if(typeof s.aiW[k]!=='number')s.aiW[k]=0;if(s.medClosed===undefined)s.medClosed=null;
  d('heg',{});if(!s.heg.caps||typeof s.heg.caps!=='object'){s.heg.caps={};for(const f of c.ais){const i=R.findIndex(r=>r.owner===f&&r.capital);if(i>=0)s.heg.caps[f]=i}}if(typeof s.heg.count!=='number')s.heg.count=0;
  for(const f of c.ais){const a=s.ai[f]=s.ai[f]||{dyn:null,name:FAC[f].ad};if(!AIPERS[a.per])a.per='klasik'}
- if(s.ferman===undefined)s.ferman=c.ferman||null;if(typeof s.fermanCh!=='boolean')s.fermanCh=false;if(s.winBy===undefined)s.winBy=s.over==='win'?'fetih':null;if(typeof s.metaDone!=='boolean')s.metaDone=!!s.over;return s}
+ if(s.ferman===undefined)s.ferman=c.ferman||null;if(typeof s.fermanCh!=='boolean')s.fermanCh=false;if(s.winBy===undefined)s.winBy=s.over==='win'?'fetih':null;if(typeof s.metaDone!=='boolean')s.metaDone=!!s.over;
+ if(!s.altM||typeof s.altM!=='object'||Array.isArray(s.altM))s.altM={};for(const k of Object.keys(s.altM))if(!ALT_P.includes(k)||typeof s.altM[k]!=='number')delete s.altM[k];
+ if(!s.altQ||typeof s.altQ!=='object'||!ALT_P.includes(s.altQ.p)||s.altM[s.altQ.p]!=null||s.over)s.altQ=null;else if(typeof s.altQ.t!=='number')s.altQ.t=s.turn;return s}
 const aiFortMax=f=>f>0&&f<NEUTRAL&&aiDyn(f)==='kartal'?3:2;
 function log(m,c=''){S.log.push({t:S.turn,m,c});if(S.log.length>300)S.log.shift()}
 // ======================= KAYIT =======================
@@ -1634,7 +1637,7 @@ function doAttack(){const{from,to}=ACT,A=pickComp();if(!sumU(A))return;const tn=
  checkEnd();
  // §5.14: sonuç toast + bölge kartı + günlük; pencere yalnız başkent alındığında, oyunu bitiren savaşta, büyük yenilgide (kayıp ≥ %60) ya da PREF.battleModal==='hep'
  ui.lastB={t:S.turn,from,to,win:res.win,sent:res.sent,lost:res.lost,dLost:res.dLost,loot:res.win?res.loot.got:null,cap:wasCap,po:prevOwner,akin:res.akin||0};
- if(PREF.battleModal!=='hep'&&!S.over&&!(res.win&&wasCap)&&res.lost<.6*res.sent){closeModal();refresh();fxFlush();
+ if(PREF.battleModal!=='hep'&&!S.over&&!S.altQ&&!(res.win&&wasCap)&&res.lost<.6*res.sent){closeModal();refresh();fxFlush();
   toast(res.win?`🏆 <b>${tn}</b> fethedildi · ${res.lost} kayıp · düşman ${res.dLost}${res.akin?` · 🐺 Akın: ${res.akin} süvari hazır`:''}`:`💀 ${tn} saldırısı püskürtüldü · ${res.lost} kayıp`,res.win?'good':'bad');return}
  refresh();fxFlush();
  modal(`<h3>${res.win?'🏆 Zafer!':'💀 Yenilgi'}</h3><p>${res.win?`<b>${tn}</b> artık senin. ${res.sent} askerden <b>${res.surv}</b> tanesi bölgeye yerleşti (${compTxt(res.SV)}). Düşman kaybı: ${res.dLost}.<br><span class=good>Moral +${mil().conqMorale}</span>${res.akin?`<br><b>🐺 Akın!</b> ${res.akin} süvari hazır: bu tur yeniden saldırabilir.`:''}${wasCap?`<br><b>${facName(prevOwner)} başkentini kaybetti!</b>`:''}<br><small class=muted>Savaşta bölgenin nüfusu, kuruluşu ve tesisleri zarar gördü.</small>`
@@ -1652,7 +1655,7 @@ function openMove(from,to){const r=S.regions[from];if(r.ready<1){toast('Bu bölg
 function doMove(){const{from,to}=ACT,A=pickComp();if(!sumU(A))return;remU(S.regions[from],A,true);addU(S.regions[to],A,false);closeModal();ui.sel=to;refresh()}
 
 // ======================= TUR SONU & YAPAY ZEKA =======================
-function endTurn(){if(!S)return;if(S.over){if(!TEST)afterModal();return}if(S.phase!=='oyun'){toast('Önce kuruluşu tamamla.');return}if(S.evQ.length){showEvent();return}
+function endTurn(){if(!S)return;if(S.over){if(!TEST)afterModal();return}if(S.phase!=='oyun'){toast('Önce kuruluşu tamamla.');return}if(S.altQ||S.evQ.length){showEvent();return}
  fxSkip();FX.b=[]; const ev=[],e=economy(),M=mil(),fx=fxOf();for(const k in e.net)S.res[k]+=e.net[k];let ok=true,famine=false;
  if(S.res.tahil<0){S.res.tahil=0;ok=false;famine=true;let lost=0;S.regions.forEach(r=>{if(r.owner===0&&r.troops>0){const l=Math.ceil(r.troops*.08);remU(r,takeProp(r.u,l),false);lost+=l}});S.morale-=10;ev.push({m:`Kıtlık! Ordu aç kaldı: ${lost} asker öldü, nüfus azalıyor, moral -10.`,c:'bad'})}
  if(S.res.altin<0){S.res.altin=0;ok=false;S.morale-=8;ev.push({m:'Hazine boş! Maaşlar ödenemedi, moral -8.',c:'bad'})}
@@ -1676,7 +1679,7 @@ function endTurn(){if(!S)return;if(S.over){if(!TEST)afterModal();return}if(S.pha
  if(!S.flags.declN&&declOk()){S.flags.declN=S.turn;ev.push({m:`👑 Gücün rakiplerinin toplamının ${fmtX(DECL.r)} katını aştı: Hedef sekmesinden zaferi ilan edip oyunu erken bitirebilirsin.`,c:'good'})}
  ev.forEach(x=>log(x.m,x.c));checkEnd();refresh();saveNow();fxTurn();
  if(S.over)return afterModal();
- if(ev.length)modal(`<h3>📯 Yıl ${S.turn} raporu</h3>${ev.map(x=>`<p class=${x.c}>${x.m}</p>`).join('')}<div class=row><button class="btn primary" onclick="closeModal();showEvent()">Tamam${S.evQ.length?' ›':''}</button></div>`,'rep');else showEvent()}
+ if(ev.length)modal(`<h3>📯 Yıl ${S.turn} raporu</h3>${ev.map(x=>`<p class=${x.c}>${x.m}</p>`).join('')}<div class=row><button class="btn primary" onclick="closeModal();showEvent()">Tamam${S.evQ.length||S.altQ?' ›':''}</button></div>`,'rep');else showEvent()}
 // Veba: bölgen + 3 komşusu (her sahip). plaguePick rnd sırası 1a ile aynı.
 function plaguePick(){const o=own();if(!o.length)return null;const c=o[fl(rnd()*o.length)],nb=MAP.regions[c].adj.filter(j=>S.regions[j].owner!==BLOCK),hit=[c];
  while(hit.length<4&&nb.length)hit.push(nb.splice(fl(rnd()*nb.length),1)[0]);return hit}
@@ -1912,11 +1915,23 @@ function aiTurn(f,ev){const R=S.regions,G=MAP.regions,D=DIFFS[S.cfg.diff],fx=fxO
 // Fetih için kalan bölgeler: sende ya da vasalında olmayan oynanabilir bölgeler (kabile ve yıkılmamış rakip)
 function fetihLeft(){const o=[];S.regions.forEach((r,i)=>{if(r.owner!==0&&r.owner!==BLOCK&&!isVas(r.owner))o.push(i)});return o}
 const fetihHeld=()=>MAP.playN-fetihLeft().length;
+// 0.9.2: Medeniyet/Hegemonya koşulu oyunu kendiliğinden bitirmez. Yol başına bir kez karar (S.altQ={p,t}, kayıtta): "devam" → kilometre taşı S.altM[p]=yıl
+// (o yol bir daha bitirmez), "bitir" → eski zafer. Yol Ferman olarak beyan edildiyse (S.ferman) karar sorulmaz, hemen biter.
+const ALT_P=['medeniyet','hegemonya'];
+function altMet(p){if(!S.cfg.alt)return false;const M=VIC.medeniyet;return p==='medeniyet'?S.medClosed==null&&techCount()>=M.tech&&S.wonder.stage>=M.stages&&capIdx()!=null:S.heg.count>=VIC.hegemonya.hold}
+const pathWon=(s,p)=>s.over==='win'&&(s.winBy===p||!!(s.altM&&s.altM[p]!=null));
 function checkEnd(){if(S.over)return;const mine=S.regions.some(r=>r.owner===0);
  if(!mine)S.over='lose';else if(!fetihLeft().length){S.over='win';S.winBy='fetih'}
- else if(S.cfg.alt&&S.medClosed==null&&techCount()>=VIC.medeniyet.tech&&S.wonder.stage>=VIC.medeniyet.stages&&capIdx()!=null){S.over='win';S.winBy='medeniyet'}
- else if(S.cfg.alt&&S.heg.count>=VIC.hegemonya.hold){S.over='win';S.winBy='hegemonya'}
- if(S.over){if(S.over==='lose')S.winBy=null;save()}}
+ else if(!S.altQ)for(const p of ALT_P){if(S.altM[p]!=null||!altMet(p))continue;if(S.ferman===p){S.over='win';S.winBy=p}else{S.altQ={p,t:S.turn};save()}break}
+ if(S.over){if(S.over==='lose')S.winBy=null;S.altQ=null;save()}}
+// Karar (bot ve arayüz ortak): k = 'devam' | 'bitir'. Dönüş: yol ya da null (bekleyen karar yoksa; çift işlenmez)
+function altPick(k){const q=S.altQ;if(!q||S.over||(k!=='devam'&&k!=='bitir'))return null;const p=q.p,V=VIC[p];S.altQ=null;
+ if(k==='bitir'){S.over='win';S.winBy=p;log(`${V.e} ${V.ad} zaferi alındı.`,'good')}
+ else{S.altM[p]=q.t;log(`${V.e} ${V.ad} kilometre taşı (${q.t}. yıl): zafer koşulu sağlandı, fetihe devam.`,'good');checkEnd()}
+ save();return p}
+// Şimdi bitirilseydi: skor ve oyun MP'si (başarım/ilk sefer hariç)
+function altProbe(p){const o=S.over,w=S.winBy;S.over='win';S.winBy=p;let r;try{r={v:scoreOf(S).v,mp:mpCalc(S,META).game,fm:fermanOk(S)}}finally{S.over=o;S.winBy=w}return r}
+const mileTxt=s=>ALT_P.filter(p=>s.altM&&s.altM[p]!=null&&s.winBy!==p).map(p=>`${VIC[p].e} ${VIC[p].ad} kilometre taşı ✓ (${s.altM[p]}. yıl)`);
 const WIN_T={fetih:['👑 Hükümdarlık Kuruldu: Fetih Zaferi',()=>{const v=MAP.playN-own().length;return`${S.turn} yılda haritanın ${MAP.playN} bölgesinin tamamını yönetir oldun${v>0?` (${v} bölge vasallarının elinde)`:''}. Son kabile de tacına boyun eğdi.`}],
  medeniyet:['📜 Medeniyet Zaferi: Külliye Tamamlandı',()=>`${S.turn}. yılda ${techCount()} teknoloji ve beş aşamalı Büyük Eserle çağın ışığı oldun.`],
  hegemonya:['👑 Hegemonya Zaferi',()=>`${S.turn}. yılda eski başkentleri ${VIC.hegemonya.hold} yıl elinde tuttun: rakipler tacına haraç ödüyor.`],
@@ -1951,7 +1966,7 @@ function commitMeta(){const s=S;if(!META)META=metaFix(null);const M=META,id=gidO
  if(s.metaDone&&s.endRes)return s.endRes;
  const c=s.cfg,st=s.stats,win=s.over==='win',sc=scoreOf(s),mp=mpCalc(s,M),R={v:sc.v,p:sc.p,x:sc.x,mp,mpG:{game:0,first:0,ach:0,daily:0},mpTot:0,mp0:fl(M.mp),ach:[],unl:[],aff:[],miss:null,rec:null,daily:null,quit:!!mp.quit,dup:M.done.includes(id)};
  if(!R.dup&&!R.quit){M.games++;if(win)M.wins++;const T=M.stats,bd=T.byDyn[c.dyn]=T.byDyn[c.dyn]||{g:0,w:0,best:0};bd.g++;
-  if(win){bd.w++;T.byPath[s.winBy]=(T.byPath[s.winBy]||0)+1;T.byMap[c.map]=(T.byMap[c.map]||0)+1;T.byDiff[c.diff]=(T.byDiff[c.diff]||0)+1;if(T.fastestWin==null||s.turn<T.fastestWin)T.fastestWin=s.turn}
+  if(win){bd.w++;T.byPath[s.winBy]=(T.byPath[s.winBy]||0)+1;T.byMile=T.byMile||{};for(const p of ALT_P)if(s.altM&&s.altM[p]!=null&&s.winBy!==p)T.byMile[p]=(T.byMile[p]||0)+1;T.byMap[c.map]=(T.byMap[c.map]||0)+1;T.byDiff[c.diff]=(T.byDiff[c.diff]||0)+1;if(T.fastestWin==null||s.turn<T.fastestWin)T.fastestWin=s.turn}
   T.totalLoot+=Math.round(st.loot);T.capsTaken+=st.capsTaken;T.maxHarbors=Math.max(T.maxHarbors,st.maxHarb||0);T.maxLootGame=Math.max(T.maxLootGame,Math.round(st.loot));
   for(const e in st.evN)if(!T.evSeen.includes(e))T.evSeen.push(e);for(const k of['akin','yagma','harac'])T.abil[k]=(T.abil[k]||0)+(st[k+'N']||0);
   if(!c.train){const B=T.best,pd=B.dyn[c.dyn]||0,pm=B.map[c.map]||0;R.rec={pd,pm,dyn:sc.v>pd,map:sc.v>pm};if(sc.v>pd)B.dyn[c.dyn]=sc.v;if(sc.v>pm)B.map[c.map]=sc.v;T.bestScore=Math.max(T.bestScore,sc.v);bd.best=Math.max(bd.best||0,sc.v)}
@@ -1966,7 +1981,7 @@ function commitMeta(){const s=S;if(!META)META=metaFix(null);const M=META,id=gidO
   const cu=(cat,id,how)=>{if(!isOpen(cat,id)){M.unlocked[cat].push(id);R.unl.push({cat,id,how})}};
   if(!c.train){if(win&&c.diff==='kalfa')cu('diff','usta',"Kalfa'da zafer");if(win&&(c.diff==='usta'||c.diff==='destan')){cu('diff','destan',"Usta'da zafer");cu('mut','ittifak',"Usta'da zafer");cu('mut','surgun',"Usta'da zafer")}
    // hanedanların MP'siz yolu Çırak'ta işlemez (Çırak'ta 1500 ganimet ilk oyunda geliyordu; Kalfa botunda 1500 ganimet %75, 3 Liman %54 oyunda tutuyordu → 6000 / 4)
-   if(c.diff!=='cirak'){if(win&&s.winBy==='medeniyet')cu('dyn','bilge','Medeniyet zaferi');if((st.maxHarb||0)>=4)cu('dyn','deniz','aynı anda 4 Liman');if(st.loot>=6000)cu('dyn','akinci','tek oyunda 6000 ganimet')}}
+   if(c.diff!=='cirak'){if(pathWon(s,'medeniyet'))cu('dyn','bilge','Medeniyet zaferi');if((st.maxHarb||0)>=4)cu('dyn','deniz','aynı anda 4 Liman');if(st.loot>=6000)cu('dyn','akinci','tek oyunda 6000 ganimet')}}
   R.aff=lockList().filter(L=>L.cost&&!L.open&&L.cost<=M.mp&&L.cost>R.mp0).sort((a,b)=>CAT_PRI[a.cat]-CAT_PRI[b.cat]||a.cost-b.cost).map(L=>({cat:L.cat,id:L.id}));
   M.history.unshift({d:dateKey(),c:{dyn:c.dyn,muts:c.muts,map:c.map,size:c.size,diff:c.diff},seed:s.seed,over:s.over,winBy:s.winBy,turn:s.turn,score:sc.v,mp:R.mpTot,daily:c.daily,re:c.rematch,tr:c.train});M.history=M.history.slice(0,20)}
  if(!R.dup){M.done.push(id);M.done=M.done.slice(-40)}
@@ -2051,11 +2066,11 @@ function sparkOf(s){const B='▁▂▃▄▅▆▇█',pn=MAP.playN,o=[];for(let
 function shareTxt(){const s=S,c=s.cfg,R=s.endRes,win=s.over==='win',st=s.stats,pn=MAP.playN,bn=META&&META.equipped.banner&&COS[META.equipped.banner];
  return[`${bn?bn.e+' ':''}⚔ Fetih${c.daily?' · Günlük '+fmtDate(c.daily)+(c.train?' (antrenman)':''):''}${c.rematch?' · rövanş':''}`,`${DYN[c.dyn].ad} · ${DIFFS[c.diff].ad} · ${MAPTYPES[c.map].ad} · ${SIZES[c.size].ad}`,c.muts.length?'🃏 '+c.muts.map(m=>MUTS[m].ad).join(' + '):'',
   win?`👑 ${(WIN_T[s.winBy]||WIN_T.fetih)[0].replace(/^\S+\s/,'')} · ${s.turn}. yıl · ${own().length}/${pn} bölge`:`🏴 Yenilgi · ${s.turn}. yıl · en çok ${st.maxRegions}/${pn} bölge`,
-  R?`Skor ${fmtN(R.v)}${win?' · '+RANKS[rankOf(R.v)][1]:''}`:'',`⚔${st.atkWon} 🏰${st.capsTaken} ☠${st.defLost}`,sparkOf(s),`Kod: ${seedCode(s.seed,c)}`].filter(Boolean).join('\n')}
+  mileTxt(s).join(' · '),R?`Skor ${fmtN(R.v)}${win?' · '+RANKS[rankOf(R.v)][1]:''}`:'',`⚔${st.atkWon} 🏰${st.capsTaken} ☠${st.defLost}`,sparkOf(s),`Kod: ${seedCode(s.seed,c)}`].filter(Boolean).join('\n')}
 function showEnd(R){const s=S,c=s.cfg,st=s.stats,win=s.over==='win',T=WIN_T[s.winBy]||WIN_T.fetih,pn=MAP.playN;
  const tag=[c.daily?'📅 Günlük '+fmtDate(c.daily):'',c.train?'antrenman':'',c.rematch?'↻ rövanş':''].filter(Boolean).join(' · ');
  const nar=win?T[1]():st.lastLoss?`${facName(st.lastLoss.by)}, son toprağın ${rName(st.lastLoss.r)}'yi ${st.lastLoss.t}. yılda aldı.`:`${s.turn}. yılda son toprağını da kaybettin.`;
- let h=`<div class=end><div class=end-h><canvas id=endMap width=220 height=151 aria-hidden=true></canvas><div><h3 class="${win?'win':''}">${win?ic((VIC[s.winBy]||VIC.fetih).i)+' '+T[0].replace(/^\S+\s/,''):`🏴 Beylik Yıkıldı · ${s.turn}. yıl`}</h3><p>${nar}</p><small class=muted>${cfgLine(c)}${tag?` · <b>${tag}</b>`:''}</small></div></div>`;
+ let h=`<div class=end><div class=end-h><canvas id=endMap width=220 height=151 aria-hidden=true></canvas><div><h3 class="${win?'win':''}">${win?ic((VIC[s.winBy]||VIC.fetih).i)+' '+T[0].replace(/^\S+\s/,''):`🏴 Beylik Yıkıldı · ${s.turn}. yıl`}</h3><p>${nar}</p>${mileTxt(s).map(t=>`<p class="good end-ms" style="margin:-4px 0 6px;font-weight:700">${t}</p>`).join('')}<small class=muted>${cfgLine(c)}${tag?` · <b>${tag}</b>`:''}</small></div></div>`;
  if(R){const rk=win?rankOf(R.v):-1,rc=R.rec;
   const up=rk>0&&rc&&rankOf(rc.pd||0)<rk;
   h+=`<div class=end-sc><div><small class=muted>SKOR</small><b id=endSc data-v="${R.v}">${fmtN(R.v)}</b></div><div class=end-rk id=endRk>${rc?(rc.dyn&&rc.pd?`<span class="tag good rec">YENİ REKOR +${fmtN(R.v-rc.pd)}</span>`:rc.dyn?'<span class="tag good rec">İlk rekor</span>':`<span class=muted>Rekor (${DYN[c.dyn].ad}): ${fmtN(rc.pd)} · ${fmtN(rc.pd-R.v)} eksik</span>`):''}${rk>=0?`<div class="rk${up?' up':''}">${ic('rutbe','k-brand')} <b>${RANKS[rk][1]}</b>${up?' <span class="tag good">yükseldi</span>':''}</div><div class=rkb role=img aria-label="Rütbe ${rk+1}/${RANKS.length}">${RANKS.map((x,k)=>`<i class="${k<=rk?'on':''}"></i>`).join('')}</div>${RANKS[rk+1]?`<small class=muted>${RANKS[rk+1][1]} için ${fmtN(RANKS[rk+1][0]-R.v)}</small>`:''}`:''}</div></div>`;
@@ -2336,31 +2351,39 @@ function hover(x,y){const t=$('#tip'),i=regionAtScreen(x,y),hv=i>=0&&S&&FX.tgt&&
 // ======================= PANEL =======================
 const inertBg=on=>{for(const e of document.querySelectorAll('header,main'))e.inert=on};
 // §5.8: kapatılamaz türler tek yerde (Esc, kapat düğmesi); sihirbaz/bitiş/miras mobilde tam ekran sayfa
-const NOCL=['setup','over','bozuk','ev','miras'],FULLM=['wiz','over','miras','ayar'],mCan=k=>!!k&&!NOCL.includes(k)&&!(k==='wiz'&&!ART);
+const NOCL=['setup','over','bozuk','ev','alt','miras'],FULLM=['wiz','over','miras','ayar'],mCan=k=>!!k&&!NOCL.includes(k)&&!(k==='wiz'&&!ART);
 const FOC='button:not([disabled]),a[href],input:not([type=hidden]):not([disabled]),select,textarea,summary,[tabindex]:not([tabindex="-1"])';
 function modal(h,kind,wide){const m=$('#modal'),bg=$('#modalBg'),k=kind||'x',was=ui.modal;mGhostOff();if(!was)ui.mRet=document.activeElement;
  m.innerHTML=(mCan(k)&&!(k==='res'&&S&&S.over)?`<div class=mbar><button class="btn ico ghost" onclick="mEsc()" aria-label="Kapat">${ic('kapat')}</button></div>`:'')+emo(h);
  m.classList.toggle('wide',!!wide);m.classList.toggle('full',FULLM.includes(k));m.classList.remove('late');bg.style.display='flex';m.scrollTop=0;bg.scrollTop=0;ui.modal=k;
  m.setAttribute('role',k==='over'||k==='bozuk'?'alertdialog':'dialog');
  const t=m.querySelector('h3');if(t){t.id='mTitle';m.setAttribute('aria-labelledby','mTitle')}else m.removeAttribute('aria-labelledby');inertBg(true);fixR(m);tipHide();ctxUpd();
- if(was!==k&&!TEST){const f=m.querySelector(k==='ev'?'.evb:not([disabled])':k==='atk'||k==='mov'?'input[type=range]':'.wz-nav .btn.primary,.row .btn.primary,.btn.primary')||[...m.querySelectorAll(FOC)].find(e=>!e.closest('.mbar'));if(f)try{f.focus({preventScroll:true})}catch(e){}}}
+ if(was!==k&&!TEST){const f=m.querySelector(k==='ev'||k==='alt'?'.evb:not([disabled])':k==='atk'||k==='mov'?'input[type=range]':'.wz-nav .btn.primary,.row .btn.primary,.btn.primary')||[...m.querySelectorAll(FOC)].find(e=>!e.closest('.mbar'));if(f)try{f.focus({preventScroll:true})}catch(e){}}}
 function mEsc(){if(!mCan(ui.modal))return;const k=ui.modal;closeModal();if(k==='rep')showEvent()}
 // Kapanış (modal-out 140 ms): durum anında kapanır (ui.modal, display), görsel bir hayalet kopyada söner
 function mGhost(){const m=$('#modal');if(!m||!m.firstChild)return;const g=document.createElement('div');g.className='mghost';g.setAttribute('aria-hidden','true');g.inert=true;const c=m.cloneNode(true);c.removeAttribute('role');c.removeAttribute('aria-labelledby');c.removeAttribute('aria-modal');c.removeAttribute('id');c.classList.add('mgc');c.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));g.appendChild(c);document.body.appendChild(g);FX.gh=g;setTimeout(()=>{if(g.isConnected)g.remove()},160)}
 function mGhostOff(){if(FX.gh){FX.gh.remove();FX.gh=null}}
 // 1d: oyunu bitiren savaşın sonuç penceresi nasıl kapanırsa kapansın (Tamam, Esc) bitiş ekranı ve miras gelir
 function closeModal(){const k=ui.modal,bg=$('#modalBg');if(k&&FX.on&&MOT()===2&&bg.style.display!=='none')mGhost();bg.style.display='none';ui.modal=null;inertBg(false);tipHide();ctxUpd();
- const r=ui.mRet;ui.mRet=null;if(k&&r&&r.isConnected&&r.focus&&!r.closest('[inert]'))try{r.focus({preventScroll:true})}catch(e){}if(k==='res'&&S&&S.over)afterModal()}
+ const r=ui.mRet;ui.mRet=null;if(k&&r&&r.isConnected&&r.focus&&!r.closest('[inert]'))try{r.focus({preventScroll:true})}catch(e){}if(k==='res'&&S&&S.over)afterModal();else if(k==='res'&&S&&S.altQ)showAlt()}
 // --- Olay penceresi: S.evQ[0] gösterilir; 1/2/3 tuşlarıyla seçilir; sonuç log'a yazılır ---
-function showEvent(){if(!S||S.over||!S.evQ.length)return;const q=S.evQ[0],E=EVM[q.id];if(!E){S.evQ.shift();return showEvent()}const t=EV_TUR[E.tur]||EV_TUR.secim;
+function showEvent(){if(S&&!S.over&&S.altQ)return showAlt();if(!S||S.over||!S.evQ.length)return;const q=S.evQ[0],E=EVM[q.id];if(!E){S.evQ.shift();return showEvent()}const t=EV_TUR[E.tur]||EV_TUR.secim;
  const tc={iyi:'good',kotu:'bad',sistem:'info'}[E.tur]||'brand';
  modal(`<div class="evm t-${tc}"><i class=evs aria-hidden=true></i><h3>${ic(E.i||'olay')} ${E.ad} <span class="tag ${t[1]}">${t[0]}</span></h3><p class=evsub>Yıl ${S.turn}${S.evQ.length>1?` · ${S.evQ.length-1} olay daha bekliyor`:''}</p><p class=evt>${E.txt?E.txt(q.d):''}</p>
  <div class=evo>${E.opts.map((o,k)=>{const ok=!o.ok||o.ok(q.d);return`<button class="btn evb" ${ok?'':'disabled'} onclick="evPick(${k},this)"><span class=key aria-hidden=true>${k+1}</span><span class=evx><b>${o.t}</b><small>${o.d}${ok?'':' · <span class=bad>şu an yapılamaz</span>'}</small></span></button>`}).join('')}</div>
  <p class=muted style="font-size:calc(11.5px*var(--ts));margin:8px 0 0">${HOV.matches?`Klavye: ${E.opts.map((o,k)=>k+1).join(' / ')} · `:''}Seçmeden yıl bitmez.</p></div>`,'ev')}
+// --- Zafer kararı (0.9.2): Medeniyet/Hegemonya koşulu sağlandı; 1 = fetihe devam (birincil), 2 = zaferi şimdi al. Esc kapatmaz ---
+function showAlt(){const q=S&&S.altQ;if(!q||S.over)return;const p=q.p,V=VIC[p],lf=fetihLeft().length,pr=altProbe(p),fm=S.ferman&&S.ferman!==p?S.ferman:null;
+ const why=p==='medeniyet'?`${techCount()} teknoloji ve beş aşamalı Büyük Eser tamamlandı.`:`Rakiplerin eski başkentlerini ${VIC.hegemonya.hold} yıl elinde tuttun.`;
+ modal(`<div class="evm t-good"><i class=evs aria-hidden=true></i><h3>${ic(V.i)} ${V.ad} zaferine ulaştın</h3><p class=evsub>Yıl ${S.turn} · Fetihe ${lf} bölge kaldı</p><p class=evt>${why} Oyunu şimdi bu zaferle bitirebilir ya da bütün bölgeleri alana kadar sürdürebilirsin.</p>
+ <div class=evo><button class="btn evb alt1" onclick="altUI('devam')"><span class=key aria-hidden=true>1</span><span class=evx><b>Fetihe devam et (${lf} bölge kaldı)</b><small>Kilometre taşı kaydedilir ve bitiş ekranında görünür; ${V.ad} oyunu bir daha bitirmez. Oyun bütün bölgeler alınınca biter (Zaferi ilan et açık kalır).</small></span></button>
+ <button class="btn evb" onclick="altUI('bitir')"><span class=key aria-hidden=true>2</span><span class=evx><b>Zaferi şimdi al</b><small>${V.ad} zaferi · skor ≈ <b>${fmtN(pr.v)}</b> · miras ≈ <b>${pr.mp} MP</b> (başarımlar hariç)${fm?` · <span class=bad>${VIC[fm].ad} fermanı tutmaz</span>`:''}</small></span></button></div>
+ <p class=muted style="font-size:calc(11.5px*var(--ts));margin:8px 0 0">${HOV.matches?'Klavye: 1 / 2 · ':''}Seçmeden yıl bitmez.</p></div>`,'alt')}
+function altUI(k){if(ui.modal!=='alt'||!altPick(k))return;refresh();saveNow();if(S.over)return afterModal();toast(k==='devam'?'Kilometre taşı kaydedildi: fetihe devam.':'');if(S.altQ||S.evQ.length)showEvent();else closeModal()}
 // event-pick (§9.2): seçilen kart altın dolar, diğerleri solar, 200 ms sonra uygulanır (az/yok harekette anında)
 function evPick(k,el){if(ui.evBusy||ui.modal!=='ev')return;el=el||document.querySelectorAll('#modal .evb')[k];if(!el||el.disabled)return;if(TEST||MOT()<2)return pickEvent(k);
  ui.evBusy=true;el.classList.add('pk');const w=el.closest('.evm');if(w)w.classList.add('picked');setTimeout(()=>{ui.evBusy=false;if(ui.modal==='ev')pickEvent(k)},200)}
-function pickEvent(k){const r=applyEvent(k);if(!r)return;refresh();saveNow();toast(`${r.E.ad}: ${r.o.t}. ${String(r.m).replace(/<[^>]+>/g,'')}`,r.o.c==='bad'?'bad':'');if(S.over)return afterModal();if(S.evQ.length)showEvent();else closeModal()}
+function pickEvent(k){const r=applyEvent(k);if(!r)return;refresh();saveNow();toast(`${r.E.ad}: ${r.o.t}. ${String(r.m).replace(/<[^>]+>/g,'')}`,r.o.c==='bad'?'bad':'');if(S.over)return afterModal();if(S.altQ||S.evQ.length)showEvent();else closeModal()}
 function regLink(i){const r=S.regions[i];return`<button type=button class=lnk onclick="selectRegion(${i})">${fdot(r.owner)}${MAP.regions[i].name}</button>`}
 function selectRegion(i,rtab){ui.sel=i;ui.tab='bolge';if(rtab)ui.rtab=rtab;else if(S.regions[i].owner!==0)ui.rtab='genel';if(isMob()&&ui.sheet==='full')setSheet('half');centerOn(i);refresh()}
 function setTab(t){if(!S)return;ui.tab=t;if(document.body.classList.contains('side-c'))sideToggle();if(isMob()&&ui.sheet==='peek')setSheet('half');renderPanel()}
@@ -2371,8 +2394,8 @@ const trend=v=>{v=r1(v);return v>0?`<span class="tr up">+${fmtD(v)}</span>`:v<0?
 const ring=(p,col)=>`<svg class=ring viewBox="0 0 36 36" aria-hidden=true><circle class=rt cx=18 cy=18 r=15.9 /><circle class=rf cx=18 cy=18 r=15.9 style="stroke-dashoffset:${Math.round(100-clamp(p,0,1)*100)}${col?';stroke:'+col:''}"/></svg>`;
 function vicBest(){const c=S.cfg,F=MAP.playN,lf=fetihLeft().length,o=F-lf,near=lf>0&&lf<=FLEFT_N&&S.phase==='oyun'&&!S.over,L=[{p:near?9:o/F,r:o/F,left:near?lf:0,id:'fetih',t:near?`Fetihe <b>${lf}</b><small> bölge kaldı</small>`:`Fetih <b>${o}</b><small>/${F}</small>`,col:''}];
  if(c.alt){const tc=techCount(),M=VIC.medeniyet,hn=hegHeld().filter(x=>x.st!=='x').length,hN=hegNeed();
-  L.push({p:(Math.min(1,tc/M.tech)+S.wonder.stage/M.stages)/2,id:'medeniyet',t:`Medeniyet <b>${tc}</b><small>/${M.tech} · ${S.wonder.stage}/${M.stages}</small>`,col:'var(--r-bilgi)'});
-  L.push({p:Math.min(1,hn/hN)*.5+S.heg.count/VIC.hegemonya.hold*.5,id:'hegemonya',t:`Hegemonya <b>${hn}</b><small>/${hN}${S.heg.count?` · ${S.heg.count}y`:''}</small>`,col:'var(--info)'})}
+  const am=S.altM||{};if(am.medeniyet==null)L.push({p:(Math.min(1,tc/M.tech)+S.wonder.stage/M.stages)/2,id:'medeniyet',t:`Medeniyet <b>${tc}</b><small>/${M.tech} · ${S.wonder.stage}/${M.stages}</small>`,col:'var(--r-bilgi)'});
+  if(am.hegemonya==null)L.push({p:Math.min(1,hn/hN)*.5+S.heg.count/VIC.hegemonya.hold*.5,id:'hegemonya',t:`Hegemonya <b>${hn}</b><small>/${hN}${S.heg.count?` · ${S.heg.count}y`:''}</small>`,col:'var(--info)'})}
  return L.sort((a,b)=>b.p-a.p)[0]}
 function renderHeader(){const R=$('#res'),Y=$('#yr');if(!S){R.innerHTML='';R._h='';Y.innerHTML='';const R2=$('#res2');R2.innerHTML='';R2._h='';hudFit();return}const e=economy(),c=S.cfg;
  Y.innerHTML=`${ic('yil')}<small>Yıl</small><b${FX.yr!=null&&FX.yr!==S.turn&&FX.on&&MOT()===2?' class=yrin':''}>${S.turn}</b>`;FX.yr=S.turn;Y.setAttribute('aria-label','Yıl '+S.turn);
@@ -2387,8 +2410,8 @@ function renderHeader(){const R=$('#res'),Y=$('#yr');if(!S){R.innerHTML='';R._h=
  else{const v=vb;h2+=`<button class="hc vic"${v.left?` data-left=${v.left}`:''} onclick="setTab('hedef')" aria-label="En yakın zafer yolu: ${v.t.replace(/<[^>]+>/g,'')}" data-tip="${esc('Zafer yolları: '+pathTxt()+'\n(Hedef sekmesi)')}">${ring(v.r!=null?v.r:v.p,v.col)}${ic(VIC[v.id].i)}${v.t}</button>`}
  {const R2=$('#res2');let f=0;if(R._h!==h){R.innerHTML=h;R._h=h;f=1}if(R2._h!==h2){R2.innerHTML=h2;R2._h=h2;f=1}if(f)hudFit()}hudAnim(e);
  const bn=META&&META.equipped.banner&&COS[META.equipped.banner],T=$('.title');if(T)T.innerHTML=`${ic(bn?'sancak':'v-fetih')}FETİH`;
- {const b=$('#endBtn'),ev=!S.over&&S.evQ.length;b.disabled=!S.over&&S.phase!=='oyun';b.innerHTML=S.over?`${ic('kupa')}<span class=lg>Sonuç</span><span class=sm>Sonuç</span>`:ev?`${ic('olay')}<span class=lg>Olayı Çöz</span><span class=sm>Olay</span>`:`${ic('ileri-tur')}<span class=lg>Turu Bitir</span><span class=sm>Bitir</span>`;
-  b.setAttribute('aria-label',S.over?'Sonuç ve miras ekranı':ev?'Bekleyen olayı çöz':'Turu bitir');if(S.over)b.dataset.tip='Sefer bitti: sonuç ve miras ekranını aç';else delete b.dataset.tip}}// 1d: oyun bitince düğme sessiz kalmaz, bitiş ekranını açar
+ {const b=$('#endBtn'),ev=!S.over&&(S.evQ.length||S.altQ);b.disabled=!S.over&&S.phase!=='oyun';b.innerHTML=S.over?`${ic('kupa')}<span class=lg>Sonuç</span><span class=sm>Sonuç</span>`:ev?(S.altQ?`${ic(VIC[S.altQ.p].i)}<span class=lg>Zafer Kararı</span><span class=sm>Karar</span>`:`${ic('olay')}<span class=lg>Olayı Çöz</span><span class=sm>Olay</span>`):`${ic('ileri-tur')}<span class=lg>Turu Bitir</span><span class=sm>Bitir</span>`;
+  b.setAttribute('aria-label',S.over?'Sonuç ve miras ekranı':ev?(S.altQ?'Zafer kararını ver':'Bekleyen olayı çöz'):'Turu bitir');if(S.over)b.dataset.tip='Sefer bitti: sonuç ve miras ekranını aç';else delete b.dataset.tip}}// 1d: oyun bitince düğme sessiz kalmaz, bitiş ekranını açar
 // HUD sayaçları (§5.4, §9.2 count + pulse): değişen çip 400 ms sayar, artışta yeşil, azalışta kırmızı nabız. Tek döngü (fxLoop)
 function hudAnim(e){const V={nufus:fl(e.pop),moral:Math.round(S.morale),asker:e.troops},t=performance.now(),go=FX.on&&MOT()===2;for(const r of RES)V[r.k]=fl(S.res[r.k]);FX.pu=FX.pu||{};
  for(const k in V){const v=V[k],p=FX.hv[k],el=document.querySelector(`#res [data-r=${k}]`);FX.hv[k]=v;if(!el)continue;
@@ -2597,7 +2620,7 @@ function pArmy(){const e=economy(),M=mil(),mm=moraleMult(S.morale),o=own(),tot=Z
 // --- Hedefler sekmesi: üç zafer yolu, ferman, etkin olay etkileri ---
 // Fetih'e kalan bölge sayısı bu kadar ya da azken Hedef sekmesinde listelenir, üst çubukta "Fetihe N bölge kaldı" yazar, haritada halkayla işaretlenir
 const FLEFT_N=8;
-function pathTxt(){const M=VIC.medeniyet;return`⚔ Fetih ${fetihHeld()}/${MAP.playN} bölge (tümü)`+(S.cfg.alt?` · 📜 Medeniyet ${techCount()}/${M.tech} teknoloji + ${S.wonder.stage}/${M.stages} eser · 👑 Hegemonya ${hegHeld().filter(x=>x.st!=='x').length}/${hegNeed()} başkent${S.heg.count?`, ${S.heg.count}/${VIC.hegemonya.hold} yıl`:''}`:'')}
+function pathTxt(){const M=VIC.medeniyet,am=S.altM||{};return`⚔ Fetih ${fetihHeld()}/${MAP.playN} bölge (tümü)`+(S.cfg.alt?` · 📜 Medeniyet ${am.medeniyet!=null?'ulaşıldı ✓':`${techCount()}/${M.tech} teknoloji + ${S.wonder.stage}/${M.stages} eser`} · 👑 Hegemonya ${am.hegemonya!=null?'ulaşıldı ✓':`${hegHeld().filter(x=>x.st!=='x').length}/${hegNeed()} başkent${S.heg.count?`, ${S.heg.count}/${VIC.hegemonya.hold} yıl`:''}`}`:'')}
 function goalTgt(){const c=S.cfg,tg=c.target&&ACHM[c.target],lv=tg&&tg.lv&&!S.over&&S.phase==='oyun'?tg.lv(S):null;if(!lv)return'';
  return`<div class="card tgt ${lv.ok===false?'no':lv.ok?'ok':''}" style="margin-bottom:10px"><b>${ic('hedefle','k-brand')} Hedef başarım: ${esc(tg.ad)}</b><small class=muted>${esc(tg.d)}</small><small class="${lv.ok===false?'bad':lv.ok?'good':''}">${lv.t}</small></div>`}
 // Hedef › Fetih: kalan bölgeler (≤ FLEFT_N ise tıklanabilir liste, yoksa sahibine göre sayım)
@@ -2607,8 +2630,8 @@ function fLeftHtml(lf){if(!lf.length||S.over)return'';const R=S.regions;
  return`<small style="margin-top:6px"><b class=k-brand>Fetihe ${lf.length} bölge kaldı</b> <span class=muted>(haritada halkalı; tıkla, bölgeye git)</span></small><div class="chips fleft" style="margin-top:4px">${lf.map(i=>`<button type=button class=chip onclick="selectRegion(${i})" title="${esc(facName(R[i].owner)+' · asker '+vis(i).txt)}">${fdot(R[i].owner)}${esc(rName(i))}</button>`).join('')}</div>`}
 function pGoal(){const M=VIC.medeniyet,H=VIC.hegemonya,W=S.wonder,F=MAP.playN,lf=fetihLeft(),o=F-lf.length,alt=S.cfg.alt,fm=S.ferman,dk=declInfo();
  const bar=(v,m,col)=>`<div class=bar><i style="width:${clamp(v/m,0,1)*100}%${col?';background:'+col:''}"></i></div>`;
- const card=(id,body)=>`<div class="card goal ${fm===id?'on':''}" style="margin-bottom:8px"><div class=rh style="justify-content:space-between"><b>${ic(VIC[id].i)} ${VIC[id].ad}</b>${fm===id?'<span class="tag good">Ferman</span>':''}</div>${body}</div>`;
- let h=goalTgt()+`<p class=muted style="margin-top:0;font-size:calc(12.5px*var(--ts))">${alt?'Üç yoldan biriyle kazanırsın; üçü aynı anda açık.':'Bu oyunda yalnız Fetih açık.'}</p>`;
+ const am=S.altM||{},card=(id,body)=>`<div class="card goal ${fm===id?'on':''}" style="margin-bottom:8px"><div class=rh style="justify-content:space-between"><b>${ic(VIC[id].i)} ${VIC[id].ad}</b>${am[id]!=null?'<span class="tag good">ulaşıldı ✓</span>':''}${fm===id?'<span class="tag good">Ferman</span>':''}</div>${am[id]!=null?`<small class=good>Ulaşıldı ✓ (${am[id]}. yıl) · fetihe devam ediliyor; bitiş ekranında kilometre taşı olarak görünür.</small>`:''}${body}</div>`;
+ let h=goalTgt()+`<p class=muted style="margin-top:0;font-size:calc(12.5px*var(--ts))">${alt?'Oyun Fetih ile (bütün bölgeler) biter. Medeniyet ya da Hegemonya koşulu sağlanınca bir kez sorulur: zaferi o an alabilir ya da fetihe devam edebilirsin (ferman olarak beyan ettiğin yol sormadan bitirir).':'Bu oyunda yalnız Fetih açık.'}</p>`;
  h+=dk.ok?`<div class="card goal on" style="margin-bottom:8px"><b>👑 Zaferi ilan et</b><small>Erken bitirme (isteğe bağlı). Gücün rakiplerinin toplamının ${fmtX(r1(dk.r))} katı. Bütün bölgeleri almayı beklemeden oyunu bitirebilirsin (taban 900, hız bonusunun yarısı); istersen Fetih'e devam et.</small><button class="btn primary" onclick="askDeclare()">👑 Zaferi ilan et</button></div>`
   :`<p class=muted style="font-size:var(--t-xs);margin:0 0 8px">👑 Zafer ilanı (isteğe bağlı erken bitirme): toprağın ≥ %${Math.round(DECL.sh*100)} ve gücün (asker + 5 × bölge) rakiplerinin toplamının ${fmtX(DECL.r)} katı olunca oyunu erken bitirebilirsin. Şimdi ${fmtX(r1(Math.min(dk.r,99)))}× · %${Math.round(dk.sh*100)}.</p>`;
  h+=card('fetih',`<small>Bölge <b>${o}</b>/${F}: haritanın tamamı (kabile bölgeleri dahil; vasalının bölgeleri senin sayılır). Rakipleri yıkmak tek başına bitirmez.</small>${bar(o,F)}${fLeftHtml(lf)}<div class=chips style="margin-top:6px">${S.cfg.ais.map(f=>`<span class=chip style="${aliveAI(f)&&!isVas(f)?'':'opacity:.5;text-decoration:line-through'}">${fdot(f)}${facName(f)}${isVas(f)?' ⛓':''}</span>`).join('')}</div>`);
@@ -2677,7 +2700,7 @@ function showHelp(){const c=S?S.cfg:normCfg(CFG_KLASIK);modal(`<h3>⚔ Fetih: Na
 <p><b>Arazi:</b> Sıradağlar geçilmezdir. Geçitler +%40 savunma verir. Köprüsüz nehir geçişi saldırıyı ×0,7'ye düşürür, süvariyi daha da fazla. Dağ ve ormanda savunma güçlüdür, süvari zayıftır.</p>
 <p><b>Ganimet:</b> Fethettiğin bölgenin stokundan yalnızca bir pay (%30–70) ele geçer. Kalanı yangın ve yağmada zayi olur. Kayıpsız kazanmak daha çok ganimet kurtarır.</p>
 <p><b>Hanedan ve kartlar:</b> Her hanedanın güçlü ve zayıf yanları, kural kartlarının etkileri <b>Ordu</b> sekmesinin başında ve sonunda.</p>
-<p><b>Zafer (🏆 Hedef sekmesi):</b> ⚔ <b>Fetih</b>: haritadaki bütün bölgeleri al (${c.ais.length} rakip ve bağımsız kabileler; vasalının bölgeleri senin sayılır). Rakipleri yıkmak tek başına yetmez; son bölgeler Hedef sekmesinde listelenir. 📜 <b>Medeniyet</b>: ${VIC.medeniyet.tech} teknoloji + başkentte 5 aşamalı Büyük Eser. 👑 <b>Hegemonya</b>: rakiplerin eski başkentlerinden ${SIZES[c.size].heg}'ini elinde ya da vasalının elinde ${VIC.hegemonya.hold} yıl tut. İlk ${c.grace} yıl rakipler sana saldırmaz.${c.coalAt!=null?` Toprakların %${Math.round(c.coalAt*100)}'e ulaşınca rakipler koalisyon kurar.`:''}</p>
+<p><b>Zafer (🏆 Hedef sekmesi):</b> ⚔ <b>Fetih</b>: haritadaki bütün bölgeleri al (${c.ais.length} rakip ve bağımsız kabileler; vasalının bölgeleri senin sayılır). Rakipleri yıkmak tek başına yetmez; son bölgeler Hedef sekmesinde listelenir. 📜 <b>Medeniyet</b>: ${VIC.medeniyet.tech} teknoloji + başkentte 5 aşamalı Büyük Eser. 👑 <b>Hegemonya</b>: rakiplerin eski başkentlerinden ${SIZES[c.size].heg}'ini elinde ya da vasalının elinde ${VIC.hegemonya.hold} yıl tut. Bu ikisi oyunu kendiliğinden bitirmez: koşul sağlanınca zaferi alıp almayacağını sen seçersin (fetihe devam edersen kilometre taşı olarak kalır); Ferman olarak beyan ettiğin yol sormadan bitirir. İlk ${c.grace} yıl rakipler sana saldırmaz.${c.coalAt!=null?` Toprakların %${Math.round(c.coalAt*100)}'e ulaşınca rakipler koalisyon kurar.`:''}</p>
 <p><b>Olaylar ve rakipler:</b> Birkaç yılda bir bir olay çıkar; seçimini yapmadan yıl bitmez (1/2/3 tuşları). Her rakibin bir kişiliği vardır (Saldırgan, Tüccar, Savunmacı, Fırsatçı): Haritacılık ile görünür.</p>
 <div class=savebox><b style="font-size:calc(12.5px*var(--ts))">💾 Kayıt</b><span class=muted style="font-size:var(--t-xs);flex:1">${ST.ok?'Oyun bu tarayıcıya otomatik kaydedilir.':'Tarayıcı kaydı kapalı.'}</span>${S?`<button class="btn sm" onclick="copyText(exportSave(),'Kayıt panoya kopyalandı.')">📋 Kaydı kopyala</button>`:''}<button class="btn sm" onclick="showImport()">📥 Kayıt yükle</button></div>
 <div class=row><button class="btn primary" onclick="closeModal();if(!S||!ART)startNew();else if(S.phase==='kurulus')showSetup()">${S&&ART?'Başla':'Tamam'}</button></div><div class=ver>Fetih v${GAME_VERSION} · kayıt v${SAVE_VER}</div>`,'help')}
@@ -2761,7 +2784,7 @@ function wz3(){const c=WZ.c,n=normCfg(c);let h=`<h3>Harita, boy ve zorluk</h3><h
  <div class=fundbox style="font-size:var(--t-sm)">${cfgLine(n)}<br><span class=muted>Barış ${n.grace} yıl · hazine ${n.fund} akçe · ${n.ais.length} rakip · miras ×${fmtX(scoreX(n))}</span></div>${S&&ART&&!S.over?'<p class=muted style="font-size:var(--t-xs);margin:0">Mevcut oyunun silinir (miras puanların korunur).</p>':''}`;
  return h+wzNav('',`<button class="btn primary" onclick="wizStart()">Seferi Başlat ▶</button>`)}
 window.addEventListener('resize',()=>{resize();hudFit();setHint();tabInk()});
-window.addEventListener('keydown',e=>{fxSkip();if(ui.modal==='ev'&&/^[1-9]$/.test(e.key)){e.preventDefault();evPick(+e.key-1);return}if(e.key==='Escape')tipHide();if(e.key==='Escape'&&mCan(ui.modal))closeModal();
+window.addEventListener('keydown',e=>{fxSkip();if(ui.modal==='ev'&&/^[1-9]$/.test(e.key)){e.preventDefault();evPick(+e.key-1);return}if(ui.modal==='alt'&&/^[12]$/.test(e.key)){e.preventDefault();altUI(e.key==='1'?'devam':'bitir');return}if(e.key==='Escape')tipHide();if(e.key==='Escape'&&mCan(ui.modal))closeModal();
  // odak tuzağı (§5.8): Tab pencere içinde döner
  if(e.key==='Tab'&&ui.modal){const L=[...$('#modal').querySelectorAll(FOC)].filter(x=>x.offsetParent!==null||x===document.activeElement);if(!L.length)return;const a=L[0],z=L[L.length-1],c=document.activeElement;
   if(!$('#modal').contains(c)){e.preventDefault();a.focus()}else if(e.shiftKey&&c===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&c===z){e.preventDefault();a.focus()}}});
@@ -2800,12 +2823,12 @@ function endSounds(R){if(SND.endS===S)return;SND.endS=S;musEnd();sfx(S.over==='w
 // Tur bitirme onayı (§13) ve "Turu Bitir hazır" (end-glow): saldırabilecek hazır asker ya da alınabilir teknoloji kalmadıysa
 function leftActs(){const L=[];if(!S||!MAP)return L;const rd=own().filter(i=>S.regions[i].ready>=1&&MAP.regions[i].adj.some(j=>canAttack(i,j))).length;if(rd)L.push(`${rd} bölgede saldırabilecek hazır asker var.`);
  if(BR.some(b=>S.tech[b.id]<4&&S.res.bilgi>=tcost(S.tech[b.id])))L.push('Araştırılabilir bir teknoloji var.');return L}
-function endTurnUI(){if(PREF.endConfirm&&S&&!S.over&&S.phase==='oyun'&&!S.evQ.length&&!ui.modal){const w=leftActs();if(w.length){modal(`<h3>${ic('ileri-tur')} Turu bitir?</h3><p>${w.join('<br>')}</p><div class=row><button class=btn onclick="closeModal()">Vazgeç</button><button class="btn primary" onclick="closeModal();endTurn()">Yine de bitir</button></div>`,'econf');return}}endTurn()}
+function endTurnUI(){if(PREF.endConfirm&&S&&!S.over&&S.phase==='oyun'&&!S.evQ.length&&!S.altQ&&!ui.modal){const w=leftActs();if(w.length){modal(`<h3>${ic('ileri-tur')} Turu bitir?</h3><p>${w.join('<br>')}</p><div class=row><button class=btn onclick="closeModal()">Vazgeç</button><button class="btn primary" onclick="closeModal();endTurn()">Yine de bitir</button></div>`,'econf');return}}endTurn()}
 // ---- Klavye (§11.1-11.2) ----
-const KEYS=[['Boşluk / Enter','Turu bitir (harita ya da boş alan odaktayken, pencere yokken; haritada Enter bölge seçer)'],['1 – 6','Panel sekmeleri (pencere yokken)'],['1 – 3','Olay seçeneği (olay penceresinde)'],['Esc','Pencereyi kapat'],['M','Sesi aç / kapat'],['F','Seçili bölgeye git'],['?','Kısayol listesi'],['Oklar','Harita odaktayken: yöndeki komşu bölgeye geç'],['Enter','Harita: odaktaki bölgeyi seç'],['A / T','Harita: seçili bölgenden odaktakine saldır / taşı'],['+ / − / 0','Yakınlaştır / uzaklaştır / tüm harita'],['Tab','Üst çubuk → harita → sekmeler → panel → Turu Bitir']];
+const KEYS=[['Boşluk / Enter','Turu bitir (harita ya da boş alan odaktayken, pencere yokken; haritada Enter bölge seçer)'],['1 – 6','Panel sekmeleri (pencere yokken)'],['1 – 3','Olay seçeneği (olay penceresinde)'],['1 / 2','Zafer kararı: fetihe devam / zaferi şimdi al'],['Esc','Pencereyi kapat'],['M','Sesi aç / kapat'],['F','Seçili bölgeye git'],['?','Kısayol listesi'],['Oklar','Harita odaktayken: yöndeki komşu bölgeye geç'],['Enter','Harita: odaktaki bölgeyi seç'],['A / T','Harita: seçili bölgenden odaktakine saldır / taşı'],['+ / − / 0','Yakınlaştır / uzaklaştır / tüm harita'],['Tab','Üst çubuk → harita → sekmeler → panel → Turu Bitir']];
 const keysHtml=()=>`<div class=keys>${KEYS.map(([k,d])=>`<kbd>${k}</kbd><span>${d}</span>`).join('')}</div>`;
 // açık pencerenin üstüne açılan ayar/kısayol penceresi kapanınca önceki pencere geri gelir
-const backOf=k=>({wiz:wizShow,setup:showSetup,menu:showMenu,help:showHelp,over:afterModal,miras:()=>showMiras(),ev:showEvent,bozuk:showBad})[k]||((!S||!ART)&&!k?startNew:null);
+const backOf=k=>({wiz:wizShow,setup:showSetup,menu:showMenu,help:showHelp,over:afterModal,miras:()=>showMiras(),ev:showEvent,alt:showEvent,bozuk:showBad})[k]||((!S||!ART)&&!k?startNew:null);
 function showKeys(){if(ui.modal!=='keys'&&ui.modal!=='ayar')ui.setBack=backOf(ui.modal);modal(`<h3>${ic('bilgi-i')} Klavye kısayolları</h3>${keysHtml()}<div class=row><button class="btn primary" onclick="closeModal()">Tamam</button></div>`,'keys')}
 const TABK=['bolge','eko','ordu','hedef','tek','kayit'];
 function kfShow(){const i=FX.kf,g=MAP.regions[i];if(!g)return;const x=(g.lx-cam.x)*cam.z,y=(g.ly-cam.y)*cam.z;if(x<40||y<40||x>visW()-40||y>visH()-40)centerOn(i);req();
@@ -2881,15 +2904,16 @@ if(!TEST){
  const act=(n,id)=>wrap(n,(o,a)=>{const b=sig(),r=o(...a);if(sig()!==b)sfx(id);return r});
  act('buildField','insa');act('upgradeField','yukselt');act('upgradeMil','insa');act('buildSur','insa');act('recruit','asker-topla');act('research','arastirma');act('buyStart','kaynak-harca');act('startWonder','insa');
  wrap('finishSetup',(o,a)=>{const p=S&&S.phase,r=o(...a);if(S&&p!==S.phase)sfx('insa');return r});
- wrap('endTurn',(o,a)=>{if(!S||S.over||S.phase!=='oyun'||S.evQ.length)return o(...a);const t0=S.turn,c0=!!(S.coal&&S.coal.on),m0=S.morale,r0=Object.assign({},S.res),k0=critSet(),r=o(...a);
+ wrap('endTurn',(o,a)=>{if(!S||S.over||S.phase!=='oyun'||S.evQ.length||S.altQ)return o(...a);const t0=S.turn,c0=!!(S.coal&&S.coal.on),m0=S.morale,r0=Object.assign({},S.res),k0=critSet(),r=o(...a);
   if(S&&S.turn!==t0){sfx('tur-sonu');if(RES.some(x=>S.res[x.k]>r0[x.k]+.5))sfx('kaynak-kazan',{at:.25,soft:1});
    const w=[];if(S.log.some(l=>l.t===S.turn&&/^(Kıtlık|Hazine boş)/.test(l.m)))w.push('kıtlık ya da boş hazine');const cn=!!(S.coal&&S.coal.on)&&!c0;if(cn){w.push('koalisyon kuruldu');fxCoal()}
    if(S.morale<30&&m0>=30)w.push('moral 30\'un altında');for(const k of critSet())if(!k0.has(k))w.push(RES.find(x=>x.k===k).ad+' 2 tur içinde tükenebilir');
    if(w.length){sfx('uyari',{at:.85,koal:cn});srA('Uyarı: '+w.join(', ')+'.')}musState();if(!S.over)srTurn()}return r});
  wrap('showEvent',(o,a)=>{const was=ui.modal,r=o(...a);if(ui.modal==='ev'&&S&&S.evQ.length){const q=S.evQ[0];if(SND.evq!==q||was!=='ev'){SND.evq=q;const E=EVM[q.id];sfx('olay-ac',{v:E&&E.tur})}}return r});
+ wrap('showAlt',(o,a)=>{const was=ui.modal,r=o(...a);if(ui.modal==='alt'&&was!=='alt')sfx('basarim');return r});
  wrap('pickEvent',(o,a)=>{const n=S?S.evQ.length:0,r=o(...a);if(S&&S.evQ.length!==n)sfx('ui-onay');return r});
- wrap('modal',(o,a)=>{const was=ui.modal,k=a[1]||'x',r=o(...a);if(!was&&!['ev','res','over','rep'].includes(k))sfx('ui-ac');return r});
- wrap('closeModal',(o,a)=>{const k=ui.modal,r=o(...a);if(k&&!['ev','res','over'].includes(k))sfx('ui-kapa');if((k==='ayar'||k==='keys')&&!ui.modal){const f=ui.setBack;ui.setBack=null;if(f)f()}return r});
+ wrap('modal',(o,a)=>{const was=ui.modal,k=a[1]||'x',r=o(...a);if(!was&&!['ev','alt','res','over','rep'].includes(k))sfx('ui-ac');return r});
+ wrap('closeModal',(o,a)=>{const k=ui.modal,r=o(...a);if(k&&!['ev','alt','res','over'].includes(k))sfx('ui-kapa');if((k==='ayar'||k==='keys')&&!ui.modal){const f=ui.setBack;ui.setBack=null;if(f)f()}return r});
  wrap('unlockItem',(o,a)=>{const r=o(...a);if(r)sfx('kilit-acildi');return r});
  wrap('openAttack',(o,a)=>{const r=o(...a);if(ui.modal!=='atk'&&S&&!S.over)sfx('ui-hata');return r});
  wrap('openMove',(o,a)=>{const r=o(...a);if(ui.modal!=='mov')sfx('ui-hata');return r});
@@ -2898,7 +2922,7 @@ if(!TEST){
  wrap('saveNow',(o,a)=>{const r=o(...a);if(r)SAVE_T=Date.now();return r});
  wrap('hover',(o,a)=>{const h=FX.hov,r=o(...a);if(FX.hov!=null&&FX.hov!==h)sfx('ui-hover');return r});
  wrap('renderHeader',(o,a)=>{const r=o(...a);if(S){const F=FX.crit||new Set(),now=new Set();document.querySelectorAll('#res .hc.crit').forEach(el=>{const k=el.dataset.r;now.add(k);if(!F.has(k)&&MOT()){el.classList.remove('cbl');void el.offsetWidth;el.classList.add('cbl')}});FX.crit=now;
-  const b=$('#endBtn');if(b)b.classList.toggle('rdy',!S.over&&S.phase==='oyun'&&!S.evQ.length&&!ui.modal&&!leftActs().length)}return r});
+  const b=$('#endBtn');if(b)b.classList.toggle('rdy',!S.over&&S.phase==='oyun'&&!S.evQ.length&&!S.altQ&&!ui.modal&&!leftActs().length)}return r});
  wrap('renderPanel',(o,a)=>{const r=o(...a),p=$('#panel');if(p&&S){p.setAttribute('aria-labelledby','tab-'+ui.tab);const l=p.querySelector('.log');if(l&&!l.hasAttribute('role')){l.setAttribute('role','log');l.setAttribute('aria-live','off')}}return r});
  // haritada klavye odağı: kesik --focus halkası
  wrap('render',(o,a)=>{const r=o(...a);const i=FX.kf;if(i!=null&&MAP&&MAP.regions[i]&&document.activeElement===view){const g=MAP.regions[i],c=vctx,x=(g.lx-cam.x)*cam.z,y=(g.ly-cam.y)*cam.z;c.save();c.setLineDash([5,4]);c.lineWidth=2.5;c.strokeStyle='#10131A';c.beginPath();c.arc(x,y,30,0,7);c.stroke();c.lineWidth=2;c.strokeStyle='#FFD66B';c.stroke();c.restore()}return r});

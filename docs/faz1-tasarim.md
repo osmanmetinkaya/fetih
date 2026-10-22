@@ -1090,3 +1090,40 @@ Yeniçeri (serbest kademe testi: her bölge Harbiye, Askeri Üretim 4, tek tür)
 - Kademe ve Yeniçeri ucuzladı: insan oyuncu Harbiye'ye bottan çok daha erken ulaşabilir; kartopu insan oyununda ölçülmedi.
 - Kuşatma kullanımı ölçülmedi (bot üretmiyor).
 - Eski taban çizgileri (baseline-v2/v3) bilerek bozuldu; yeni taban `tests/baseline-v4.json`.
+
+## Uygulama notları (0.9.2: alternatif zaferler oyunu sessizce bitirmez)
+
+### Karar
+Kullanıcı isteği "oyun tüm bölgeleri ele geçirene kadar devam etsin". 0.9.1'de Fetih = bütün bölgeler oldu, ama Medeniyet ve Hegemonya koşul sağlanır sağlanmaz oyunu bitiriyordu (fetih botunda Çırak 15/48, Uzun Çırak 18/48 oyun Hegemonya ile kendiliğinden bitiyordu).
+
+### Yapılanlar
+- `checkEnd`: Medeniyet/Hegemonya koşulu (`altMet`) sağlanınca oyun bitmez; yol başına bir kez `S.altQ={p,t}` (bekleyen karar) yazılır. Yol Ferman olarak beyan edildiyse (`S.ferman===p`) eski gibi hemen biter. Fetih ve yenilgi bekleyen kararı siler.
+- `altPick(k)` (bot ve arayüz ortak): `'bitir'` → eski zafer (`S.over='win'`, `S.winBy=p`); `'devam'` → kilometre taşı `S.altM[p]=yıl`, o yol bir daha zafer tetiklemez (AI eser yarışı/koalisyon davranışı değişmedi). Karar silindikten sonra işlenir: çift tık/yenileme iki kez işlemez.
+- Karar penceresi (`showAlt`, tür `alt`, `NOCL`: Esc kapatmaz): olay penceresi kalıbı; birincil "Fetihe devam et (N bölge kaldı)", ikincil "Zaferi şimdi al" (şimdi bitirilseydi skor ve oyun MP'si `altProbe`, başarımlar hariç; başka yol fermanlıysa "ferman tutmaz" uyarısı). 1/2 tuşları, odak birincil düğmede. `showEvent` önce bekleyen kararı gösterir: tur sonu raporu → karar → olaylar; yenilemede (`start`), savaş sonucu penceresi kapanınca ve olay seçiminden sonra geri gelir. Karar bekliyorken "Turu Bitir" yerine "Zafer Kararı" düğmesi, tur bitmez.
+- Hedef sekmesi: ulaşılan yolun kartında "ulaşıldı ✓ (devam ediliyor)"; üst çubuk ulaşılmış yolu en yakın hedef olarak göstermez; `pathTxt`, yardım ve Hedef giriş metni güncellendi; kısayol listesine 1/2.
+- Bitiş ekranı ve paylaşım metni: "👑 Hegemonya kilometre taşı ✓ (N. yıl)" satırı. Skor/MP formülü değişmedi.
+- Başarımlar: Külliye, Taç ve Haraç ve Bilge açılımı "kilometre taşı + kazanılan oyun"u da sayar (`pathWon`); Üç Yol için `META.stats.byMile` sayacı (`byPath` anlamı korunur). Kalemle Fetih yalnız gerçek Medeniyet zaferinde.
+- Kayıt: `altQ`/`altM` `def1b`'de varsayılanla tamamlanır (eksik = karar yok); geçersiz değerler temizlenir, bitmiş oyunda bekleyen karar silinir. `SAVE_VER` 8 kaldı (yeni alan yalnız eklendi, göç gerekmez); META_VER 2 kaldı (`metaFix` yeni sayacı tamamlar).
+- `tests/sim.js`: `altChoice` (`'devam'`/`'bitir'`; boşsa fetih botu `'devam'`, yol botları `'bitir'`), karar olay gibi tur sonunda çözülür; satırda `alt`, `mile`; özette `altGames`, `altN`, `altBy`, `mileWin`. Yeni taban `tests/baseline-v6.json`.
+
+### Ölçüm (48 tohum 1001-1048, Klasik, olay/alternatif açık, 240 tur, Uzun 280; yol botları 24 tohum Kalfa; önce 0.9.1 → sonra 0.9.2)
+| | Kazanma (⚔/👑) önce | sonra | Karar çıkan oyun | Bitmeyen | Ort. bitiş |
+|---|---|---|---|---|---|
+| Çırak | 44 (29/15) | 44 (44/0) | 15 | 0 → 0 | 78,3 → 85,2 |
+| Kalfa | 23 (19/4) | 21 (21/0) | 4 | 1 → 3 | 74,0 → 80,4 |
+| Usta | 12 (9/3) | 10 (10/0) | 3 | 0 → 2 | 59,7 → 66,3 |
+| Kısa Çırak | 44 (29/15) | 44 (44/0) | 15 | 0 → 0 | 68,2 → 74,7 |
+| Kısa Kalfa | 24 (14/10) | 23 (23/0) | 10 | 1 → 2 | 71,6 → 79,5 |
+| Uzun Çırak | 41 (23/18) | 41 (41/0) | 18 | 0 → 0 | 96,4 → 106,2 |
+| Uzun Kalfa | 24 (15/9) | 23 (23/0) | 9 | 0 → 1 | 93,3 → 99,7 |
+
+- Fetih botunda Medeniyet/Hegemonya ile biten oyun: 0 (önce 74/336). Karar penceresi yalnız Hegemonya'dan çıktı (fetih botu eser kurmaz).
+- Yol botları (`'bitir'`) 0.9.1 ile birebir aynı: med 11 kazanma (📜7 ⚔3 👑1), heg 7 (👑7), Zafer İlanı 15/24; `ev:false, alt:false` matrisleri ve `baseline-v5.rowsOff` birebir aynı. Ferman beyanlı med/heg botu: kendi yolunda karar 0 (yalnız ferman dışı yol sorulur), sonuç 0.9.1 ile aynı.
+- `'devam'` diyen yol botları (Kalfa, 24): med 7 kazanma / 4 bitmeyen; heg 1 kazanma / 5 bitmeyen (yol botu fethi bitirecek biçimde oynamıyor).
+- Bitmeyen oyunlar bot sınırı: 7 tohum 500 tura uzatıldı, 1'i (1036) 245. yılda Fetih ile bitti, 6'sı 3-14 bölge kala kilitli kaldı (eski kodda bunların 5'i Hegemonya ile bitiyordu).
+- Hata 0, invariant 0, `randLeak` 0, belirlenimci (`det`), `checkMaps` 20/20 + 12/12, `evUnit` 43/43 temiz, sim'de AudioContext yok.
+
+### Açık riskler
+- İnsan oyuncu "devam" deyip fethi bitiremezse oyun uzar; "Zaferi ilan et" (taban 900) tek erken çıkış. Kararı geri alma yok (bilerek: pencere bir kez).
+- Fetih botu kalan son bölgelerde kilitlenebiliyor (Kalfa/Usta 48 oyunda 2-3); botun son aşama mantığı ayrı iş.
+- Kilometre taşı Külliye/Taç ve Haraç/Üç Yol/Bilge'yi açar: "devam" diyen ve kazanan oyuncu bu ödülleri kaybetmez; bu MP'ye dolaylı etki (başarım MP'si) bilinçli seçim.
