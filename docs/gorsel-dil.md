@@ -1203,3 +1203,34 @@ Uygulanan: Aşama 4 (pencere kalıbı, olay, saldırı, sonuç akışı, sihirba
 - Gerçek dokunmatik cihazda (iOS Safari, Android) denenmedi; tam ekran sayfa `100dvh`, hayalet kapanış ve `letterSpacing` yalnız Chrome'da görüldü.
 - `icoImg` SVG'yi `data:` görüntüsü olarak tuvale çizer; eski Safari'de SVG görüntüsü tuvali "kirletebilir" (yalnız `getImageData` etkilenir; görünüm tuvalinden okuma yapılmıyor).
 - Ses (Aşama 7-8) yok; ayarlar arayüzü, renk körü modunda desen alfası %40 ve klavye harita gezintisi Aşama 8.
+
+---
+
+## Uygulama notları (görsel 7-8)
+
+Uygulanan: Aşama 7 (ses motoru, 27 tarif + alt türler, öncelik/toplama, kancalar), Aşama 8 (üretken müzik, ayarlar paneli, klavye/ARIA/ekran okuyucu, renk körü, yazı ölçeği, yüksek kontrast) ve 4-6'dan kalanlar (koalisyon kesik çizgisi, nehir/köprü işareti, `crit-blink`, `end-glow`, mobil sihirbaz "Hanedan" etiketi). Oyun mantığı, denge, kayıt biçimi (`SAVE_VER` 8), RNG değişmedi: `baseline-v4` `rows` 12/12 + `rowsOff` 12/12 birebir (`ms` alanı hariç), `randLeak` 0, `checkMaps` 20/20 + 12/12, `evUnit` 43 satır 0 hata; `fast:false` 3 tohum × 60 tur HEAD ile birebir. Sim boyunca tüm çerçevelerde `AudioContext` kurucusu 0 kez çağrıldı (CDP ile sayıldı). Dosya 368,9 → 412,9 KB (gzip 147 KB).
+
+**Mimari kararlar**
+- **Ses:** `SND` (§10.1 grafiği: master → compressor; sfx, ui, mus → duck lowpass). `AudioContext` yalnız ilk `pointerdown/pointerup/keydown/touchend`'de (yakalama aşaması) kurulur; TEST kipinde `SND.ok=false`, hiçbir şey kurulmaz. `visibilitychange`: `suspend()`/`resume()` + müzik zamanlayıcısı durur/yeniden başlar (6 sn yumuşak giriş).
+- **Ses sayacı zaman aralığı listesiyle** (`vAdd`): t anında çalan ses sayısı; efekt ≤ 12, müzik ≤ 8 (2 dem + 6 geçici). `OfflineAudioContext` çiziminde de doğru sayar.
+- **Öncelik:** `sfx()` çağrıları mikro görevde toplanır; aynı 50 ms dilimde en yüksek 2 öncelik çalar, `ui-*` yalnız tek başınaysa; aynı efekt 40 ms içinde tekrar etmez. Efekt gecikmeleri (`at`) ses saatine yazılır (zamanlayıcı yok).
+- **Kancalar:** oyun fonksiyonlarına dokunulmadı; TEST dışı kipte global fonksiyonlar sarılır (`buildField`, `upgradeField/Mil`, `buildSur`, `recruit`, `research`, `buyStart`, `startWonder`, `finishSetup`, `endTurn`, `showEvent`, `pickEvent`, `modal`, `closeModal`, `unlockItem`, `openAttack/Move`, `doMove`, `showEnd`, `hover`, `renderHeader`, `renderPanel`, `render`). Başarı, kaynak/tur imzası değişimiyle anlaşılır. Savaş sesleri `fxFlush`/`fxTurn` içinde `FX.b` kayıtlarından (hareket "yok" olsa da çalar). Düğme tıkı tek temsilci `click` dinleyicisinde.
+- **Müzik:** varsayılan **kapalı** (belgede açık .35): duyularak dengelenmediği için ilk izlenim riski alınmadı; sihirbaz karşılamasında ve Ayarlar'da tek dokunuşla açılır. Look-ahead 40 ms / 0,2 sn. Durum her tur sonunda (`musState`): kriz = tahıl < 2 tur gideri, moral < 35, son 2 turda başkente saldırı ya da koalisyonla savaş; savaş = son 3 turda ≥ 2 savaş ya da koalisyon. Geçiş ölçü başında, dem kökü/filtre 2,5 sn zaman sabitiyle kayar. Bitişte 1,5 sn söner, 4 sn sonra 20 sn'de döner.
+- **Ayarlar:** `PREF` = `{v:1,battleModal,motion,vol{master,sfx,ui,music},mute,music,musicMode,fastTurn,text,cb,hc,endConfirm,endLeft}`; her alan ayrı doğrulanır (bozuk alan varsayılana). Panel 6 grup + grup gezinmesi; mobilde tam ekran; açık pencerenin üstüne açılır, kapanınca önceki pencere (sihirbaz, kuruluş, olay, bitiş…) geri gelir. Kayıt grubu: boyut/son kayıt, kopyala/yükle, mirası kopyala, bozuk yedeği kopyala/sil, "SIFIRLA" yazarak tüm veriyi silme.
+- **Yazı boyutu:** `--ts` çarpanı `--t-*` token'larına (`calc`). Satır içi px yazılar (~40 yer) ölçeklenmez.
+- **Klavye:** Boşluk/Enter yalnız odak gövdede ya da haritadayken ve pencere yokken, tuş tekrarında değil; haritada Enter bölge seçer (tur bitirmez). 1-6 sekme, M ses, ? kısayol penceresi, F seçiliye git; harita: oklar (yöne göre en yakın komşu), Enter, A, T, +/−/0, odak kesik halka + `#sr` duyurusu.
+- **Ekran okuyucu:** `#sr` (polite) tur özeti tek cümle ve savaş sonucu; `#sra` (assertive) uyarılar (kıtlık, boş hazine, koalisyon, moral < 30, kaynak 2 turda biter). Sekmelere `id/aria-controls`, panel `aria-labelledby`; günlük `role=log` (`aria-live=off`, panel yeniden çizildiği için).
+- **Renk körü:** desen alfası 96 → 150 (≈%59; mevcut desen zaten %38 olduğundan belgedeki %40 fark yaratmıyordu), rozet yanında sahip harfi (★ K M Y S B), hedef işaretinde şans sözcüğü, bitiş grafiğinde asker çizgisi kesik.
+- **Kontrast:** `--tx-3` #8691A3 → #9BA5B6 (`bg-3` üstünde 4,16 → 5,1; seçili kart zemininde 4,6); seçili/yıkanmış zeminde kırmızı metin `--bad-hi` #FF8378 (4,18 → 4,88).
+
+**Belgeden sapmalar / yapılmayanlar**
+- Müzik varsayılanı kapalı; "Müzik ruhu: Kapalı" yerine ayrı Müzik anahtarı. Zamanlayıcı 25 yerine 40 ms.
+- Kriz için "başkent kuşatma altında" yalnız oyuncuya yönelen ve başkenti hedefleyen savaş kaydından anlaşılır; `aiPer.stack` (savaş durumu) kullanılmadı.
+- "Harita etiketleri" ve "İpuçları" ayarları ile tablet `panel-in` yapılmadı. Mobilde Ayarlar ≡ menüsünden (üst çubukta yalnız ses düğmesi). `TXT`/`LOC` metin çerçevesi kurulmadı (yalnız dil seçimi yeri).
+- axe-core çalıştırılmadı (dış bağımlılık); ARIA elle betikle denetlendi. Yalnız klavyeyle tam oyun akışı (sihirbazdan 10 tura) uçtan uca koşulmadı; kısayollar ve harita gezinmesi ayrı ayrı test edildi.
+
+**Ölçümler (başsız Chrome, bu makine)**
+- `OfflineAudioContext`: 27 tarif + 2 çeşit; tepe −10,9 (fetih) … −52 dBFS, kırpma 0, NaN 0; `ui-tik` ile `fetih` RMS farkı ~19 dB. Müzik 20 sn: barış/savaş/kriz tepe −20/−21/−22 dBFS, RMS −40/−38/−40, eşzamanlı müzik sesi en çok 4/6/2 (+2 dem), sessiz boşluk yok.
+- Kurallar: aynı efekt arka arkaya → 1; 5 efekt aynı anda → yalnız `fetih` + `uyari`; 30 eşzamanlı ton → 12 çaldı, 18 düştü.
+- Müzik açık/kapalı (10 sn, seçim nabzı açık): ana iş parçacığı görev yükü 1440: %7,5 → %8,5 (barış), %7,6 (savaş); 375 + 4× CPU: %7,1 → %7,1 / %6,6. Kare p95 16,7-16,8 ms her durumda. `refresh` ort. 1440 4,7-5,0 ms, 375 4× 14,5-16,1 ms.
+- Ses duyularak test edilmedi: tüm tarifler ve müzik yalnız sayısal ölçüldü; kazanç dengesi kulakla onaylanmalı.

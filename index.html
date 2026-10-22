@@ -10,15 +10,15 @@
 :root{color-scheme:dark;
  --bg-0:#0E1117;--bg-1:#151A23;--bg-2:#1D2430;--bg-3:#273041;--bg-map:#0B1622;
  --overlay:rgba(6,8,12,.72);--scrim-map:rgba(11,22,34,.55);--line:#2F394A;--edge:#7A879E;
- --tx-1:#F1F3F7;--tx-2:#A7B1C2;--tx-3:#8691A3;--tx-dis:#6E788A;--ink:#10131A;
+ --tx-1:#F1F3F7;--tx-2:#A7B1C2;--tx-3:#9BA5B6;--tx-dis:#6E788A;--ink:#10131A;
  --brand:#F2B33D;--brand-hi:#FFC95C;--brand-lo:#B9862A;--brand-wash:rgba(242,179,61,.14);--focus:#FFD66B;
- --good:#4CC38A;--bad:#FF6B5E;--warn:#FF9447;--info:#5AB0FF;--danger-bg:#B33A2B;
+ --good:#4CC38A;--bad:#FF6B5E;--bad-hi:#FF8378;--warn:#FF9447;--info:#5AB0FF;--danger-bg:#B33A2B;
  --good-wash:rgba(76,195,138,.14);--bad-wash:rgba(255,107,94,.14);--warn-wash:rgba(255,148,71,.14);
  --r-tahil:#B5D46A;--r-odun:#D99A5B;--r-tas:#BDB4A6;--r-demir:#7DB6EC;--r-altin:#FFD447;--r-bilgi:#B9A2FF;--r-nufus:#E8D9C4;--r-moral:#FF8A5B;
  --f0:#F5B829;--f1:#E0473A;--f2:#3B82F6;--f3:#139E8C;--f4:#E77FD2;--f5:#CFC8BA;
  --font-ui:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Helvetica Neue",Arial,sans-serif;
  --font-num:ui-rounded,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
- --t-micro:11px;--t-xs:12px;--t-sm:13px;--t-md:14px;--t-lg:16px;--t-xl:20px;--t-2xl:26px;--t-3xl:40px;
+ --ts:1;--t-micro:calc(11px*var(--ts));--t-xs:calc(12px*var(--ts));--t-sm:calc(13px*var(--ts));--t-md:calc(14px*var(--ts));--t-lg:calc(16px*var(--ts));--t-xl:calc(20px*var(--ts));--t-2xl:calc(26px*var(--ts));--t-3xl:calc(40px*var(--ts));
  --s-1:4px;--s-2:8px;--s-3:12px;--s-4:16px;--s-5:24px;--s-6:32px;--s-7:48px;
  --rad-xs:4px;--rad-sm:6px;--rad-md:10px;--rad-lg:14px;--rad-pill:999px;
  --e-1:0 1px 0 rgba(255,255,255,.04) inset,0 1px 2px rgba(0,0,0,.4);--e-2:0 1px 0 rgba(255,255,255,.06) inset,0 4px 12px rgba(0,0,0,.45);
@@ -30,7 +30,7 @@
  /* geriye uyum takma adları */
  --bg:var(--bg-0);--panel:var(--bg-1);--panel2:var(--bg-2);--text:var(--tx-1);--muted:var(--tx-2);--accent:var(--brand)}
 :root.rm,:root.rm0{--d-1:0ms;--d-2:0ms;--d-3:0ms;--d-4:0ms;--d-5:0ms;--d-6:0ms}/* hareket: PREF.motion + prefers-reduced-motion (JS: MOT()) */
-@media (max-width:767px){:root{--hud-h:48px;--t-sm:13.5px;--t-md:15px;--t-lg:17px;--t-2xl:24px;--t-3xl:32px}}
+@media (max-width:767px){:root{--hud-h:48px;--t-sm:calc(13.5px*var(--ts));--t-md:calc(15px*var(--ts));--t-lg:calc(17px*var(--ts));--t-2xl:calc(24px*var(--ts));--t-3xl:calc(32px*var(--ts))}}
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;background:var(--bg-0);color:var(--tx-1);font:400 var(--t-md)/1.45 var(--font-ui);display:flex;flex-direction:column;overflow:hidden;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
@@ -434,6 +434,38 @@ tr.flash td,h4.flash{background:var(--brand-wash);transition:background .3s}
  .end-h{flex-direction:column}.end-h canvas{width:100%}#endSc{font-size:var(--t-3xl)}.end-h h3{font-size:20px}
  .stats>div{padding:8px}
 }
+/* ===== Aşama 7-8: ses düğmesi, ayarlar paneli, erişilebilirlik (§10.4, §11, §13) ===== */
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.hdb{flex:none}
+/* kontrast: seçili/yıkanmış zeminde kırmızı metin (≥4,5) */
+.pick.on .bad,.step.cur .bad,.fundbox .bad,.node.done .bad,.tag.bad,.goal.on .bad,.lastb .bad{color:var(--bad-hi)}
+/* yüksek kontrast §11.6 */
+:root.hcm{--tx-2:#D3D9E3;--tx-3:#BCC5D3;--line:#5A6880;--edge:#AEB8C8;--tx-dis:#8C96A8}
+:root.hcm .card,:root.hcm .btn,:root.hcm .step,:root.hcm .node{border-width:2px}:root.hcm .card{border-color:var(--line)}:root.hcm .hc{box-shadow:inset 0 0 0 1px var(--edge)}
+:root.hcm .muted{color:var(--tx-2)}
+/* crit-blink: kaynak kritik eşiğe düştü (3×200 ms kenar) · end-glow: yapılacak eylem kalmadı, Turu Bitir hazır */
+@keyframes crit-blink{50%{box-shadow:inset 0 0 0 2px var(--bad),0 0 0 2px var(--bad-wash)}}
+.hc.cbl{animation:crit-blink 200ms var(--ease-io) 3}
+#endBtn::after{content:'';position:absolute;inset:-3px;border-radius:inherit;box-shadow:0 0 0 2px var(--brand-hi),0 0 18px rgba(242,179,61,.55);opacity:0;pointer-events:none}
+@keyframes end-glow{50%{opacity:1}}
+#endBtn.rdy::after{animation:end-glow 2000ms var(--ease-io) infinite}
+:root.rm #endBtn.rdy::after,:root.rm0 #endBtn.rdy::after{opacity:.6}
+/* ayarlar */
+.setg{border-top:1px solid var(--line);padding:4px 0 12px}.setg:first-of-type{border-top:0}
+.setg h4{margin-top:14px}
+.setr{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:4px 0;flex-wrap:wrap}
+.setr>span:first-child{flex:1 1 160px;min-width:0;font-size:var(--t-md)}.setr>span small{display:block;color:var(--tx-2);font-size:var(--t-xs)}
+.setr .seg{flex:1 1 220px;justify-content:flex-end}.setr .seg .btn{flex:0 1 auto;min-width:56px;min-height:44px}
+.setr input[type=range]{flex:1 1 160px;max-width:260px}.setr output{min-width:3ch;text-align:right;font-variant-numeric:tabular-nums;color:var(--tx-2)}
+.setr .switch{min-height:44px}
+.setr.rr{flex-wrap:nowrap}.setr.rr>span:first-child{flex:0 1 120px}.setr.rr input[type=range]{min-width:0}
+input[type=checkbox]::before{content:'';position:absolute;inset:-9px -2px}
+.setnav{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 6px}.setnav .btn{min-height:44px;min-width:56px}
+.setp{background:var(--bg-2);border-radius:var(--rad-sm);padding:8px 12px;font-size:var(--t-md)}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:var(--t-sm);align-items:baseline}.keys kbd{font:700 var(--t-xs)/1 var(--font-mono);background:var(--bg-3);border:1px solid var(--edge);border-radius:4px;padding:4px 6px;white-space:nowrap;justify-self:start}
+.wzq{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px;border-top:1px solid var(--line);padding-top:10px;font-size:var(--t-sm)}
+@media (max-width:767px){#setBtn{display:none}.wz-steps>span.on{flex:none}.setr .seg{justify-content:flex-start}}
+@media (forced-colors:active){#endBtn::after{display:none}}
 </style>
 </head>
 <body>
@@ -443,10 +475,11 @@ tr.flash td,h4.flash{background:var(--brand-wash);transition:background .3s}
   <span class="title"><svg class="ic" aria-hidden="true"><use href="#i-v-fetih"/></svg>FETİH</span>
   <div class="hc yr" id="yr"></div>
   <div class="resw" id="resw"><div class="res" id="res"></div></div>
+  <button class="btn ico ghost hdb" id="sndBtn" onclick="sndMute()" aria-label="Sesi kapat (M)" aria-pressed="false"><svg class="ic" aria-hidden="true"><use href="#i-ses-acik"/></svg></button><button class="btn ico ghost hdb" id="setBtn" onclick="showSettings()" aria-label="Ayarlar" data-tip="Ayarlar"><svg class="ic" aria-hidden="true"><use href="#i-ayarlar"/></svg></button>
 </header>
 <main>
   <div id="mapWrap">
-    <canvas id="view" tabindex="0" aria-label="Harita"></canvas>
+    <canvas id="view" tabindex="0" role="application" aria-roledescription="harita" aria-label="Harita. Ok tuşlarıyla bölgeler arasında gez, Enter ile seç, A saldır, T taşı, artı/eksi yakınlaştır, 0 sığdır, Boşluk turu bitirir."></canvas>
     <div class="mapctl"><button class="btn ico z" onclick="zoomBy(1.3)" aria-label="Yakınlaştır" data-tip="Yakınlaştır"><svg class="ic" aria-hidden="true"><use href="#i-arti"/></svg></button><button class="btn ico z" onclick="zoomBy(1/1.3)" aria-label="Uzaklaştır" data-tip="Uzaklaştır"><svg class="ic" aria-hidden="true"><use href="#i-eksi"/></svg></button><button class="btn ico" onclick="fitCam()" aria-label="Tüm harita" data-tip="Tüm harita"><svg class="ic" aria-hidden="true"><use href="#i-sigdir"/></svg></button><button class="btn ico" onclick="focusSel()" aria-label="Seçili bölgeye git" data-tip="Seçili bölgeye git"><svg class="ic" aria-hidden="true"><use href="#i-hedefle"/></svg></button></div>
     <div class="hint" id="hint"></div>
     <button class="btn primary" id="ctxAct" onclick="ctxGo()"></button>
@@ -459,19 +492,20 @@ tr.flash td,h4.flash{background:var(--brand-wash);transition:background .3s}
     <div id="sheet">
       <div class="grab" id="grab" role="button" tabindex="0" aria-label="Paneli aç / kapat"><div id="peek"></div></div>
       <nav class="tabs" id="tabs" role="tablist">
-        <button data-t="bolge" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-kale"/></svg><span>Bölge</span></button><button data-t="eko" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-pazar"/></svg><span class=lg>Ekonomi</span><span class=sm>Eko</span></button><button data-t="ordu" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-saldiri"/></svg><span>Ordu</span></button><button data-t="hedef" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-kupa"/></svg><span>Hedef</span></button><button data-t="tek" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-bilgi"/></svg><span class=lg>Teknoloji</span><span class=sm>Tekno</span></button><button data-t="kayit" role="tab"><svg class="ic" aria-hidden="true"><use href="#i-gunce"/></svg><span>Kayıt</span></button><i class="tink" aria-hidden="true"></i>
+        <button data-t="bolge" role="tab" id="tab-bolge" aria-controls="panel"><svg class="ic" aria-hidden="true"><use href="#i-kale"/></svg><span>Bölge</span></button><button data-t="eko" role="tab" id="tab-eko" aria-controls="panel"><svg class="ic" aria-hidden="true"><use href="#i-pazar"/></svg><span class=lg>Ekonomi</span><span class=sm>Eko</span></button><button data-t="ordu" role="tab" id="tab-ordu" aria-controls="panel"><svg class="ic" aria-hidden="true"><use href="#i-saldiri"/></svg><span>Ordu</span></button><button data-t="hedef" role="tab" id="tab-hedef" aria-controls="panel"><svg class="ic" aria-hidden="true"><use href="#i-kupa"/></svg><span>Hedef</span></button><button data-t="tek" role="tab" id="tab-tek" aria-controls="panel"><svg class="ic" aria-hidden="true"><use href="#i-bilgi"/></svg><span class=lg>Teknoloji</span><span class=sm>Tekno</span></button><button data-t="kayit" role="tab" id="tab-kayit" aria-controls="panel"><svg class="ic" aria-hidden="true"><use href="#i-gunce"/></svg><span>Kayıt</span></button><i class="tink" aria-hidden="true"></i>
       </nav>
-      <div id="panel" role="tabpanel"></div>
+      <div id="panel" role="tabpanel" aria-labelledby="tab-bolge"></div>
     </div>
     <div class="foot">
       <button class="btn ico" onclick="askNew()" aria-label="Yeni sefer" data-tip="Yeni sefer"><svg class="ic" aria-hidden="true"><use href="#i-yenile"/></svg></button>
       <button class="btn ico" onclick="showHelp()" aria-label="Nasıl oynanır" data-tip="Nasıl oynanır"><svg class="ic" aria-hidden="true"><use href="#i-yardim"/></svg></button>
-      <button class="btn primary big" id="endBtn" onclick="endTurn()"><svg class="ic" aria-hidden="true"><use href="#i-ileri-tur"/></svg><span class=lg>Turu Bitir</span><span class=sm>Bitir</span></button>
+      <button class="btn primary big" id="endBtn" onclick="endTurnUI()"><svg class="ic" aria-hidden="true"><use href="#i-ileri-tur"/></svg><span class=lg>Turu Bitir</span><span class=sm>Bitir</span></button>
     </div>
   </aside>
 </main>
 <div id="modalBg"><div id="modal" role="dialog" aria-modal="true"></div></div>
 <div id="toast" role="status" aria-live="polite"></div>
+<div id="sr" class="sr-only" role="status" aria-live="polite"></div><div id="sra" class="sr-only" aria-live="assertive"></div>
 <div id="tipx" role="tooltip"></div>
 <div id="bars"></div>
 <script>
@@ -748,13 +782,118 @@ function pay(c){for(const[k,v]of Object.entries(c))S.res[k]-=v}
 function scaleC(c,m){const o={};for(const k in c)o[k]=Math.round(c[k]*m*10)/10;return o}
 function addY(t,y,m=1){for(const[k,v]of Object.entries(y))t[k]=(t[k]||0)+v*m}
 // ---- Ayarlar (§13 hazırlığı; arayüz Aşama 8): localStorage['fetih-ayar'], kayıttan ayrı. Konsoldan: PREF.battleModal='hep' (her savaşta sonuç penceresi) · prefSet('motion','az') ----
-const PREF_KEY='fetih-ayar',PREF=(()=>{const d={v:1,battleModal:'onemli',motion:null};if(TEST)return d;try{const o=JSON.parse(localStorage.getItem(PREF_KEY)||'null');if(o&&typeof o==='object'){if(['onemli','hep'].includes(o.battleModal))d.battleModal=o.battleModal;if(['tam','az','yok'].includes(o.motion))d.motion=o.motion}}catch(e){}return d})();
-function prefSave(){motApply();if(TEST)return;try{localStorage.setItem(PREF_KEY,JSON.stringify(PREF))}catch(e){}}
+// Aşama 8: ses (vol, mute, music, musicMode), görüntü (motion, fastTurn, text, cb, hc), oynanış (battleModal, endConfirm, endLeft). Bozuk/eksik alan sessizce varsayılana döner
+const PREF_KEY='fetih-ayar',PREF_D={v:1,battleModal:'onemli',motion:null,vol:{master:.8,sfx:.8,ui:.5,music:.35},mute:false,music:false,musicMode:'oto',fastTurn:false,text:100,cb:false,hc:null,endConfirm:false,endLeft:false},
+ PREF_OK={battleModal:['onemli','hep'],motion:['tam','az','yok',null],musicMode:['oto','baris'],text:[90,100,115,130],hc:[true,false,null]};
+function prefMerge(d,o){for(const k in PREF_D){if(k==='v'||!(k in o))continue;const v=o[k];if(k==='vol'){if(v&&typeof v==='object')for(const q in d.vol){const x=+v[q];if(v[q]!=null&&isFinite(x))d.vol[q]=clamp(x,0,1)}}else if(PREF_OK[k]){if(PREF_OK[k].includes(v))d[k]=v}else if(typeof v===typeof PREF_D[k])d[k]=v}return d}
+const PREF=(()=>{const d=JSON.parse(JSON.stringify(PREF_D));if(TEST)return d;try{const o=JSON.parse(localStorage.getItem(PREF_KEY)||'null');if(o&&typeof o==='object')prefMerge(d,o)}catch(e){}return d})();
+function prefSave(){motApply();prefApply();if(TEST)return;try{localStorage.setItem(PREF_KEY,JSON.stringify(PREF))}catch(e){}}
 function prefSet(k,v){PREF[k]=v;prefSave()}
+// Görüntü ayarları kök sınıflarda: yazı ölçeği --ts, yüksek kontrast .hcm (boşsa prefers-contrast:more), renk körü .cbm, Turu Bitir solda .endl
+const HCQ=matchMedia('(prefers-contrast: more)');
+function prefApply(){const r=document.documentElement;r.style.setProperty('--ts',PREF.text/100);r.classList.toggle('hcm',PREF.hc==null?HCQ.matches:PREF.hc);r.classList.toggle('cbm',!!PREF.cb);if(document.body)document.body.classList.toggle('endl',!!PREF.endLeft);if(typeof sndApply==='function')sndApply()}
 // Hareket düzeyi (§9.1): 2 tam · 1 az (konum/ölçek yok, ≤120 ms opaklık) · 0 yok. PREF.motion boşsa prefers-reduced-motion izlenir
 const RMQ=matchMedia('(prefers-reduced-motion: reduce)'),MOT=()=>{const m=PREF.motion;return m==='yok'?0:m==='az'?1:m==='tam'?2:RMQ.matches?1:2};
 function motApply(){const r=document.documentElement,m=MOT();r.classList.toggle('rm',m===1);r.classList.toggle('rm0',m===0)}
 motApply();if(RMQ.addEventListener)RMQ.addEventListener('change',motApply);
+// ======================= SES (§10): tek AudioContext, ilk etkileşimde açılır; TEST kipinde hiç oluşmaz =======================
+// master ─ compressor ─ çıkış; sfx, ui, mus (mus ─ duck lowpass) master'a. Eşzamanlı ses: efekt ≤12, müzik ≤8 (zaman aralığı listesiyle sayılır)
+const SND={ctx:null,b:{},noise:null,last:{},v:[],mv:[],pend:[],ok:!TEST&&!!(window.AudioContext||window.webkitAudioContext),peak:0,mpeak:0,dropped:0};
+const SMAX=12,MMAX=8,mf=m=>440*2**((m-69)/12);
+function sndBuild(c){SND.ctx=c;const comp=c.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=4;comp.attack.value=.003;comp.release.value=.2;
+ const m=c.createGain();m.connect(comp);comp.connect(c.destination);SND.b={master:m,comp};for(const k of['sfx','ui'])(SND.b[k]=c.createGain()).connect(m);
+ const du=SND.b.duck=c.createBiquadFilter();du.type='lowpass';du.frequency.value=18000;du.Q.value=.5;du.connect(m);(SND.b.mus=c.createGain()).connect(du);
+ if(!SND.noise||SND.noise.sampleRate!==c.sampleRate){const n=c.createBuffer(1,c.sampleRate,c.sampleRate),d=n.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;SND.noise=n}SND.v=[];SND.mv=[];sndApply(true)}
+function sndInit(){if(SND.ctx||!SND.ok)return;const C=window.AudioContext||window.webkitAudioContext;try{sndBuild(new C({latencyHint:'interactive'}))}catch(e){SND.ok=false;SND.ctx=null;return}musSync()}
+function sndApply(now){const c=SND.ctx;if(!c||!SND.b.master)return;const V=PREF.vol,t=c.currentTime,set=(g,v)=>{if(now){g.gain.cancelScheduledValues(0);g.gain.value=v}else g.gain.setTargetAtTime(v,t,.03)};
+ set(SND.b.master,PREF.mute?0:V.master);set(SND.b.sfx,V.sfx);set(SND.b.ui,V.ui);if(!MUS.fade)set(SND.b.mus,V.music);if(typeof musSync==='function')musSync()}
+// zaman aralığı tabanlı ses sayacı: t anında çalan ses sayısı (çevrim dışı çizimde de doğru)
+function vAdd(L,max,t0,t1){const now=SND.ctx.currentTime;for(let i=L.length-1;i>=0;i--)if(L[i][1]<now)L.splice(i,1);let n=0;for(const v of L)if(v[0]<t1&&v[1]>t0)n++;if(n>=max){SND.dropped++;return false}L.push([t0,t1]);
+ if(L===SND.v)SND.peak=Math.max(SND.peak,n+1);else SND.mpeak=Math.max(SND.mpeak,n+1);return true}
+// tek ton: tip, f(→f2 üstel), A/D/S/R (s), süre, filtre [tür,f,f2], kazanç, gecikme (s, mutlak T ile), otobüs
+function tn({type='sine',f=440,f2,a=.005,d=.1,s=0,r=.08,dur=.15,g=.3,flt,q=1,det=0,at=0,T,bus='sfx'}){const c=SND.ctx,t=T!=null?T:c.currentTime+at,end=t+dur+r*1.6+.03;
+ if(!vAdd(bus==='mus'?SND.mv:SND.v,bus==='mus'?MMAX-2:SMAX,t,end))return;const o=c.createOscillator(),v=c.createGain();o.type=type;o.detune.value=det;
+ o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(g,t+a);v.gain.setTargetAtTime(g*s,t+a,d/3);v.gain.setTargetAtTime(0,t+dur,r/4);
+ let n=o;if(flt){const b=c.createBiquadFilter();b.type=flt[0];b.frequency.setValueAtTime(flt[1],t);b.Q.value=q;if(flt[2])b.frequency.exponentialRampToValueAtTime(flt[2],t+dur);o.connect(b);n=b}
+ n.connect(v);v.connect(SND.b[bus]);o.start(t);o.stop(end);o.onended=()=>{v.disconnect();n.disconnect()}}
+// gürültü: paylaşılan 1 s beyaz gürültü, bant filtreli
+function nz({f=1000,f2,q=1,type='bandpass',a=.002,dur=.1,r=.05,g=.3,at=0,T,bus='sfx'}){const c=SND.ctx,t=T!=null?T:c.currentTime+at,end=t+dur+r*1.6+.03;
+ if(!vAdd(bus==='mus'?SND.mv:SND.v,bus==='mus'?MMAX-2:SMAX,t,end))return;const s=c.createBufferSource(),b=c.createBiquadFilter(),v=c.createGain();s.buffer=SND.noise;s.loop=true;
+ b.type=type;b.frequency.setValueAtTime(f,t);if(f2)b.frequency.exponentialRampToValueAtTime(f2,t+dur);b.Q.value=q;v.gain.setValueAtTime(0,t);v.gain.linearRampToValueAtTime(g,t+a);v.gain.setTargetAtTime(0,t+dur,r/4);
+ s.connect(b);b.connect(v);v.connect(SND.b[bus]);s.start(t,Math.random()*.5);s.stop(end);s.onended=()=>{v.disconnect();b.disconnect()}}
+const hammer=a=>{nz({f:1800,q:4,dur:.03,g:.25,at:a});tn({f:220,f2:140,a:.001,d:.08,r:.04,dur:.08,g:.25,at:a})};
+const horn=(ms,a,g,dur,ch,bus)=>ms.forEach((m,k)=>{const at=a+(ch?0:k*.12);for(const det of ch?[0]:[-6,6])tn({type:'sawtooth',f:mf(m),a:.03,d:.2,s:.6,r:.15,dur:dur||.38,flt:['lowpass',1400,2200],q:2,g:ch?g:g/2,det,at,bus})});
+const zafer=(a,oc,g)=>{[74,81,86].forEach((m,k)=>tn({type:'triangle',f:mf(m+oc),a:.005,d:.15,s:.5,r:.2,dur:k===2?.4:.2,flt:['lowpass',3000],g:g||.16,at:a+k*.11}));tn({f:mf(50+oc),a:.01,d:.3,r:.2,dur:.4,g:.18,at:a})};
+const arp=(a,g)=>{[74,78,81,86].forEach((m,k)=>tn({type:'triangle',f:mf(m),a:.002,d:.15,r:.12,dur:.15,flt:['lowpass',3000],g:g||.12,at:a+k*.08}));tn({f:mf(98),a:.002,d:.6,r:.4,dur:.7,g:.04,at:a+.24})};
+// 27 tarif (§10.2). a = gecikme (s), o = seçenekler
+const SFX={
+ 'ui-tik':a=>{tn({type:'triangle',f:1800,f2:1200,a:.001,d:.03,r:.02,dur:.04,flt:['highpass',600],g:.3,at:a,bus:'ui'});nz({f:4000,q:2,dur:.015,g:.12,at:a,bus:'ui'})},
+ 'ui-hover':a=>tn({f:2400,a:.001,d:.015,r:.015,dur:.025,g:.06,at:a,bus:'ui'}),
+ 'ui-onay':a=>[660,990].forEach((f,k)=>tn({type:'triangle',f,a:.002,d:.06,r:.06,dur:.08,flt:['lowpass',3000],g:.18,at:a+k*.06,bus:'ui'})),
+ 'ui-hata':a=>[[180,0],[160,.11]].forEach(([f,x])=>tn({type:'square',f,a:.002,d:.08,r:.04,dur:.09,flt:['lowpass',900],g:.12,at:a+x,bus:'ui'})),
+ 'ui-ac':a=>nz({f:800,f2:2400,q:.7,a:.03,dur:.14,g:.08,at:a,bus:'ui'}),
+ 'ui-kapa':a=>nz({f:2400,f2:700,q:.7,a:.02,dur:.11,g:.06,at:a,bus:'ui'}),
+ 'kaynak-kazan':(a,o)=>{[86,90,93].forEach((m,k)=>tn({f:mf(m),a:.002,d:.09,r:.08,dur:.09,g:o.soft?.06:.1,at:a+k*.045}));nz({f:7000,q:3,dur:.04,g:.03,at:a})},
+ 'kaynak-harca':a=>{tn({type:'triangle',f:520,f2:380,a:.002,d:.07,r:.05,dur:.09,flt:['lowpass',2000],g:.14,at:a});nz({f:3000,f2:1200,q:1.5,dur:.06,g:.05,at:a})},
+ 'insa':a=>{hammer(a);hammer(a+.18);tn({type:'triangle',f:mf(74),a:.005,d:.2,r:.15,dur:.25,flt:['lowpass',2500],g:.12,at:a+.36})},
+ 'yukselt':a=>{hammer(a);[74,78,81].forEach((m,k)=>tn({type:'triangle',f:mf(m),a:.004,d:k===2?.3:.1,s:k===2?.4:0,r:.12,dur:k===2?.3:.07,flt:['lowpass',3000],g:.13,at:a+.08+k*.07}))},
+ 'asker-topla':a=>{for(let k=0;k<3;k++)nz({type:'lowpass',f:400,dur:.04,g:.18,at:a+k*.09});tn({type:'sawtooth',f:110,a:.005,d:.12,r:.06,dur:.15,flt:['lowpass',500],g:.08,at:a})},
+ 'saldiri-basla':a=>horn([62,69],a,.14),
+ 'savas-carpisma':a=>{nz({f:2500,q:.8,dur:.16,g:.32,at:a});nz({f:6000,q:6,dur:.06,g:.12,at:a});tn({f:90,f2:45,a:.002,d:.2,r:.1,dur:.22,g:.35,at:a})},
+ 'savas-zafer':(a,o)=>zafer(a,0,o.soft?.1:.16),
+ 'savas-yenilgi':a=>{tn({type:'sawtooth',f:220,f2:147,a:.02,d:.3,r:.25,dur:.45,flt:['lowpass',700],g:.14,at:a});tn({f:73,a:.01,d:.4,r:.3,dur:.5,g:.2,at:a})},
+ 'fetih':a=>{tn({f:120,f2:48,a:.002,d:.35,r:.2,dur:.4,g:.45,at:a});nz({type:'lowpass',f:150,dur:.2,g:.2,at:a});zafer(a+.16,-12,.16);nz({f:5000,f2:9000,q:.5,a:.05,dur:.3,g:.04,at:a+.16})},
+ 'baskent-alindi':a=>{SFX.fetih(a);horn([62,66,69],a+.4,.1,.6,1)},
+ 'bolge-kayip':a=>{tn({type:'square',f:mf(62),f2:mf(61),a:.01,d:.25,r:.2,dur:.35,flt:['lowpass',800],g:.1,at:a});tn({f:70,a:.005,d:.3,r:.2,dur:.3,g:.3,at:a})},
+ 'tur-sonu':a=>{tn({f:mf(50),a:.005,d:.3,r:.3,dur:.4,flt:['lowpass',600],g:.22,at:a});nz({f:300,q:2,dur:.15,g:.08,at:a})},
+ 'yil-gecis':a=>{tn({f:880,a:.002,d:.8,r:.6,dur:.9,g:.08,at:a});tn({f:2429,a:.002,d:.3,r:.2,dur:.4,g:.03,at:a});tn({f:4752,a:.002,d:.2,r:.15,dur:.2,g:.015,at:a})},
+ 'olay-ac':(a,o)=>{if(o.v==='iyi')return SFX['kaynak-kazan'](a,{soft:1});const k=o.v==='kotu'?-12:0;[[69,.15],[75,.15],[74,.3]].forEach(([m,d],j)=>tn({type:'triangle',f:mf(m+k),a:.01,d:.15,s:.3,r:.2,dur:d,flt:['lowpass',2000],g:.12,at:a+j*.15}));if(k)nz({f:200,dur:.3,g:.06,at:a})},
+ 'uyari':(a,o)=>{for(let k=0;k<(o.koal?3:2);k++)tn({type:'square',f:o.koal?660:880,a:.002,d:.06,r:.04,dur:.08,flt:['bandpass',1200],q:4,g:.09,at:a+k*.14})},
+ 'arastirma':a=>arp(a),
+ 'kilit-acildi':a=>{nz({f:5000,q:8,dur:.025,g:.2,at:a});tn({f:1320,f2:1760,a:.002,d:.2,r:.2,dur:.25,g:.1,at:a+.06})},
+ 'basarim':a=>{arp(a);tn({type:'triangle',f:mf(62),a:.02,d:.6,s:.4,r:.5,dur:.8,flt:['lowpass',1500],g:.12,at:a})},
+ 'skor-tik':(a,o)=>tn({f:1200+(o.i||0)*60,a:.001,d:.03,r:.02,dur:.03,g:.05,at:a,bus:'ui'}),
+ 'skor-son':a=>zafer(a,0,.16),
+ 'odul':(a,o)=>{const i=o.i||0,P=[62,64,66,69,71];tn({type:'triangle',f:mf(P[i%5]+12+12*(fl(i/5)%2)),a:.002,d:.2,r:.15,dur:.25,flt:['lowpass',3000],g:.12,at:a})},
+ 'rutbe':a=>horn([62,66,69],a,.1,.6,1),
+ 'bitis-zafer':a=>{for(let k=0;k<8;k++)nz({f:180,dur:.04,g:.08+k*.02,at:a+k*.045});[50,57,62,66,69].forEach((m,k)=>tn({type:'sawtooth',f:mf(m),a:.04,d:1.5,s:.5,r:1.2,dur:2.5,flt:['lowpass',1800],g:.06,det:k%2?5:-5,at:a+.38}))},
+ 'bitis-yenilgi':a=>{[66,63,62].forEach((m,k)=>tn({type:'triangle',f:mf(m),a:.03,d:.5,s:.4,r:.4,dur:.6,flt:['lowpass',900],g:.12,at:a+k*.6}));tn({f:mf(50),a:.1,d:1.8,s:.3,r:.6,dur:2,g:.08,at:a});for(let k=0;k<3;k++)tn({f:70,a:.005,d:.3,r:.2,dur:.3,g:.25,at:a+k*.6})}};
+// öncelik (§10.2 notları): bitis > baskent > fetih/kayıp > savaş > uyarı > olay > kaynak > ui. Aynı zaman diliminde (50 ms) en yüksek 2 öncelik çalar; ui yalnız tek başınaysa
+const SPRI=id=>/^bitis/.test(id)?9:id==='baskent-alindi'?8:id==='fetih'||id==='bolge-kayip'?7:/^savas|saldiri/.test(id)?6:id==='uyari'?5:/^(olay|arastirma|basarim|kilit|odul|rutbe|skor-son)/.test(id)?4:/^(insa|yukselt|asker|tur|yil)/.test(id)?3:/^kaynak/.test(id)?2:1;
+const DUCK=/^(savas|fetih|baskent|olay|bitis)/;
+function sfx(id,o){if(!SND.ctx||PREF.mute||!SFX[id])return;o=o||{};const n=performance.now(),k=id+(o.at||0);if(n-(SND.last[k]||0)<40)return;SND.last[k]=n;SND.pend.push({id,o,p:SPRI(id)});if(SND.pend.length===1)queueMicrotask(sndFlush)}
+function sndFlush(){const L=SND.pend;SND.pend=[];const c=SND.ctx;if(!c||c.state==='closed')return;const B={};for(const e of L){const k=Math.round((e.o.at||0)*20);(B[k]=B[k]||[]).push(e)}
+ for(const k in B){const g=B[k].sort((a,b)=>b.p-a.p),seen=new Set(),hi=g[0].p;let n=0;for(const e of g){if(seen.has(e.id)||n>=2||(e.p===1&&hi>1))continue;seen.add(e.id);n++;
+  try{SFX[e.id](e.o.at||0,e.o)}catch(x){}if(DUCK.test(e.id))duck(e.o.at||0)}}}
+// müzik bastırma: efekt sırasında müzik otobüsü lowpass 900 Hz'e iner, 1,2 s sonra açılır
+function duck(a){const c=SND.ctx,f=SND.b.duck&&SND.b.duck.frequency;if(!f)return;const t=c.currentTime+a;f.cancelScheduledValues(t);f.setTargetAtTime(900,t,.1);f.setTargetAtTime(18000,t+1.2,.4)}
+function sndMute(v){PREF.mute=v==null?!PREF.mute:!!v;prefSave();sndBtn();if(!PREF.mute){sndInit();sfx('ui-onay')}if(v==null)toast(PREF.mute?'🔇 Ses kapalı (M)':'🔊 Ses açık (M)')}
+function sndBtn(){const b=document.getElementById('sndBtn');if(!b)return;b.innerHTML=ic(PREF.mute?'ses-kapali':'ses-acik');b.setAttribute('aria-pressed',PREF.mute);b.setAttribute('aria-label',PREF.mute?'Sesi aç (M)':'Sesi kapat (M)');b.dataset.tip=PREF.mute?'Ses kapalı · M':'Ses açık · M'}
+// ---- Üretken müzik (§10.3): dem (pad) + mızrap arpeji + Düyek usulü; barış Re Dorian, savaş Hicaz, kriz seyrek Hicaz (yarım ses aşağı). Math.random (oyun RNG'sine dokunmaz) ----
+const MUS={on:false,iv:0,next:0,step:0,bar:0,st:'baris',want:'baris',pos:3,pad:null,int:0,fade:false,capT:-9};
+const MSC={baris:[0,2,3,5,7,9,10],savas:[0,1,4,5,7,8,10],kriz:[0,1,4,7]},MBPM={baris:66,savas:92,kriz:58},MARP={baris:.35,savas:.7,kriz:.15};
+function musPad(T){const c=SND.ctx,f=c.createBiquadFilter(),g=c.createGain(),lfo=c.createOscillator(),lg=c.createGain(),o=[c.createOscillator(),c.createOscillator()];f.type='lowpass';f.frequency.value=500;f.Q.value=.7;
+ lfo.frequency.value=.07;lg.gain.value=120;lfo.connect(lg);lg.connect(f.frequency);o.forEach((x,k)=>{x.type='sawtooth';x.detune.value=k?7:-7;x.frequency.value=mf(k?57:50);x.connect(f);x.start(T)});lfo.start(T);
+ f.connect(g);g.connect(SND.b.mus);g.gain.setValueAtTime(0,T);g.gain.linearRampToValueAtTime(.05,T+6);return{o,lfo,f,g}}
+function musStop(){if(MUS.iv)clearInterval(MUS.iv);MUS.iv=0;const p=MUS.pad;MUS.pad=null;MUS.on=false;if(p&&SND.ctx){const t=SND.ctx.currentTime;p.g.gain.cancelScheduledValues(t);p.g.gain.setTargetAtTime(0,t,.3);setTimeout(()=>{try{p.o.forEach(x=>x.stop());p.lfo.stop();p.g.disconnect()}catch(e){}},1500)}}
+function musSync(){const go=!!SND.ctx&&PREF.music&&!PREF.mute&&PREF.vol.music>0&&!document.hidden;if(go&&!MUS.on){const c=SND.ctx;MUS.on=true;MUS.next=c.currentTime+.15;MUS.step=0;MUS.bar=0;MUS.pad=musPad(c.currentTime);MUS.iv=setInterval(()=>musSched(SND.ctx.currentTime+.2),40)}else if(!go&&MUS.on)musStop()}
+// durum seçici (her tur sonunda): kriz / savaş / barış; yoğunluk = son 3 turdaki savaş / 5
+function musState(){if(!S||!S.stats)return;const e=economy(),st=S.stats,bl=st.batT?battlesLast(3):0,t=S.res.tahil,nt=e.net.tahil;MUS.int=clamp(bl/5,0,1);
+ const kriz=(nt<0&&t<-2*nt)||S.morale<35||S.turn-MUS.capT<=2||(S.coal&&S.coal.on&&bl>0),savas=bl>=2||(S.coal&&S.coal.on);MUS.want=PREF.musicMode==='baris'?'baris':kriz?'kriz':savas?'savas':'baris'}
+function musSched(until){const c=SND.ctx;if(!MUS.on||!c)return;while(MUS.next<until){const T=MUS.next,s=MUS.step%8;
+  if(s===0){if(MUS.want!==MUS.st)MUS.st=MUS.want;const st=MUS.st,p=MUS.pad;MUS.bar++;
+   if(p){const R=[0,-2,0,st==='kriz'?-6:-5][fl(MUS.bar/8)%4]+(st==='kriz'?-1:0);p.o[0].frequency.setTargetAtTime(mf(50+R),T,2.5);p.o[1].frequency.setTargetAtTime(mf(57+R),T,2.5);p.f.frequency.setTargetAtTime(st==='kriz'?300:500,T,2.5)}}
+  musStep(T,s,MUS.st);MUS.step++;MUS.next+=60/MBPM[MUS.st]/2}}
+function musStep(T,s,st){const sc=MSC[st],I=MUS.int,b=st==='kriz'?-1:0,dum=()=>{tn({f:110,f2:55,a:.002,d:.25,r:.1,dur:.25,g:.22,T,bus:'mus'});nz({type:'lowpass',f:120,dur:.08,g:.08,T,bus:'mus'})},tek=()=>{nz({f:2200,q:1.2,dur:.05,g:.07,T,bus:'mus'});tn({type:'triangle',f:330,a:.001,d:.04,r:.03,dur:.05,g:.03,T,bus:'mus'})};
+ // Düyek: 0 DÜM, 2 tek, 3 tek, 4 DÜM, 6 tek (barışta yalnız düm, krizde yarım tempo)
+ if(st==='savas'){if(s===0||s===4)dum();else if(s===2||s===3||s===6)tek();else if(I>.6&&MUS.bar%2&&s===7)tek()}else if(st==='baris'){if(s===0&&MUS.bar%2===0)dum()}else if(s===0&&MUS.bar%2)dum();
+ if(st==='savas'&&s===0&&MUS.bar%16===8)[62,66,69].forEach(m=>tn({type:'sawtooth',f:mf(m),a:.03,d:.2,s:.6,r:.15,dur:.4,flt:['lowpass',1400,2200],q:2,g:.06,T,bus:'mus'}));// boru çağrısı
+ const N=sc.length*2,kal=s===0&&MUS.bar%4===0;let p=MARP[st]*(.7+.6*I);if(!kal&&Math.random()>p)return;
+ if(kal)MUS.pos=Math.random()<.5?0:sc.indexOf(7)>=0?sc.indexOf(7):0;else{const r=Math.random(),j=r<.8?(Math.random()<.5?1:2)*(Math.random()<.5?-1:1):(Math.random()<.5?-4:4);MUS.pos=clamp(MUS.pos+j,0,N)}
+ const q=MUS.pos,m=62+b+sc[q%sc.length]+12*fl(q/sc.length),d=kal?.6:.18;tn({type:'triangle',f:mf(m),a:.002,d,r:.12,dur:d,flt:['lowpass',2400,1200],g:.07,T,bus:'mus'});tn({f:mf(m+12),a:.002,d:d*.6,r:.08,dur:d*.6,g:.021,T,bus:'mus'})}
+// bitiş ekranı: müzik 1,5 s'de söner, 4 s sonra 20 s'de geri gelir (barış)
+function musEnd(){const c=SND.ctx;if(!c||!SND.b.mus)return;const g=SND.b.mus.gain,t=c.currentTime;MUS.fade=true;MUS.want=MUS.st='baris';g.cancelScheduledValues(t);g.setTargetAtTime(0,t,.5);g.setTargetAtTime(PREF.vol.music,t+4,6);setTimeout(()=>MUS.fade=false,25000)}
+prefApply();
 // Efekt durumu (§8, §9.3): tek rAF döngüsü (fxLoop), q = geçici efektler, cnt = HUD sayaçları. TEST kipinde kapalı (belirlenimci testler etkilenmez)
 const FX={on:!TEST,q:[],raf:0,dirty:false,cnt:{},hv:{},b:[],old:{},tgt:null,tch:{},sel:null,pins:{},shake:null,n:0,ovN:0,lastR:0};
 // Toast yığını (§5.9): en çok 3, yenisi alta; 2,4 sn
@@ -1911,7 +2050,7 @@ const ULK='<svg class="ic ulk k-brand" viewBox="0 0 24 24" aria-hidden="true"><g
 function drawEndMap(){const cv=$('#endMap');if(!cv||TEST||!ART)return;const x=cv.getContext('2d');x.drawImage(ART,0,0,cv.width,cv.height);drawOverlay();x.drawImage(OVL,0,0,cv.width,cv.height);x.drawImage(OVL,0,0,cv.width,cv.height)}
 function drawEndChart(){const cv=$('#endCh'),hs=S.hist;if(!cv||TEST||hs.length<2)return;const x=cv.getContext('2d'),w=cv.width,h=cv.height,t0=hs[0][0],t1=hs[hs.length-1][0]||1,mr=Math.max(...hs.map(a=>a[1]),1),mt=Math.max(...hs.map(a=>a[2]),1);
  x.clearRect(0,0,w,h);x.strokeStyle='#2F394A';x.lineWidth=1;for(let k=1;k<4;k++){x.beginPath();x.moveTo(0,h*k/4);x.lineTo(w,h*k/4);x.stroke()}
- const line=(i,m,col)=>{x.strokeStyle=col;x.lineWidth=2.5;x.beginPath();hs.forEach((a,k)=>{const px=(a[0]-t0)/Math.max(1,t1-t0)*(w-4)+2,py=h-4-a[i]/m*(h-12);k?x.lineTo(px,py):x.moveTo(px,py)});x.stroke()};line(2,mt,'#FF6B5E');line(1,mr,'#F2B33D');
+ const line=(i,m,col)=>{x.strokeStyle=col;x.lineWidth=2.5;x.beginPath();hs.forEach((a,k)=>{const px=(a[0]-t0)/Math.max(1,t1-t0)*(w-4)+2,py=h-4-a[i]/m*(h-12);k?x.lineTo(px,py):x.moveTo(px,py)});x.stroke()};if(PREF.cb)x.setLineDash([6,4]);line(2,mt,'#FF6B5E');x.setLineDash([]);line(1,mr,'#F2B33D');
  x.fillStyle='#A7B1C2';x.font='11px system-ui';x.fillText(`en çok ${mr} bölge · ${mt} asker`,6,13);x.fillText(`${t1}. yıl`,w-48,h-6)}
 // Skor sayarak yükselir, ödüller ~0,3 sn arayla gelir (prefers-reduced-motion'da hepsi anında)
 // Skor 1200 ms ease-out-expo sayar (FX döngüsünde), rütbe sayaç bitince, vuruşlar 350 ms arayla; dokununca hepsi anında (fxSkip). Azaltılmış harekette anında
@@ -1978,7 +2117,7 @@ const PT=(()=>{const t=new Uint8Array(5*36);for(let y=0;y<6;y++)for(let x=0;x<6;
 function drawOverlay(){FX.ovN++;if(!ovImg)ovImg=octx.createImageData(W,H);const d=ovImg.data;d.fill(0);
  const{ids,blk,n,bP,bO}=MAP,R=S.regions,G=mgeo(),tf=tgtFlags(),sel=ui.sel,tc=[],ta=new Uint8Array(n),tb=new Uint8Array(n),tp=new Uint8Array(n),sis=hasMut('sis'),sg=mil().sight;
  for(let i=0;i<n;i++){if(blk[i])continue;const o=R[i].owner;let c=o===NEUTRAL?null:FAC[o].col;
-  if(sis&&o!==0&&VIS[i]>sg){c=[40,44,52];ta[i]=tb[i]=100}else if(c){ta[i]=o===0?56:46;tb[i]=o===0?56:96;tp[i]=o>0&&o<5?o:0}
+  if(sis&&o!==0&&VIS[i]>sg){c=[40,44,52];ta[i]=tb[i]=100}else if(c){ta[i]=o===0?56:46;tb[i]=o===0?56:PREF.cb?150:96;tp[i]=o>0&&o<5?o:0}
   if(i===sel){c=c?mix(c,[255,250,225],.35):[255,250,225];ta[i]=Math.max(ta[i],26)+20;tb[i]=Math.max(tb[i],ta[i])}tc[i]=c}
  for(let y=0;y<H;y++){const ym=(y%6)*6;for(let x=0,p=y*W,xm=0;x<W;x++,p++,xm=xm===5?0:xm+1){const id=ids[p];if(id<0)continue;const a0=ta[id];if(!a0)continue;
   const t=tp[id],c=tc[id],o=p*4;d[o]=c[0];d[o+1]=c[1];d[o+2]=c[2];d[o+3]=t&&PT[t*36+ym+xm]?tb[id]:a0}}
@@ -2027,7 +2166,9 @@ function drawArrow(c,from,to,col,n,p,al,flow){const A=rsP(from),B=rsP(to),dx=B[0
  path();c.lineWidth=w+4;c.strokeStyle='#10131A';c.stroke();path();c.lineWidth=w;c.strokeStyle=rgb(col);c.stroke();
  const E=P[16],F=P[15],a=Math.atan2(E[1]-F[1],E[0]-F[0]),hl=14*s;c.beginPath();c.moveTo(E[0]+Math.cos(a)*hl*.6,E[1]+Math.sin(a)*hl*.6);c.lineTo(E[0]+Math.cos(a+2.4)*hl*.7,E[1]+Math.sin(a+2.4)*hl*.7);c.lineTo(E[0]+Math.cos(a-2.4)*hl*.7,E[1]+Math.sin(a-2.4)*hl*.7);c.closePath();
  c.lineWidth=3;c.strokeStyle='#10131A';c.stroke();c.fillStyle=rgb(col);c.fill();
- if(flow!=null){c.fillStyle='#F1F3F7';for(let j=0;j<3;j++){const q=pt(te*((flow+j/3)%1));c.beginPath();c.arc(q[0],q[1],Math.max(1.5,w*.32),0,7);c.fill()}}c.globalAlpha=1}
+ if(flow!=null){c.fillStyle='#F1F3F7';for(let j=0;j<3;j++){const q=pt(te*((flow+j/3)%1));c.beginPath();c.arc(q[0],q[1],Math.max(1.5,w*.32),0,7);c.fill()}}
+ // nehir/köprü geçiş işareti (§8.6): ok geçiş noktasını geçince küçük i-nehir / i-kopru
+ const cr=MAP.cross&&crossAt(from,to);if(cr&&p>.45){const[x,y]=wsP(cr.x,cr.y),im=icoImg(cr.bridge?'kopru':'nehir',cr.bridge?'#F1F3F7':'#5AB0FF'),r=9*s;c.beginPath();c.arc(x,y,r,0,7);c.fillStyle='#151A23';c.fill();c.lineWidth=1.5;c.strokeStyle=cr.bridge?'#7A879E':'#5AB0FF';c.stroke();if(im)c.drawImage(im,x-r*.7,y-r*.7,r*1.4,r*1.4)}c.globalAlpha=1}
 function fxArrow(from,to,col,n,at,al,draw,hold){const D=draw||350,Hd=hold==null?500:hold;return fxAdd({at,dur:D+Hd+150,L:1,d:(c,e)=>{const m=MOT(),p=m===2?eio(Math.min(1,e/D)):1,fo=e>D+Hd?1-(e-D-Hd)/150:1;drawArrow(c,from,to,col,n,p,al*fo,m===2&&e>D&&e<D+Hd?(e-D)/Hd:null)}})}
 // Savaş efekti (§8.7): kılıçlar → genişleyen halka + 6 kıvılcım → sonuç işareti (✓/✕) 700 ms; azaltılmış harekette yalnız işaret
 function fxClash(to,win,at){const sw=icoImg('v-fetih','#F1F3F7'),mk=icoImg(win?'onay':'kapat',win?'#4CC38A':'#FF6B5E');return fxAdd({at,dur:1300,L:1,d:(c,e)=>{const[x,y]=rsP(to),m=MOT(),s=clamp(cam.z,.7,1.3),cy=y-8*s;
@@ -2054,10 +2195,10 @@ function fxLoot(to,loot,at,neg){const ks=RES.map(r=>r.k).filter(k=>loot&&loot[k]
    if(im)c.drawImage(im,x-w/2+7,y-7,14,14);c.fillStyle=neg?'#FF6B5E':'#F1F3F7';c.textAlign='left';c.fillText(txt,x-w/2+24,y+.5);c.textAlign='center';c.globalAlpha=1}})})}
 function fxShake(){if(MOT()<2)return;FX.shake=performance.now();fxAdd({dur:190,L:-1,d:()=>{}})}
 // Oyuncu eylemi (saldırı/yağma) sonrası: ok → çarpışma → dalga → ganimet
-function fxFlush(){if(!FX.on)return;for(const b of FX.b){if(b.ao!==0)continue;fxArrow(b.from,b.to,FAC[0].col,b.n,0,1);fxClash(b.to,b.win,350);
+function fxFlush(){if(!FX.on)return;sndBattle(FX.b);for(const b of FX.b){if(b.ao!==0)continue;fxArrow(b.from,b.to,FAC[0].col,b.n,0,1);fxClash(b.to,b.win,350);
   if(b.win&&!b.raid&&S.regions[b.to].owner===0){fxWave(b.to,b.from,550);if(b.c0)setTimeout(fxShake,550)}if(b.win&&b.loot)fxLoot(b.to,b.loot,650)}FX.b=[];FX.old={}}
 // Tur geçişi (§8.11): rakip okları (önce oyuncuya yönelenler, en çok 6 sıralı + 6 birlikte), fetih dalgaları, yıl kartı. Toplam ≤ 1,2 sn; dokununca atlanır
-function fxTurn(){if(!FX.on)return;if(!MOT()||S.over){FX.b=[];FX.old={};return}
+function fxTurn(){if(!FX.on)return;sndTurn(FX.b);if(!MOT()||S.over||PREF.fastTurn){FX.b=[];FX.old={};return}
  const L=FX.b.filter(b=>b.ao!==0&&(b.d0===0||b.win)).sort((a,b)=>(b.d0===0)-(a.d0===0)).slice(0,12);// en çok 6 sıralı (120 ms arayla), fazlası 6.yla birlikte
  L.forEach((b,k)=>{const at=Math.min(k,5)*120,me=b.d0===0;fxArrow(b.from,b.to,FAC[b.ao].col,me?b.n*1.5:b.n,at,me?.9:.7,280,me?200:100);if(me)fxClash(b.to,!b.win,at+280);
   if(b.win&&S.regions[b.to].owner!==b.d0)fxWave(b.to,b.from,at+300,me);if(me&&b.win&&b.c0)setTimeout(fxShake,at+300)});
@@ -2093,7 +2234,7 @@ function drawIcons(c,t){const z=cam.z,L=LOD(),k=clamp(z*1.05,.5,1.55),R=S.region
  for(const i of FX.ord.a){const g=G[i],r=R[i],sx=(g.lx-cam.x)*z,sy=(g.ly-cam.y)*z;if(sx<-70||sy<-70||sx>VW+70||sy>VH+70)continue;
   if(r.capital)iCastle(c,sx,sy-6*k,k,FAC[r.owner].col,r.fort,r.owner);else if(L){if(r.fort>=2)iFort(c,sx,sy-4*k,k,r.owner===NEUTRAL?null:FAC[r.owner].col,r.fort,r.owner);else iVillage(c,sx,sy-3*k,k,r.fort)}
   if(g.feat&&L)iFeat(c,g.feat,sx-24*k,sy-6*k,k);
-  iBadge(c,sx,sy+17*k,k,r,i,i===ui.sel,L);
+  iBadge(c,sx,sy+17*k,k,r,i,i===ui.sel,L);if(PREF.cb&&L&&r.owner!==BLOCK)cbTag(c,sx,sy+17*k,k,r.owner);
   if(L>=2&&r.owner===0&&r.mil){const bx=sx+17*k,by=sy+10*k,rr=6.5*k;c.beginPath();c.arc(bx,by,rr,0,7);c.fillStyle='#151A23';c.fill();c.lineWidth=1.5;c.strokeStyle='rgba(16,19,26,.9)';c.stroke();c.font=`800 ${Math.round(9*k)}px ${MAPF}`;c.fillStyle='#F2B33D';c.fillText(r.mil,bx,by+.5)}
   if(L===3&&r.troops&&vis(i).exact){const w=28*k,x0=sx-w/2,y0=sy+28*k;let x=x0;c.fillStyle='rgba(16,19,26,.85)';c.fillRect(x0-1,y0-1,w+2,3*k+2);for(const u of UK){const v=r.u[u]/r.troops*w;if(v>0){c.fillStyle=UCOL[u];c.fillRect(x,y0,v,3*k);x+=v}}}
   const P=pinOf(i);if(P&&L){const key=i+P[0];let dy=0;if(!(key in FX.pins)){FX.pins[key]=t;if(go)fxAdd({dur:260,L:-1,d:()=>{}})}const e=t-FX.pins[key];if(go&&e<240)dy=-12*(1-eout(e/240));iPin(c,sx-17*k,sy+5*k+dy,P[0],k)}
@@ -2107,7 +2248,7 @@ function drawIcons(c,t){const z=cam.z,L=LOD(),k=clamp(z*1.05,.5,1.55),R=S.region
  // hedef işaretleri (§8.3): saldırı %şans (z<0,7 yalnız ikon), taşıma, ateşkes/vasal gri
  if(tg&&tg.length===MAP.n)for(let j=0;j<MAP.n;j++){const f=tg[j];if(!f)continue;const g=G[j],sx=(g.lx-cam.x)*z,sy=(g.ly-cam.y)*z;if(sx<-40||sy<-40||sx>VW+40||sy>VH+40)continue;iTgt(c,sx+20*k+10,sy+17*k,f,FX.tch[j]||0,z)}
  if(FX.hov!=null&&ui.sel!=null&&tg&&tg[FX.hov]===1)drawArrow(c,ui.sel,FX.hov,FAC[0].col,S.regions[ui.sel].ready,1,.5,null)}
-function iTgt(c,x,y,f,ch,z){const id=f===1?'saldiri':f===2?'tasi':f===3?'ateskes':'vasal',im=icoImg(id,f>=3?'#A7B1C2':'#F1F3F7'),cc=ch>=.7?'#4CC38A':ch>=.4?'#F2B33D':'#FF6B5E',txt=f===1&&z>=.7?'%'+Math.round(ch*100):'';
+function iTgt(c,x,y,f,ch,z){const id=f===1?'saldiri':f===2?'tasi':f===3?'ateskes':'vasal',im=icoImg(id,f>=3?'#A7B1C2':'#F1F3F7'),cc=ch>=.7?'#4CC38A':ch>=.4?'#F2B33D':'#FF6B5E',txt=f===1&&z>=.7?'%'+Math.round(ch*100)+(PREF.cb?' '+chanceW(ch):''):'';
  c.font=`700 11px ${MAPF}`;const tw=txt?c.measureText(txt).width+7:0;c.beginPath();if(c.roundRect)c.roundRect(x-11,y-11,22+tw,22,11);else c.arc(x,y,11,0,7);c.fillStyle='#151A23';c.fill();c.lineWidth=1.5;c.strokeStyle=f===1?cc:'rgba(122,135,158,.9)';c.stroke();
  if(im)c.drawImage(im,x-7,y-7,14,14);if(txt){c.fillStyle=cc;c.textAlign='left';c.fillText(txt,x+9,y+.5);c.textAlign='center'}}
 function iPin(c,x,y,id,k){const s=9*clamp(k,.8,1.2),im=icoImg(id,'#F1F3F7');c.beginPath();c.moveTo(x,y-s);c.lineTo(x+s,y);c.lineTo(x,y+s);c.lineTo(x-s,y);c.closePath();c.fillStyle='#151A23';c.fill();c.lineWidth=2;c.strokeStyle='#FF6B5E';c.stroke();if(im)c.drawImage(im,x-s*.62,y-s*.62,s*1.24,s*1.24)}
@@ -2154,7 +2295,7 @@ function hover(x,y){const t=$('#tip'),i=regionAtScreen(x,y),hv=i>=0&&S&&FX.tgt&&
 // ======================= PANEL =======================
 const inertBg=on=>{for(const e of document.querySelectorAll('header,main'))e.inert=on};
 // §5.8: kapatılamaz türler tek yerde (Esc, kapat düğmesi); sihirbaz/bitiş/miras mobilde tam ekran sayfa
-const NOCL=['setup','over','bozuk','ev','miras'],FULLM=['wiz','over','miras'],mCan=k=>!!k&&!NOCL.includes(k)&&!(k==='wiz'&&!ART);
+const NOCL=['setup','over','bozuk','ev','miras'],FULLM=['wiz','over','miras','ayar'],mCan=k=>!!k&&!NOCL.includes(k)&&!(k==='wiz'&&!ART);
 const FOC='button:not([disabled]),a[href],input:not([type=hidden]):not([disabled]),select,textarea,summary,[tabindex]:not([tabindex="-1"])';
 function modal(h,kind,wide){const m=$('#modal'),bg=$('#modalBg'),k=kind||'x',was=ui.modal;mGhostOff();if(!was)ui.mRet=document.activeElement;
  m.innerHTML=(mCan(k)&&!(k==='res'&&S&&S.over)?`<div class=mbar><button class="btn ico ghost" onclick="mEsc()" aria-label="Kapat">${ic('kapat')}</button></div>`:'')+emo(h);
@@ -2252,7 +2393,7 @@ function sideToggle(){const c=document.body.classList.toggle('side-c'),b=$('#sid
 function showMenu(){modal(`<div class=menu><h3>${ic('v-fetih')} Fetih</h3>${S&&ART&&!S.over?`<button class="btn wide primary" onclick="closeModal()">${ic('oyna')} Oyuna dön</button>`:''}
  <button class="btn wide" onclick="askNew()">${ic('harita')} Yeni sefer</button><button class="btn wide" onclick="showHelp()">${ic('yardim')} Nasıl oynanır</button>
  ${META?`<button class="btn wide" onclick="showMiras(null)">${ic('miras')} Miras · ${fl(META.mp)} MP</button>`:''}${S?`<button class="btn wide" onclick="copyText(exportSave(),'Kayıt ve miras panoya kopyalandı.')">${ic('kopyala')} Kaydı kopyala</button>`:''}
- <button class="btn wide" onclick="showImport()">${ic('ice-aktar')} Kayıt yükle</button><div class=ver>Fetih v${GAME_VERSION} · kayıt v${SAVE_VER}</div></div>`,'menu')}
+ <button class="btn wide" onclick="showImport()">${ic('ice-aktar')} Kayıt yükle</button><button class="btn wide" onclick="showSettings()">${ic('ayarlar')} Ayarlar</button><button class="btn wide" onclick="showKeys()">${ic('bilgi-i')} Klavye kısayolları</button><div class=ver>Fetih v${GAME_VERSION} · kayıt v${SAVE_VER}</div></div>`,'menu')}
 // İpucu yöneticisi (§5.7): data-tip; masaüstünde 350 ms hover / odak, dokunmatikte 450 ms uzun basış
 const TIPX={t:0,cur:null,lp:0,sup:false};
 function tipShow(el){const s=el.getAttribute('data-tip'),d=$('#tipx');if(!s||!el.isConnected||!d)return;d.innerHTML=emo(esc(s)).replace(/\n/g,'<br>');d.style.display='block';
@@ -2522,7 +2663,7 @@ const unlockBtn=(cat,id)=>{const c=lockCost(cat,id);return c&&META.mp>=c?`<butto
 function wz0(){const can=!!(S&&ART&&!S.over),l=META.lastCfg;
  if(metaNew()&&!can)return`<h3 style="font-size:22px">⚔ Fetih</h3><p>Tek bir bölgeden başla: kaynak topla, ordunu büyüt, rakip devletleri fethet.</p>
   <button class="btn primary wide" style="min-height:58px;font-size:18px" onclick="quickStart()">⚡ Hızlı Başla</button><p class=muted style="font-size:12px;text-align:center;margin:6px 0 0">${cfgLine(CFG_HIZLI)}</p>
-  <p style="text-align:center;margin:16px 0 4px"><button type=button class=lnk onclick="wizGo(1)">Seferi kendim hazırlayayım →</button></p>`;
+  <p style="text-align:center;margin:16px 0 4px"><button type=button class=lnk onclick="wizGo(1)">Seferi kendim hazırlayayım →</button></p>${wzQuick()}`;
  return`<h3>⚔ Yeni Sefer</h3>${can?`<button class="btn wide" onclick="closeModal()">▶ Devam et <small class=muted>(${S.turn}. yıl)</small></button>`:''}
   <button class="btn primary wide" onclick="wizGo(1)">🧭 Yeni sefer hazırla</button>
   ${(()=>{const k=dateKey(),st=META.daily.started[k],dc=normCfg(dailyOf(k).cfg);return`<button class="btn wide ${st?'':'hot'}" onclick="startDaily()">📅 Günlük meydan okuma ${st?'<small class=muted>(bugün başlatıldı · tekrar antrenman)</small>':'<span class=good>● bugün oynanmadı</span>'}${META.daily.streak?` · seri ${META.daily.streak}`:''}<br><small class=muted>${cfgShort(dc)} · Kısa</small></button>`})()}
@@ -2530,7 +2671,7 @@ function wz0(){const can=!!(S&&ART&&!S.over),l=META.lastCfg;
   <button class="btn wide" onclick="quickStart()">⚡ Hızlı Başla<br><small class=muted>${cfgLine(CFG_HIZLI)}</small></button>
   ${can?'<p class=muted style="font-size:12px">Yeni sefer başlayınca mevcut oyunun silinir (miras puanların korunur).</p>':''}
   <button class="btn wide" onclick="showMiras('wiz')">🏛 Miras · <b>${fl(META.mp)} MP</b> <small class=muted>· açılımlar, başarımlar (${ACH.filter(a=>META.ach[a.id]).length}/${ACH.length}), rekorlar</small></button>
-  <div class=ver>${ST.ok?'':'Tarayıcı kaydı kapalı · '}Fetih v${GAME_VERSION}</div>`}
+  ${wzQuick()}<div class=ver>${ST.ok?'':'Tarayıcı kaydı kapalı · '}Fetih v${GAME_VERSION}</div>`}
 function wz1(){const c=WZ.c;let h=`<h3>Hanedanını seç</h3><div class="cards wzc wzc2">`;
  for(const d of['klasik',...DYN6]){const D=DYN[d],op=isOpen('dyn',d),A=D.ab&&ABIL[D.ab];
   h+=`<div ${pickA('dyn',d,c.dyn===d,op)} ${op?`onclick="wizSet('dyn','${d}')"`:''}>${lkI(op)}<div><b>${ic(D.i)} ${D.ad}</b>${d==='klasik'?' <span class=tag>miras ×0,9</span>':''}</div><small class=muted>${D.tema}</small>
@@ -2574,6 +2715,144 @@ async function start(){if(!storeCheck())note('st','⚠ Tarayıcı kaydı kapalı
   if(r&&r.bad)backupBad(r)})}catch(e){onErr('Açılış: '+e.message,e.stack);ok=false;S=null;ART=null}
  $('#loading').style.display=ART?'none':'flex';if(!ART)loadMsg('FETİH');
  if(ok){if(S.phase==='kurulus')showSetup();else if(S.over)afterModal();else showEvent()}else if(ST.bad)showBad();else startNew()}
+// ======================= SES KANCALARI, AYARLAR, ERİŞİLEBİLİRLİK (Aşama 7-8) =======================
+// Sesler yalnız mevcut olay/animasyon kancalarından tetiklenir; oyun fonksiyonları sarılır (TEST kipinde hiç sarılmaz, AudioContext hiç oluşmaz)
+const sr=m=>{const e=$('#sr');if(!e)return;e.textContent='';setTimeout(()=>{e.textContent=m},60)},srA=m=>{const e=$('#sra');if(!e)return;e.textContent='';setTimeout(()=>{e.textContent=m},60)};
+const srNum=v=>(v<0?'eksi ':'artı ')+fmtD(v);
+// oyuncu saldırısı/yağması (fxFlush): boru → çarpışma → fetih/başkent/yenilgi → ganimet
+function sndBattle(L){const b=L.find(x=>x.ao===0);if(!b)return;srBattle();sfx('saldiri-basla');sfx('savas-carpisma',{at:.47});
+ if(b.win){sfx(b.raid?'savas-zafer':b.c0?'baskent-alindi':'fetih',{at:.6});if(b.loot)sfx('kaynak-kazan',{at:.9})}else sfx('savas-yenilgi',{at:.6})}
+function srBattle(){const b=ui.lastB;if(!b)return;const n=rName(b.to),lt=b.loot?RES.filter(r=>b.loot[r.k]>=1).map(r=>fl(b.loot[r.k])+' '+r.ad.toLocaleLowerCase('tr-TR')).join(', '):'';
+ sr(b.raid?(b.win?`Yağma başarılı: ${n}. ${b.lost} kayıp.${lt?' Ganimet: '+lt+'.':''}`:`Yağma püskürtüldü. ${b.lost} kayıp.`):b.win?`Saldırı kazanıldı. ${n} senin. ${b.lost} kayıp.${lt?' Ganimet: '+lt+'.':''}`:`Saldırı püskürtüldü. ${b.lost} kayıp.`)}
+// tur geçişi (fxTurn): oyuncuya yönelen savaşlar, yıl çanı; başkente saldırı müziği krize çeker
+function sndTurn(L){const me=L.filter(b=>b.ao!==0&&b.d0===0);SND.tb=me;if(me.some(b=>b.c0||b.to===capIdx()))MUS.capT=S.turn;
+ if(me.length){sfx('savas-carpisma',{at:.3});sfx(me.some(b=>b.win)?'bolge-kayip':'savas-zafer',{at:.6,soft:1})}if(!S.over)sfx('yil-gecis',{at:.45})}
+const critSet=()=>{const s=new Set();if(!S)return s;const e=economy();for(const k of['tahil','altin'])if(S.res[k]+e.net[k]*2<0)s.add(k);return s};
+function srTurn(){const e=economy(),B=SND.tb||[];let m=`Yıl ${S.turn}. Tahıl ${fl(S.res.tahil)}, ${srNum(e.net.tahil)}. Altın ${fl(S.res.altin)}, ${srNum(e.net.altin)}. Moral ${Math.round(S.morale)}.`;
+ if(B.length)m+=` ${B.length} savaş: `+B.slice(0,4).map(b=>rName(b.to)+(b.win?' kaybedildi':' savunuldu')).join(', ')+'.';if(S.evQ.length)m+=` ${S.evQ.length} olay bekliyor.`;sr(m)}
+// koalisyon kuruldu (§8.10): üye başkentleri arasında 2 sn kesik kırmızı çizgi
+function fxCoal(){if(!FX.on||!MOT()||!S.coal)return;const cs=S.coal.mem.map(f=>S.regions.findIndex(r=>r.capital&&r.owner===f)).filter(i=>i>=0);if(cs.length<2)return;
+ fxAdd({at:300,dur:2000,L:1,d:(c,e)=>{c.save();c.globalAlpha=e>1600?(2000-e)/400:1;c.setLineDash([6,4]);c.lineDashOffset=-e/40;c.lineWidth=1.5;c.strokeStyle='#FF6B5E';c.beginPath();cs.forEach((i,k)=>{const[x,y]=rsP(i);k?c.lineTo(x,y):c.moveTo(x,y)});if(cs.length>2)c.closePath();c.stroke();c.restore()}})}
+// bitiş ekranı: müzik söner, zafer/yenilgi, skor sayacı tıkları, ödül merdiveni, açılım, başarım, rütbe
+function endSounds(R){if(SND.endS===S)return;SND.endS=S;musEnd();sfx(S.over==='win'?'bitis-zafer':'bitis-yenilgi');if(!R)return;const go=FX.on&&MOT()===2,D=go?1.2:.5;
+ if(go)for(let k=0;k<10;k++)sfx('skor-tik',{at:.05+k*.11,i:k});sfx('skor-son',{at:D});if($('#endRk .rk.up'))sfx('rutbe',{at:D+.3});
+ [...document.querySelectorAll('.end .beat')].forEach((b,i)=>{const at=+(go?D*.6+i*.35:D+.5+i*.12).toFixed(2);sfx(b.classList.contains('big')?'kilit-acildi':R.ach&&R.ach.some(k=>ACHM[k]&&b.textContent.includes(ACHM[k].ad))?'basarim':'odul',{at,i})})}
+// Tur bitirme onayı (§13) ve "Turu Bitir hazır" (end-glow): saldırabilecek hazır asker ya da alınabilir teknoloji kalmadıysa
+function leftActs(){const L=[];if(!S||!MAP)return L;const rd=own().filter(i=>S.regions[i].ready>=1&&MAP.regions[i].adj.some(j=>canAttack(i,j))).length;if(rd)L.push(`${rd} bölgede saldırabilecek hazır asker var.`);
+ if(BR.some(b=>S.tech[b.id]<4&&S.res.bilgi>=tcost(S.tech[b.id])))L.push('Araştırılabilir bir teknoloji var.');return L}
+function endTurnUI(){if(PREF.endConfirm&&S&&!S.over&&S.phase==='oyun'&&!S.evQ.length&&!ui.modal){const w=leftActs();if(w.length){modal(`<h3>${ic('ileri-tur')} Turu bitir?</h3><p>${w.join('<br>')}</p><div class=row><button class=btn onclick="closeModal()">Vazgeç</button><button class="btn primary" onclick="closeModal();endTurn()">Yine de bitir</button></div>`,'econf');return}}endTurn()}
+// ---- Klavye (§11.1-11.2) ----
+const KEYS=[['Boşluk / Enter','Turu bitir (harita ya da boş alan odaktayken, pencere yokken; haritada Enter bölge seçer)'],['1 – 6','Panel sekmeleri (pencere yokken)'],['1 – 3','Olay seçeneği (olay penceresinde)'],['Esc','Pencereyi kapat'],['M','Sesi aç / kapat'],['F','Seçili bölgeye git'],['?','Kısayol listesi'],['Oklar','Harita odaktayken: yöndeki komşu bölgeye geç'],['Enter','Harita: odaktaki bölgeyi seç'],['A / T','Harita: seçili bölgenden odaktakine saldır / taşı'],['+ / − / 0','Yakınlaştır / uzaklaştır / tüm harita'],['Tab','Üst çubuk → harita → sekmeler → panel → Turu Bitir']];
+const keysHtml=()=>`<div class=keys>${KEYS.map(([k,d])=>`<kbd>${k}</kbd><span>${d}</span>`).join('')}</div>`;
+// açık pencerenin üstüne açılan ayar/kısayol penceresi kapanınca önceki pencere geri gelir
+const backOf=k=>({wiz:wizShow,setup:showSetup,menu:showMenu,help:showHelp,over:afterModal,miras:()=>showMiras(),ev:showEvent,bozuk:showBad})[k]||((!S||!ART)&&!k?startNew:null);
+function showKeys(){if(ui.modal!=='keys'&&ui.modal!=='ayar')ui.setBack=backOf(ui.modal);modal(`<h3>${ic('bilgi-i')} Klavye kısayolları</h3>${keysHtml()}<div class=row><button class="btn primary" onclick="closeModal()">Tamam</button></div>`,'keys')}
+const TABK=['bolge','eko','ordu','hedef','tek','kayit'];
+function kfShow(){const i=FX.kf,g=MAP.regions[i];if(!g)return;const x=(g.lx-cam.x)*cam.z,y=(g.ly-cam.y)*cam.z;if(x<40||y<40||x>visW()-40||y>visH()-40)centerOn(i);req();
+ const r=S.regions[i],s=ui.sel;let m=`${g.name}, ${g.block?'geçilmez sıradağ':facName(r.owner)+', asker '+vis(i).txt}`;if(i===s)m+=', seçili';else if(s!=null&&canAttack(s,i)&&S.regions[s].ready>0)m+=`, saldırı şansı yüzde ${Math.round(previewAtk(s,i,S.regions[s].rd).ch*100)}, A ile saldır`;else if(s!=null&&canMove(s,i)&&S.regions[s].ready>0)m+=', T ile asker taşı';sr(m)}
+function mapKey(e){const k=e.key,G=MAP.regions;
+ if(k==='+'||k==='='){zoomBy(1.3);return true}if(k==='-'||k==='−'){zoomBy(1/1.3);return true}if(k==='0'){fitCam();return true}
+ const dir={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[k];
+ if(dir){e.preventDefault();const c=FX.kf!=null?FX.kf:ui.sel!=null?ui.sel:capIdx();if(c==null)return true;if(FX.kf==null)FX.kf=c;else{const g=G[c];let best=null,bs=1e9;
+   for(const j of g.adj){if(G[j].block)continue;const dx=G[j].lx-g.lx,dy=G[j].ly-g.ly,d=Math.hypot(dx,dy)||1,co=(dx*dir[0]+dy*dir[1])/d;if(co<.3)continue;const sc=d*(2-co);if(sc<bs){bs=sc;best=j}}
+   if(best!=null)FX.kf=best;else sfx('ui-hata')}kfShow();return true}
+ if(FX.kf==null)return false;const f=FX.kf;
+ if(k==='Enter'){e.preventDefault();if(f!==ui.sel){ui.sel=f;ui.tab='bolge';if(S.regions[f].owner!==0)ui.rtab='genel';refresh();sfx('ui-tik');sr(rName(f)+' seçildi.')}return true}
+ if(k==='a'||k==='A'){e.preventDefault();if(ui.sel!=null&&canAttack(ui.sel,f))openAttack(ui.sel,f);else sfx('ui-hata');return true}
+ if(k==='t'||k==='T'){e.preventDefault();if(ui.sel!=null&&canMove(ui.sel,f))openMove(ui.sel,f);else sfx('ui-hata');return true}
+ if(k==='Escape'){FX.kf=null;req();return true}return false}
+addEventListener('keydown',e=>{if(e.defaultPrevented||e.ctrlKey||e.metaKey||e.altKey)return;const t=e.target,k=e.key;
+ if(t&&t.matches&&t.matches('input:not([type=range]):not([type=checkbox]),textarea,select,[contenteditable=true]'))return;
+ if(k==='m'||k==='M'){e.preventDefault();sndMute();return}
+ if(k==='?'){e.preventDefault();if(ui.modal!=='keys')showKeys();return}
+ if(ui.modal||!S||!ART||boot.busy)return;
+ const onMap=t===view,body=!t||t===document.body||t===document.documentElement;
+ if(onMap&&mapKey(e))return;
+ if((k===' '||k==='Enter')&&(onMap||body)){e.preventDefault();if(!e.repeat)endTurnUI();return}
+ if(/^[1-6]$/.test(k)&&(onMap||body||(t.closest&&t.closest('#panel,#tabs,header,.foot,.mapctl')))){e.preventDefault();setTab(TABK[+k-1]);return}
+ if(k==='f'||k==='F'){e.preventDefault();focusSel()}});
+view.addEventListener('blur',()=>req());view.addEventListener('focus',()=>req());
+// ---- Ayarlar paneli (§13): değişiklik anında uygulanır ve kaydedilir; kayıttan ayrı (fetih-ayar), dışa aktarmaya girmez ----
+let SAVE_T=0;
+const sw=(id,on,lab,sub,fn)=>`<div class=setr><span><label for=${id}>${lab}</label>${sub?`<small>${sub}</small>`:''}</span><input type=checkbox role=switch id=${id} ${on?'checked':''} onchange="${fn}"></div>`;
+const sg=(lab,sub,key,opts)=>`<div class=setr><span>${lab}${sub?`<small>${sub}</small>`:''}</span><div class=seg role=group aria-label="${lab}">${opts.map(([v,t])=>`<button class="btn sm${PREF[key]===v?' primary':''}" aria-pressed=${PREF[key]===v} onclick='setP("${key}",${JSON.stringify(v)},this)'>${t}</button>`).join('')}</div></div>`;
+const rg=(k,lab)=>{const v=Math.round(PREF.vol[k]*100);return`<div class='setr rr'><span><label for=vol-${k}>${lab}</label></span><input type=range id=vol-${k} min=0 max=100 step=5 value=${v} aria-valuetext="yüzde ${v}" oninput="setVol('${k}',this)" onchange="volTry('${k}')"><output id=vo-${k} for=vol-${k}>${v}</output></div>`};
+function showSettings(){if(ui.modal!=='ayar'&&ui.modal!=='keys')ui.setBack=backOf(ui.modal);const ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ const G=[['ses','Ses'],['gor','Görüntü'],['oyn','Oynanış'],['dil','Dil'],['kay','Kayıt'],['hak','Hakkında']];
+ modal(`<h3>${ic('ayarlar')} Ayarlar</h3><nav class=setnav aria-label="Ayar grupları">${G.map(([k,t])=>`<button class="btn sm" onclick="setGo('${k}')">${t}</button>`).join('')}</nav>
+ <section class=setg id=sg-ses aria-labelledby=sh-ses><h4 id=sh-ses>${ic('ses-acik')} Ses</h4>${sw('st-ses',!PREF.mute,'Ses','Kısayol: M · ilk dokunuştan önce hiç ses çalmaz','sndMute(!this.checked)')}${rg('master','Ana ses')}${rg('sfx','Efektler')}${rg('ui','Arayüz tıkı')}
+  ${sw('st-mus',PREF.music,'Müzik','Üretken ortam müziği: barışta Re Dorian, savaşta Hicaz. Varsayılan kapalı','setMusic(this.checked)')}${rg('music','Müzik seviyesi')}${sg('Müzik ruhu','Otomatik: duruma göre barış / savaş / kriz','musicMode',[['oto','Otomatik'],['baris','Hep barış']])}
+  ${ios?'<p class=muted style="font-size:var(--t-xs);margin:4px 0 0">iPhone/iPad: cihazın sessiz anahtarı açıksa ses duyulmaz.</p>':''}</section>
+ <section class=setg id=sg-gor aria-labelledby=sh-gor><h4 id=sh-gor>${ic('goz')} Görüntü</h4>${sg('Animasyonlar',`Sistem: ${RMQ.matches?'azaltılmış hareket açık':'tam hareket'}`,'motion',[[null,'Sistem'],['tam','Tam'],['az','Az'],['yok','Yok']])}
+  ${sw('st-fast',PREF.fastTurn,'Hızlı tur','Tur geçişinde rakip okları, dalgalar ve yıl kartı atlanır; sayaçlar kalır','setP(\'fastTurn\',this.checked)')}
+  ${sg('Yazı boyutu','','text',[[90,'%90'],[100,'%100'],[115,'%115'],[130,'%130']])}<div class=setp aria-hidden=true>${ic('tahil','k-tahil')} Tahıl <b>412</b> <span class="tr up">+3</span> · Örnek satır</div>
+  ${sw('st-cb',PREF.cb,'Renk körü desteği','Haritada daha güçlü desen, rozet yanında sahip harfi (★ sen, K, M, Y, S, B), hedefte şans sözcüğü','setP(\'cb\',this.checked)')}
+  ${sg('Yüksek kontrast',`Sistem: ${HCQ.matches?'açık':'kapalı'}`,'hc',[[null,'Sistem'],[true,'Açık'],[false,'Kapalı']])}</section>
+ <section class=setg id=sg-oyn aria-labelledby=sh-oyn><h4 id=sh-oyn>${ic('saldiri')} Oynanış</h4>${sg('Savaş sonucu penceresi','Önemli: başkent, oyun sonu ve ağır kayıplarda; diğerleri bildirim + bölge kartı','battleModal',[['onemli','Önemli olanlar'],['hep','Her savaşta']])}
+  ${sw('st-econf',PREF.endConfirm,'Tur bitirme onayı','Saldırabilecek hazır asker ya da alınabilir teknoloji varken "Yine de bitir?" sorar','setP(\'endConfirm\',this.checked)')}
+  ${sg('Turu Bitir düğmesi','Mobil','endLeft',[[false,'Sağda'],[true,'Solda']])}<h4>Kısayollar</h4>${keysHtml()}</section>
+ <section class=setg id=sg-dil aria-labelledby=sh-dil><h4 id=sh-dil>${ic('gunce')} Dil</h4><div class=setr><span><label for=st-dil>Dil</label><small>Diğer diller sonraki sürümlerde</small></span><select id=st-dil><option selected>Türkçe</option></select></div></section>
+ <section class=setg id=sg-kay aria-labelledby=sh-kay><h4 id=sh-kay>${ic('kayit')} Kayıt</h4><div id=setSave>${setSave()}</div></section>
+ <section class=setg id=sg-hak aria-labelledby=sh-hak><h4 id=sh-hak>${ic('bilgi-i')} Hakkında</h4><div class=kv><span>Sürüm</span><span>Fetih v${GAME_VERSION} · kayıt v${SAVE_VER}</span></div>${S?`<div class=kv><span>Oyun kodu</span><span><code>${seedCode(S.seed,S.cfg)}</code></span></div>`:''}
+  <div class=seg style="margin-top:8px"><button class="btn sm" onclick="showHelp()">${ic('yardim')} Nasıl oynanır</button><button class="btn sm" onclick="showKeys()">Kısayollar</button></div><p class=muted style="font-size:var(--t-xs)">Ses ve müzik dosyasızdır: tarayıcıda WebAudio ile anlık sentezlenir.</p></section>
+ <div class=row><button class="btn primary" onclick="closeModal()">Bitti</button></div>`,'ayar',true)}
+function setGo(k){const el=$('#sg-'+k);if(el){el.scrollIntoView({block:'start',behavior:MOT()===2?'smooth':'auto'});const h=el.querySelector('h4');if(h){h.tabIndex=-1;h.focus({preventScroll:true})}}}
+function setP(k,v,el){PREF[k]=v;prefSave();if(el&&el.parentNode)el.parentNode.querySelectorAll('button').forEach(b=>{const on=b===el;b.classList.toggle('primary',on);b.setAttribute('aria-pressed',on)});
+ if(k==='cb'&&S&&ART)refresh();if(k==='text')setTimeout(()=>{tabInk();resMore()},50);if(k==='musicMode')musState();sfx('ui-tik')}
+function setMusic(on){PREF.music=!!on;prefSave();if(on){sndInit();musState()}}
+function setVol(k,el){const v=+el.value;PREF.vol[k]=v/100;el.setAttribute('aria-valuetext','yüzde '+v);const o=$('#vo-'+k);if(o)o.textContent=v;sndApply()}
+function volTry(k){prefSave();sfx(k==='ui'?'ui-tik':k==='music'?'ui-hover':'kaynak-kazan')}
+const kb=n=>Math.max(1,Math.round(n/1024))+' KB',ago=t=>{const m=Math.round((Date.now()-t)/60000);return m<1?'az önce':m+' dk önce'};
+function setSave(){const raw=stGet(SAVE),bad=stGet(SAVE_BAD);let h=`<div class=setp>${S?`Yıl ${S.turn}`:'Kayıtlı oyun yok'}${raw?' · '+kb(raw.length):''}${SAVE_T?' · son kayıt '+ago(SAVE_T):''}${!ST.ok?' · <span class=bad>tarayıcı kaydı kapalı</span>':''}${ST.quota?' · <span class=bad>depolama dolu</span>':''}</div>
+ <div class=seg style="margin-top:8px">${S?`<button class="btn sm" onclick="copyText(exportSave(),'Kayıt ve miras panoya kopyalandı.')">${ic('kopyala')} Kaydı kopyala</button>`:''}<button class="btn sm" onclick="showImport()">${ic('ice-aktar')} Kayıt yükle</button>${META?`<button class="btn sm" onclick="copyText('FETIH:'+b64e(JSON.stringify({fetih:2,save:null,meta:META})),'Miras panoya kopyalandı.')">${ic('miras')} Mirası kopyala</button>`:''}</div>`;
+ if(bad)h+=`<div class=warn>${ic('uyari')}<div>Bozuk kayıt yedeği var (${kb(bad.length)}).<div class=seg style="margin-top:6px"><button class="btn sm" onclick="copyText(stGet(SAVE_BAD)||'','Bozuk yedek panoya kopyalandı.')">${ic('kopyala')} Yedeği kopyala</button><button class="btn sm" onclick="badDel(this)">Yedeği sil</button></div></div></div>`;
+ return h+`<div class=seg style="margin-top:8px"><button class="btn sm" onclick="ui.setBack=null;closeModal();startNew()">${ic('harita')} Yeni sefer</button><button class="btn sm danger" onclick="resetAsk()">Tüm verileri sıfırla</button></div><div id=rstBox></div>`}
+function badDel(el){if(!el.dataset.ok){el.dataset.ok=1;el.textContent='Emin misin? Sil';return}stDel(SAVE_BAD);const b=$('#setSave');if(b)b.innerHTML=emo(setSave());toast('Bozuk yedek silindi.')}
+function resetAsk(){const b=$('#rstBox');if(!b)return;b.innerHTML=`<div class=warn style="flex-direction:column">${'<span>Kayıt, miras ve ayarların hepsi silinir. Onaylamak için <b>SIFIRLA</b> yaz.</span>'}<input class=inp id=rstIn autocomplete=off aria-label="Onay: SIFIRLA yaz"><button class="btn sm danger" onclick="resetAll()">Her şeyi sil</button></div>`;$('#rstIn').focus()}
+function resetAll(){const v=($('#rstIn')||{}).value||'';if(v.trim().toLocaleUpperCase('tr-TR')!=='SIFIRLA'){sfx('ui-hata');toast('Onay için SIFIRLA yaz.');return}S=null;for(const k of[SAVE,...SAVE_OLD,SAVE_BAD,META_KEY,PREF_KEY])stDel(k);try{for(const k of[SAVE,...SAVE_OLD,SAVE_BAD,META_KEY,PREF_KEY])localStorage.removeItem(k)}catch(e){}location.reload()}
+function wzQuick(){return`<div class=wzq><button class="btn sm" onclick="showSettings()">${ic('ayarlar')} Ayarlar</button><label class=switch><input type=checkbox role=switch ${PREF.mute?'':'checked'} onchange="sndMute(!this.checked)"> Ses</label><label class=switch><input type=checkbox role=switch ${PREF.music?'checked':''} onchange="setMusic(this.checked)"> Müzik</label></div>`}
+// renk körü: rozet yanında sahip harfi (§11.5)
+const CBL=['★','K','M','Y','S','B'];
+function cbTag(c,x,y,k,o){const t=CBL[o];if(!t)return;c.font=`800 ${Math.max(9,Math.round(10*k))}px ${MAPF}`;const px=x-20*k-6;c.lineWidth=3;c.strokeStyle='rgba(16,19,26,.92)';c.strokeText(t,px,y+.5);c.fillStyle='#F1F3F7';c.fillText(t,px,y+.5)}
+// ---- sarmalayıcılar (yalnız TEST dışı) ----
+if(!TEST){
+ const wrap=(n,f)=>{const o=window[n];if(typeof o!=='function')return;window[n]=function(...a){return f(o,a)}};
+ const sig=()=>S?Object.values(S.res).join()+'|'+S.fund+'|'+S.turn:'';
+ const act=(n,id)=>wrap(n,(o,a)=>{const b=sig(),r=o(...a);if(sig()!==b)sfx(id);return r});
+ act('buildField','insa');act('upgradeField','yukselt');act('upgradeMil','insa');act('buildSur','insa');act('recruit','asker-topla');act('research','arastirma');act('buyStart','kaynak-harca');act('startWonder','insa');
+ wrap('finishSetup',(o,a)=>{const p=S&&S.phase,r=o(...a);if(S&&p!==S.phase)sfx('insa');return r});
+ wrap('endTurn',(o,a)=>{if(!S||S.over||S.phase!=='oyun'||S.evQ.length)return o(...a);const t0=S.turn,c0=!!(S.coal&&S.coal.on),m0=S.morale,r0=Object.assign({},S.res),k0=critSet(),r=o(...a);
+  if(S&&S.turn!==t0){sfx('tur-sonu');if(RES.some(x=>S.res[x.k]>r0[x.k]+.5))sfx('kaynak-kazan',{at:.25,soft:1});
+   const w=[];if(S.log.some(l=>l.t===S.turn&&/^(Kıtlık|Hazine boş)/.test(l.m)))w.push('kıtlık ya da boş hazine');const cn=!!(S.coal&&S.coal.on)&&!c0;if(cn){w.push('koalisyon kuruldu');fxCoal()}
+   if(S.morale<30&&m0>=30)w.push('moral 30\'un altında');for(const k of critSet())if(!k0.has(k))w.push(RES.find(x=>x.k===k).ad+' 2 tur içinde tükenebilir');
+   if(w.length){sfx('uyari',{at:.85,koal:cn});srA('Uyarı: '+w.join(', ')+'.')}musState();if(!S.over)srTurn()}return r});
+ wrap('showEvent',(o,a)=>{const was=ui.modal,r=o(...a);if(ui.modal==='ev'&&S&&S.evQ.length){const q=S.evQ[0];if(SND.evq!==q||was!=='ev'){SND.evq=q;const E=EVM[q.id];sfx('olay-ac',{v:E&&E.tur})}}return r});
+ wrap('pickEvent',(o,a)=>{const n=S?S.evQ.length:0,r=o(...a);if(S&&S.evQ.length!==n)sfx('ui-onay');return r});
+ wrap('modal',(o,a)=>{const was=ui.modal,k=a[1]||'x',r=o(...a);if(!was&&!['ev','res','over','rep'].includes(k))sfx('ui-ac');return r});
+ wrap('closeModal',(o,a)=>{const k=ui.modal,r=o(...a);if(k&&!['ev','res','over'].includes(k))sfx('ui-kapa');if((k==='ayar'||k==='keys')&&!ui.modal){const f=ui.setBack;ui.setBack=null;if(f)f()}return r});
+ wrap('unlockItem',(o,a)=>{const r=o(...a);if(r)sfx('kilit-acildi');return r});
+ wrap('openAttack',(o,a)=>{const r=o(...a);if(ui.modal!=='atk'&&S&&!S.over)sfx('ui-hata');return r});
+ wrap('openMove',(o,a)=>{const r=o(...a);if(ui.modal!=='mov')sfx('ui-hata');return r});
+ wrap('doMove',(o,a)=>{const m=ui.modal,r=o(...a);if(m==='mov'&&ui.modal!=='mov')sfx('asker-topla');return r});
+ wrap('showEnd',(o,a)=>{const r=o(...a);try{endSounds(a[0])}catch(e){}return r});
+ wrap('saveNow',(o,a)=>{const r=o(...a);if(r)SAVE_T=Date.now();return r});
+ wrap('hover',(o,a)=>{const h=FX.hov,r=o(...a);if(FX.hov!=null&&FX.hov!==h)sfx('ui-hover');return r});
+ wrap('renderHeader',(o,a)=>{const r=o(...a);if(S){const F=FX.crit||new Set(),now=new Set();document.querySelectorAll('#res .hc.crit').forEach(el=>{const k=el.dataset.r;now.add(k);if(!F.has(k)&&MOT()){el.classList.remove('cbl');void el.offsetWidth;el.classList.add('cbl')}});FX.crit=now;
+  const b=$('#endBtn');if(b)b.classList.toggle('rdy',!S.over&&S.phase==='oyun'&&!S.evQ.length&&!ui.modal&&!leftActs().length)}return r});
+ wrap('renderPanel',(o,a)=>{const r=o(...a),p=$('#panel');if(p&&S){p.setAttribute('aria-labelledby','tab-'+ui.tab);const l=p.querySelector('.log');if(l&&!l.hasAttribute('role')){l.setAttribute('role','log');l.setAttribute('aria-live','off')}}return r});
+ // haritada klavye odağı: kesik --focus halkası
+ wrap('render',(o,a)=>{const r=o(...a);const i=FX.kf;if(i!=null&&MAP&&MAP.regions[i]&&document.activeElement===view){const g=MAP.regions[i],c=vctx,x=(g.lx-cam.x)*cam.z,y=(g.ly-cam.y)*cam.z;c.save();c.setLineDash([5,4]);c.lineWidth=2.5;c.strokeStyle='#10131A';c.beginPath();c.arc(x,y,30,0,7);c.stroke();c.lineWidth=2;c.strokeStyle='#FFD66B';c.stroke();c.restore()}return r});
+ // ilk etkileşimde AudioContext; dokunmatikte pointerup/touchend'de resume
+ const unlock=()=>{sndInit();const c=SND.ctx;if(c&&c.state==='suspended'&&!document.hidden)c.resume().catch(()=>{})};
+ for(const ev of['pointerdown','pointerup','keydown','touchend'])addEventListener(ev,unlock,{capture:true,passive:true});
+ document.addEventListener('visibilitychange',()=>{const c=SND.ctx;if(!c)return;if(document.hidden)c.suspend().catch(()=>{});else c.resume().catch(()=>{});musSync()});
+ // genel düğme tıkı (temsilci, tek yer) ve devre dışı öğeye basış
+ document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closest('button,.pick,[role=button],summary');if(!el||el.disabled||el.getAttribute('aria-disabled')==='true')return;sfx('ui-tik')});
+ document.addEventListener('pointerdown',e=>{const el=e.target.closest&&e.target.closest('button:disabled,[aria-disabled=true]');if(el)sfx('ui-hata')},true);
+ let hovT=0;document.addEventListener('mouseover',e=>{if(!HOV.matches)return;const el=e.target.closest&&e.target.closest('.btn.primary:not(:disabled)');if(el===SND.hel)return;SND.hel=el;if(!el)return;const n=performance.now();if(n-hovT<120)return;hovT=n;sfx('ui-hover')});
+ HCQ.addEventListener&&HCQ.addEventListener('change',prefApply);
+ sndBtn();
+}
 if(!TEST)start();
 </script>
 </body>
