@@ -1,0 +1,56 @@
+{
+ "title": "Fetih görsel dil (aşama 1-8) final QA",
+ "version": "0.8.1",
+ "file": {"bytes": 412892, "kib": 403.2, "gzip": 147223, "budgetKB": 450, "ok": true},
+ "env": "başsız Chrome (CDP), localhost:8123",
+ "scratch": "/private/tmp/claude-501/-Users-osman/43ff13d3-c66b-4b6c-9bc1-b657fa0f123e/scratchpad/qg/",
+ "regression": {
+  "baselineV4": {"rowsEqual": true, "rowsOffEqual": true, "maps": "20/20 + 12/12", "randLeak": 0, "errors": 0, "evUnit": {"n": 43, "err": 0, "bad": 0}},
+  "fastTrueVsFalse3seeds70turns": "identical",
+  "configs": {"count": 11, "games": 114, "errors": 0, "fatal": null, "randLeak": 0, "nan": 0},
+  "audioContextDuringSim": 0,
+  "oldScripts": {"a_save": "6 OK", "b_daily": "31 OK", "d_robust": "41 OK, 1 known (B17)", "g_meta": "52 OK", "f_fix": "8 OK, 2 harness mismatches", "e_flow": "38 OK, 6 harness mismatches"}
+ },
+ "realPlay": [
+  {"id": "w1", "size": "1440x880", "cfg": "Klasik/Kısa/Çırak", "turns": 83, "attacks": 17, "result": "lose@84", "errors": 0},
+  {"id": "w2", "size": "1440x880", "cfg": "Klasik/Normal/Çırak", "turns": 108, "attacks": 38, "result": "lose@109", "errors": 0},
+  {"id": "w3", "size": "390x844", "cfg": "Börü/Kısa/Kalfa", "turns": 96, "attacks": 5, "result": "lose@97", "errors": 0},
+  {"id": "l1", "size": "375x812", "cfg": "Klasik/Kısa/Kalfa passive", "turns": 40, "attacks": 0, "result": "lose@41", "errors": 0},
+  {"id": "e2e-11", "size": "1440x880", "cfg": "Klasik/Kısa/Çırak seed 11 (hybrid: economy via functions, attack/turn/event/end via UI)", "turns": 122, "attacks": 259, "result": "win(fetih)@123 score 3148 mp 74", "errors": 0},
+  {"id": "e2e-5", "size": "1440x880", "cfg": "Börü/Destan/Kısa seed 5 (hybrid)", "turns": 19, "attacks": 7, "result": "lose@20 mp 65", "errors": 0}
+ ],
+ "battleFlow": {"onemliOrdinaryWin": "toast+card+log, no modal", "capitalCapture": "modal res", "gameEnding": "modal res; Esc and Tamam both reach over + meta", "heavyLoss": "modal res", "hepOrdinaryWin": "modal res", "fxQueueAfter12Attacks": 0},
+ "hiddenInfo": {"leaksFound": 0, "regionsChecked": 39, "chanceError": {"n": 221, "meanAbsPp": 1.2, "maxAbsPp": 69.6, "over10pp": 8, "over30pp": 2}},
+ "perf": {
+  "1440x1x": {"drawOverlayMs": 4.8, "refreshMs": 5.2, "renderMs": 0.32},
+  "1440x4x": {"drawOverlayMs": 19.0, "refreshMs": 20.1, "renderMs": 1.24},
+  "375x1x": {"drawOverlayMs": 4.9, "refreshMs": 5.2},
+  "375x4x": {"drawOverlayMs": 19.0, "refreshMs": 19.9},
+  "long166turns": {"refreshMs": 7.4, "drawOverlayMs": 7.7, "heapMBafterGC": 23.2, "saveKB": 49},
+  "loadSavedGame": {"1x": {"readyMs": 1090, "maxLongTaskMs": 351}, "4x": {"readyMs": 4111, "maxLongTaskMs": 1354}},
+  "memory14newGamesHeapMB": [22.4, 23.5],
+  "domNodesStable": true
+ },
+ "audio": {"ctxBeforeInteraction": 0, "offline": {"clip": 0, "nan": 0, "maxPeakDbFS": -11.1, "musicPeakDbFS": [-21.2, -19.1, -21.1]}, "voiceCap": 12, "heardByEar": false},
+ "oldFindings": {
+  "B1": "closed", "B2": "closed", "B3": "closed", "B4": "closed", "B5": "closed", "B6": "closed", "B7": "closed", "B8": "closed",
+  "B9": "partial (G5)", "B10": "mostly closed (new G1, G2)", "B11": "closed (computed contrast 0 low; --tx-dis intentional)", "B12": "closed except G3, G9"
+ },
+ "findings": [
+  {"id": "G1", "sev": "orta", "title": "HUD strip clips resource chips at <=1280 px, tablet and mobile; 1440 with coalition/declare chip", "evidence": "kb2: sw 1037 cw 743 @1100; sw 1037 cw 923 @1280"},
+  {"id": "G2", "sev": "orta", "title": "Mobile end-turn FAB covers row buttons even at scroll end (half sheet)", "evidence": "mob2: half/bolge.tesis ['35 7'], half/bolge.genel ['%100','%100'] @375"},
+  {"id": "G3", "sev": "düşük", "title": "Duplicate ids modal/mTitle while closing ghost exists", "evidence": "monkey x2"},
+  {"id": "G4", "sev": "düşük", "title": "Attack chance on pills/markers/hover lacks 'tahmini'; estimate error up to 69.6 pp", "evidence": "leak2 n=221"},
+  {"id": "G5", "sev": "düşük", "title": "Touch targets <44 px remain (wizard links, HUD chips, switches)", "evidence": "b9, c_ui2"},
+  {"id": "G6", "sev": "düşük", "title": "Saved-game load: longest task 351 ms (1x), 1.35 s (4x); transient heap 115-155 MB", "evidence": "load.mjs"},
+  {"id": "G7", "sev": "düşük", "title": "46 inline px font sizes do not scale with text size", "evidence": "txt1_1440.json"},
+  {"id": "G8", "sev": "düşük", "title": "Tech panel overflows at 130% text on 768/812", "evidence": "acc1s_768.json"},
+  {"id": "G9", "sev": "düşük", "title": "Tablist lacks Home/End", "evidence": "kb2"},
+  {"id": "G10", "sev": "düşük", "title": "Context pill hidden near map edge without feedback (code reading + 2 misses)", "evidence": "play-w2/w3 pillMiss 2"},
+  {"id": "G11", "sev": "düşük", "title": "Wizard cards animate width 0->full (layout shift)", "evidence": "card1.mjs"},
+  {"id": "G12", "sev": "bilgi", "title": "Lowercase ASCII 'sifirla' rejected by tr-TR uppercase", "evidence": "set1"},
+  {"id": "G13", "sev": "bilgi", "title": "Mobile sheet state not kept across page reload", "evidence": "mob1"},
+  {"id": "G14", "sev": "bilgi", "title": "Wrong-typed META fields silently defaulted (old B17)", "evidence": "d_robust"}
+ ],
+ "notTested": ["real touch devices", "real audio by ear", "screen readers/axe-core", "Safari/Firefox", "real tab hiding", "real keyboard/visual viewport", "CVD pixel simulation", "pure-UI full victory", "G10 edge cases individually", "long-session memory", "midnight Date rollover"]
+}

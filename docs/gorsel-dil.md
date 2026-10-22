@@ -1234,3 +1234,41 @@ Uygulanan: Aşama 7 (ses motoru, 27 tarif + alt türler, öncelik/toplama, kanca
 - Kurallar: aynı efekt arka arkaya → 1; 5 efekt aynı anda → yalnız `fetih` + `uyari`; 30 eşzamanlı ton → 12 çaldı, 18 düştü.
 - Müzik açık/kapalı (10 sn, seçim nabzı açık): ana iş parçacığı görev yükü 1440: %7,5 → %8,5 (barış), %7,6 (savaş); 375 + 4× CPU: %7,1 → %7,1 / %6,6. Kare p95 16,7-16,8 ms her durumda. `refresh` ort. 1440 4,7-5,0 ms, 375 4× 14,5-16,1 ms.
 - Ses duyularak test edilmedi: tüm tarifler ve müzik yalnız sayısal ölçüldü; kazanç dengesi kulakla onaylanmalı.
+
+## Uygulama notları (final QA)
+
+Sürüm 0.9.0 (`GAME_VERSION`; yardım, hakkında, hata raporu ve sihirbaz metinleri sürümü buradan okuyor). `SAVE_VER` 8, oyun mantığı, denge, RNG değişmedi: `baseline-v4` `rows` 12/12 + `rowsOff` 12/12 birebir, `randLeak` 0, `checkMaps` 20/20 + 12/12, `evUnit(7)` 43 satır 0 hata 0 `bad`, sim boyunca `AudioContext` 0. Dosya 412,9 → 420,4 KB (gzip 149,5 KB). Kaynak rapor: `tests/qa-gorsel.md`.
+
+**Düzeltmeler**
+- **G1 HUD önceliği:** `#resw` = `.resi>#res` (Yıl + 6 kaynak + nüfus/moral/asker) + `#res2` (ikincil: zafer, koalisyon, "Zaferi ilan et") + `#hmore` ("⋯" açılır). `hudFit()` sığmayınca `header`'a sırayla sınıf ekler: `c1` eğilim yalnız ok → `fold` ikinciller açılıra → `c3` eğilim ve nüfus üst sınırı gizli, sıkı çip → `c4` wordmark ve "Yıl" sözcüğü gizli → `c5` küçük ikon/sayı → `c6` ses düğmesi gizli (Ayarlar ve M ile erişilir). Katlanmış "⋯" çipi en önemli ikincilin ikonunu ve rengini taşır (ilan: altın, koalisyon: kırmızı). Mobilde (<768) `c1 c3 c4 c5 fold` sabit, şerit kaydırılır; sıra: kritik çip, tahıl, altın, asker, sonra diğerleri (CSS `order`). Esc ve dış tık açılırı kapatır, açılınca odak ilk öğede.
+- **G2:** yarım çekmecede `#panel` alt dolgusu yanlış (yüzde dolgu genişliğe göre hesaplanıyordu): `(100dvh − HUD − güvenli alan)×0,92 − 50dvh + 96px + alt güvenli alan`.
+- **G3:** kapanış hayaleti kimliksiz (`id`, `aria-labelledby`, iç kimlikler silinir; `.mgc` sınıfı); stil seçicileri `:is(#modal,.mgc)` (19 seçici).
+- **G4:** `atkEx/chShow/chTxt/chSay` (yalnız gösterim). Casusluk, ifşa ya da boş bölge yoksa şans her yüzeyde "~%N" ve %5-%95'e sıkıştırılır: hedef işareti, bağlamsal hap, ipucu (+ "tahmini (Casusluk kesin değer verir)"), bölge listesi düğmesi (+ `data-tip`, `aria-label`), saldırı penceresi, ekran okuyucu ("tahmini yüzde N"). `previewAtk` aynı.
+- **G5:** dokunmatik ya da ≤1099 px: `.btn.sm` 44 px, alt sekmeler 44 px, `.lnk` 14 px dolgu + eksi kenar boşluğu (düzen aynı, alt çizgi `text-decoration`); anahtarlar `label.swl` (52×44) içinde.
+- **G7:** satır içi ve CSS px yazılar token'a: 57 satır içi (`font-size` 55 + `font:11px monospace` 2) + CSS 11 (2 `font-size`, 9 `font:` kısaltması) = 68. Tam değerler `--t-*`, ara değerler `calc(Npx*var(--ts))`.
+- **G8:** 768-1099 px'te teknoloji ağacı mobil düzeni (dal başlığı üstte, 4 sütun).
+- **G9:** sekmelerde Home/End. **G10:** hap kenarda gizlenmez, görünür alana kenetlenir (`.edge` halkası), harita kontrolleri ve mobil FAB bölgesinden kaçar. **G12:** `sifirla` (ASCII) kabul.
+
+**Ölçümler (başsız Chrome; önce = d860244, sonra = 0.9.0)**
+
+| Bulgu | Önce | Sonra |
+|---|---|---|
+| G1 görünmeyen birincil çip (1440/1280/1100/768, normal + koalisyon/ilan + %130) | 1440: 0; 1280 %130: 1; 1100: 2-3; 768: 6 | 768 dahil hepsinde 0; ikinciller açılırda, sayfa taşması 0 |
+| G1 mobil ilk görünen | 375/390: Yıl, tahıl, odun (+kesik) | Yıl, tahıl, altın, asker (%130'da asker kayar) |
+| G2 FAB'ın örttüğü panel düğmesi (375+390, 3 durum × 10 sekme) | 1 + 2 | 0 + 0 |
+| G3 kapanışta tekrar eden kimlik (3 pencere) | 2-30 | 0 |
+| G4 tahmini şansta "~" (5 yüzey, 73 örnek) | yalnız pencere 73/73, diğerleri 0/73 | 5 yüzeyde 73/73, tutarlılık 73/73; gösterilen %100: 33 → 0; en büyük sapma 69,6 → 64,6 puan |
+| G5 vuruş alanı < 44 (dokunmatik/dar) / < 40 (1440), elementFromPoint sondası | 33 | 0 (kutu ölçütüyle 82 → 70; kalanlar HUD çipi 36 px kutu + ±4 px vuruş alanı) |
+| G7 %130'da ölçeklenmeyen metin (10 ekran) | 1440/768/812: 33, 375: 23 | 0 |
+| G8 Teknoloji paneli yatay taşma %130 | 768, 812×375 | yok |
+| G9 End/Home | yok | Kayıt/Bölge |
+| G10 kenarda hap (4 kenar + 4 köşe + dışarıda; 1440, 768, 375) | 9/10 gizli | 10/10 görünür, tıklanabilir, kontrol/FAB örtüşmesi 0 |
+
+Regresyon: QA `c_ui2` (5 boyut × 26 ekran) sayfa/pencere taşması 0, kontrast `lowN` 0, adsız düğme 0, hata 0.
+
+**G6 (açılış) — değiştirilmedi.** Kayıtlı açılış 1x: önce 1106-1118 ms (en uzun görev 352-353), sonra 1099-1134 (355-380); aşama 4 öncesi yapı (`v46/index-before.html`) 1084-1139 (342-389). 4x: 4,20 → 4,26-4,28 sn. Profil: ~1 sn'nin tamamına yakını harita üretimi (`runGA` → `genMapG` 0,44 sn + `buildArtG` 0,51 sn); örnekleme yığın profili açılışta ~1,27 GB geçici ayırma (çoğu `buildArtG`), aşama 4 öncesiyle aynı. Yeni efekt katmanı ve `icoImg` profilde görünmüyor (`drawOverlay` 22 ms, `mgeo` 10 ms). +%21 ve 115-155 MB tepe ölçüm gürültüsü/GC zamanlaması; ucuz ve risksiz bir iyileştirme yok (harita üretimine dokunmak `checkMaps`'i riske atar).
+
+**Yapılmayanlar / riskler**
+- G11 (kart animasyonu düzen kayması) ve G13 (çekmece durumu yenilemede sıfırlanır) bilerek bırakıldı.
+- `hudFit` her başlık değişiminde en çok 6 zorunlu düzen ölçümü yapar (ölçülen açılışa etkisi gürültü içinde).
+- Gerçek dokunmatik cihaz, Safari/Firefox, ekran okuyucu ile denenmedi; dokunma ölçümleri CDP emülasyonu ve `elementFromPoint` sondasıyla.

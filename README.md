@@ -1,47 +1,50 @@
 # ⚔ Fetih
 
-Tarayıcıda oynanan, tek oyunculu, tur tabanlı bir strateji ve fetih oyunu. Tek bir bölgeden başlarsın. Kaynak toplar, bilgi geliştirir, ordunu büyütür ve rakip devletleri fethedersin.
-
-## Nasıl oynanır?
+Tarayıcıda oynanan, tek oyunculu, tur tabanlı bir fetih stratejisi. Tek bir başkentle başlarsın; kaynak toplar, nüfusu ve ordunu büyütür, teknoloji geliştirir ve rakip devletleri fethedersin. Her oyun farklı: hanedan, kural kartları, harita türü, rakip kişilikleri ve olaylar her seferinde yeni bir problem sunar.
 
 🎮 **Hemen oyna:** https://osmanmetinkaya.github.io/fetih/
 
-
-Kurulum gerekmez. `index.html` dosyasını tarayıcıda açman yeterli. Oyun ilerlemesi tarayıcıya otomatik kaydedilir.
+Kurulum yok; `index.html` dosyasını tarayıcıda açman yeterli. İlerleme tarayıcıya otomatik kaydedilir.
 
 ## Özellikler
 
-- **Büyük ve gerçekçi harita.** Yaklaşık 55 oynanabilir bölge var. Yakınlaştırılıp kaydırılabilen haritada dağlar, ormanlar, tarlalar, nehirler ve yollar ayrı çıkartmalar değil, tek bir yüzeyin parçası: hepsi aynı ışıkla gölgelenen rölyefe işlenmiş. Dağlar yükseklikten doğar, ormanlar tek tek ağaç taçlarından oluşur, tarlalar sürülmüş parseller halindedir.
-- **Arazi önemli.** Sıradağlar geçilmez. Dağ geçitleri savunmaya +%40 verir. Köprüsüz nehir geçişi saldırıyı zayıflatır, süvariyi daha da çok. Dağ ve orman savunmayı güçlendirir.
-- **Ganimet.** Fethettiğin bölgenin stokundan yalnızca %30–70'i ele geçer, kalanı yangın ve yağmada zayi olur. Az kayıpla kazanırsan daha çok kurtarırsın.
-- **Nüfus.** Askerler bölgenin nüfusundan çıkar. Nüfus tahılla büyür. Çok asker almak işgücünü ve dolayısıyla üretimi düşürür.
-- **Kuruluş aşaması.** Oyun başında verilen 260 akçeyle başkentine 1–2 kaynak tesisi satın alırsın.
-- **Kaynak tesisleri.** Tarla, kereste, taş ocağı, demir madeni, pazar ve medrese var. Fethettiğin bölgelerde tarımdan gelen tahılla yenilerini kurarsın. 5 seviyeye kadar gelişirler ve verimleri araziye göre değişir.
-- **Her kaynağın askeri bir rolü var:**
-  - Tahıl ikmali sağlar.
-  - Odun kuşatmada kullanılır.
-  - Taş sur yapmaya yarar.
-  - Demir silah donanımı sağlar.
-  - Altın asker ve maaş için gerekir.
-  - Bilgi teknoloji açar.
-- **Askeri kuruluşlar.** Karakol → Kışla → Talimhane → Ordugâh → Harbiye. Her kademe otomatik üretimi hızlandırır ve yeni bir birlik türü açar.
-- **Birlik türleri:**
-  - 🗡️ Piyade: dengeli
-  - 🏹 Okçu: savunmada güçlü
-  - 🐎 Süvari: ovada güçlü hücum birliği
-  - 🪨 Kuşatma Takımı: surları kırar
-  - ⚔️ Yeniçeri: seçkin birlik
-- **Teknoloji ağacı.** 6 dal ve her dalda 4 kademe var. Her teknolojinin kendi detay penceresi açılır.
-- **Yapay zekâ rakipler.** 4 rakip devlet ve bağımsız kabileler var.
-
-## Teknik
-
-Tek bir HTML dosyası: düz JavaScript ve Canvas. Dış bağımlılık yok.
+- **Her oyun farklı.** 6 hanedan (+ Klasik), 14 kural kartı, 4 harita türü (Kıta, Nehir Vadisi, Dağ Kalesi, Körfez), 3 oyun boyu, 4 zorluk. 4 adımlı yeni oyun sihirbazı ve tek tıkla "Hızlı Başla".
+- **Akıllı rakipler.** 4 yapay zekâ devleti saldırgan, tüccar, savunmacı ya da fırsatçı kişilikle oynar; koalisyon kurabilirler.
+- **Olaylar ve ikilemler.** Her birkaç yılda bir seçimli olaylar çıkar.
+- **3 zafer yolu.** Fetih, Medeniyet (Büyük Eser) ve Hegemonya. İstersen "Ferman" ile hedefini önceden ilan edersin.
+- **Büyük, gerçekçi harita.** Yaklaşık 55 bölge; dağlar, ormanlar, tarlalar, nehirler ve yollar tek bir rölyefe işlenmiş. Geçilmez sıradağlar, dağ geçitleri, nehirler ve köprüler savaşı belirler.
+- **Ekonomi ve nüfus.** 6 kaynağın her birinin askeri bir rolü var. Askerler nüfustan çıkar; çok asker almak üretimi düşürür. Tesisler 5 seviyeye kadar gelişir.
+- **Ordu.** Karakol → Kışla → Talimhane → Ordugâh → Harbiye; her kademe yeni bir birlik açar (piyade, okçu, süvari, kuşatma, yeniçeri). Fetihte ganimetin yalnızca bir kısmı ele geçer, kalanı zayi olur.
+- **6 dallı teknoloji ağacı** (dal başına 4 kademe).
+- **Miras ve "bir oyun daha".** Her oyun sonunda miras puanı (MP) kazanırsın; hanedan, kart ve harita açarsın. Oyun sonu ekranı skor, rekor, rütbe ve ödül sırasını gösterir; tek tıkla yeni oyuna geçersin.
+- **Günlük meydan okuma** (tarihten tohum), seri, paylaşılabilir sonuç kodu ve 25 başarım.
+- **Oyun gibi arayüz.** Temiz modern strateji teması, tek stil SVG ikonlar, animasyonlar, WebAudio ile sentezlenmiş ses efektleri ve isteğe bağlı üretken müzik (varsayılan kapalı).
+- **Masaüstü ve mobil.** Mobilde alt çekmece, başparmakla ulaşılan "Turu Bitir" düğmesi ve ≥44 px dokunma hedefleri.
+- **Erişilebilirlik.** Klavye kısayolları, odak halkası, ARIA rolleri, renk körü modu, yüksek kontrast, yazı ölçeği, azaltılmış hareket.
+- **Güvenli kayıt.** Sürümlü kayıt ve göç, bozuk kayıt yedeği, dışa/içe aktarma, tarayıcı kaydı kapalıyken uyarı.
 
 ## Kontroller
 
-- **Sol tık:** bölge seçer.
-- **Sağ tık:** kendi bölgen seçiliyken komşu bölgeye saldırır ya da asker taşır.
-- **Sürükle / tekerlek:** haritayı kaydırır ve yakınlaştırır.
-- **Çift tık:** bölgeye yakınlaştırır.
-- **Sağ panel:** Bölge, Ekonomi, Ordu, Teknoloji ve Kayıt sekmeleri. Tüm yönetim tek yerde.
+| | Masaüstü | Mobil |
+|---|---|---|
+| Bölge seç | sol tık | dokun |
+| Saldır / asker taşı | seçili bölgeden komşuya sağ tık ya da "Saldır %N" düğmesi | komşuya dokun → "Saldır %N" |
+| Harita | sürükle, tekerlek, çift tık | sürükle, iki parmak |
+| Tur bitir | Boşluk / Enter | sağ alttaki düğme |
+
+Kısayollar: `1-6` sekmeler, `M` sesi kapat/aç, `F` seçili bölgeye git, `?` yardım, `Esc` kapat. Ayarlar üst çubuktaki dişli simgesinde.
+
+## Teknik
+
+Tek bir HTML dosyası: düz JavaScript ve Canvas, dış bağımlılık yok (ses dosyası, font ya da kütüphane yok; ikonlar ve sesler kodla üretilir). Statik olarak yayınlanır.
+
+## Geliştirme ve test
+
+```bash
+python3 -m http.server 8123   # sonra http://localhost:8123/
+```
+
+- `tests/index.html`: oyunu bir iframe'de açıp bot ile yüzlerce oyun koşturan simülasyon (`runSim`, `simJob`). Kullanım: `tests/README.md`.
+- `tests/baseline-v4.json`: denge taban çizgisi; oyun mantığı değişmediyse birebir tekrarlanmalıdır.
+- `tests/qa-*.md`, `tests/economy-1c.md`: QA ve ekonomi/denge raporları.
+- `docs/faz1-tasarim.md`, `docs/gorsel-dil.md`: oyun tasarımı ve görsel dil belgeleri; `docs/ikonlar.svg`: ikon seti.
