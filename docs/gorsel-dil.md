@@ -1295,3 +1295,27 @@ Regresyon: QA `c_ui2` (5 boyut × 26 ekran) sayfa/pencere taşması 0, kontrast 
 
 **Riskler.** Windows/Android/Linux gerçek cihazda ekran görüntüsüyle doğrulanmadı (yalnız yığın beklentisi). Sitka Text'in rakam biçimi sürüme göre değişebilir; gözlemde eski stil görülürse Sitka yığından çıkarılır (Cambria düz rakamlıdır). Geniş fallback fontlarda HUD `c3/c4/c5` sıkıştırma ve "⋯" katlama daha erken devreye girer; öncelikli 9 çip görünür kalır.
 
+
+---
+
+## Uygulama notları (Saray Haritacısı, aşama 1)
+
+Sürüm 0.10.0. Kaynak: `docs/oyun-analizi.md` §4b-A, §4c, §5 "Aşama 1". Oyun mantığı, denge, kayıt biçimi (`SAVE_VER` 8), RNG değişmedi; kimlikler (`#modal/#modalBg/#panel/#tabs/#endBtn/#view`) ve fonksiyon adları korundu.
+
+**Malzeme ve kapsam (kullanıcı kararı: okuma yüzeylerinin hepsi parşömen).** `:root` token'ları artık parşömen değerleridir (sağ panel sayfası, sekme içerikleri, bütün pencereler, teknoloji, tablolar, toast, ipucu, uyarı şeritleri). Okuma yüzeyi olmayan üç kap, `header`, `#mapWrap`, `.foot`, aynı token adlarını koyu deri cilt değerleriyle yeniden tanımlar; harita içindeki okuma yüzeyleri (`#hint`, `#tip`) `.parsomen` sınıfıyla parşömene döner. Bileşen CSS'i token adlarını kullandığı için aynı kural iki yüzeyde doğru renk verir. Yeni token'lar: `--gold/--gold-hi/--gold-lo` (tezhip), `--cilt/--deri/--deri-2/--deri-3`, `--paper`, `--cetvel` (çift altın çizgi, `box-shadow: inset`), `--tex-parch/--tex-cilt` (doku), `--orn-*` (köşebent SVG), `--rozet` (şemse madalyon), `--font-sc`, `--font-sys`.
+
+**Renk ve kontrast.** Parşömen `#E9DDC1` / `#E0D2B2` / `#D9C9A3`; mürekkep `#231A12` (12,7:1), ikincil `#54402B` (7,3:1); vurgu metni bronz `#6A480E`; durum renkleri parşömene göre yeniden hesaplandı (iyi `#2E5E29`, kötü `#962819`, uyarı `#80420A`, bilgi `#1E4877`; hepsi `bg-2` üstünde ≥ 4,5). Deri üstünde krem `#F1E6CC`, altın `#D9AE55`. Kaynak renkleri iki takım: deride açık, parşömende koyulaştırılmış (ikon ≥ 3:1). Yüksek kontrast kipi iki kapsamda ayrı token'larla (ölçülen en düşük 7,04:1); renk körü kipinde iyi/kötü lacivert/kahve-turuncuya döner (yeşil/kırmızı ayrımına dayanmaz). Eski `:root.hcm` lacivert tema satırı kaldırıldı (parşömeni bozuyordu).
+
+**Biçim.** `--rad-*` 2-3 px; bütün 8/10/14/999 px köşeler ezildi (yalnız daire biçimli küçük noktalar, başarım madalyonu, sürgü tutamağı yuvarlak). `--e-1` gömme, `--e-2` plaka kenarı (sert 2 px), `--e-3` yalnız pencere; "iç üst 1 px beyaz + yumuşak gölge" kalıbı yok. `--ease-back` = `--ease-out` (sıçrama kaldırıldı).
+
+**Doku.** `texInit()` açılışta bir kez, `mulberry32` tohumlu gürültüyle (Math.random yok) 160 px parşömen ve 96 px deri döşemesi üretir; dikişsiz (dört kaydırılmış örneğin karışımı), alfa parşömende ≤ ,05, deride ≤ ,08. Süre `window.__texMs` (ölçülen 14-20 ms). `?test=1` kipinde üretilmez.
+
+**Çerçeve ve süs.** Pencere ve panel sayfası: `--cetvel` + dört köşede köşebent (`background-image`; kaydırılan kapta köşede sabit). Üst bant: deri + altta çift altın çizgi. Harita: `#mapWrap::after` deri kenar (masaüstü 7 px, mobil 4 px) + iç çift altın cetvel + köşebentler + hafif vinyet; `pointer-events:none`, harita kontrollerinin altında. Süs düğmelerde ve satırlarda yok.
+
+**Tipografi.** Gömülü WOFF2 alt kümeleri (base64): Alegreya 400-700 değişken (gövde, sayı; `lnum,tnum,smcp,c2sc,locl` korunur), Cinzel 500-700 (başlık `h2/h3`, sözcük işareti, yıl kartı, madalyon yazısı, şan), Alegreya SC Medium (bölüm etiketi `h4`, sekme, tablo başlığı). Cinzel yalnız büyük harf tasarımıdır: küçük harfler küçük büyük harf olarak çizilir; Türkçe `i` için `locl` (TRK) alt kümede tutuldu, `lang="tr"` ile noktalı küçük İ görünür (doğrulandı: "Fetih", "Sarıgöl", "Bilimler"). `font-synthesis:none`: sahte kalın/eğik yok. `h4` artık gri BÜYÜK HARF değil, mürekkep-ikincil küçük büyük harf + baklava + sönen çizgi. Canvas: `MAPF` Alegreya; `fontInit()` fontlar çözülünce `hudFit`, `tabInk`, `drawOverlay`, `req` çağırır.
+
+**Bileşenler.** Üst bant çipleri kutusuz (zemin, kenar, gölge yok; 44 px yüksek), değerler arasında altın baklava ayraç; kritik kaynak alt çizgiyle. İstatistik karoları (`.stats`) noktalı önderli defter satırı. Birincil düğme deri plaka + altın çift kenar (sarı dolu şerit yok). Sekmeler kitap ayracı (etkin sekme sayfayla birleşir, altında altın kurdele). Teknoloji ağacı her genişlikte dal adı üstte, 4 kademe (`.treew` kap sorgusu ≤ 340 px'te 2 sütun); `.node` `overflow-wrap:normal; hyphens:manual`: sözcük içi bölünme 0. "Turu Bitir" → `#endBtn` şemse madalyon (16 dilim, deri göbek) + "Yılı Bitir / N. yıl" plakası; mobilde yüzen 68 px madalyon + plaka etiketi; daraltılmış tablet sütununda yalnız madalyon. Kalıcı ipucu şeridi 3. yıldan sonra gizlenir.
+
+**Metin.** `TX` nesnesi (index.html, `ROM`'dan sonra) arayüz metinlerinin tek kaynağıdır (orta dönem tonu): sekmeler Bölge / Hazine / Ordu / Zafer / Bilimler / Tarihçe, Yılı Bitir, Fermanı Oku, Sefere Çık, Beyliği Kur, Vezirin önerisiyle kur, Hücum! / Geri dur, Şan, Paylaş, Günün Seferi, boş durumlar, toast'lar. Birimler `/tur` → `/yıl`. Günlük (`S.log`) ve olay metinleri değişmedi (aşama 3).
+
+**Sapmalar.** (1) "Vakayiname" sekme adı 6 sekmeli 400 px panelde taşıyor (389 > 385 px ölçüldü); sekme adı "Tarihçe" oldu. (2) Analist "karışık" yüzey önermişti; kullanıcı kararıyla hepsi parşömen, üst bant ve harita çerçevesi deri. (3) "Günlük ferman" yerine "Günün Seferi": "Ferman" oyunda zafer beyanı mekaniğinin adı.

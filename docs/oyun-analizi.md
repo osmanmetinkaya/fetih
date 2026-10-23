@@ -502,3 +502,23 @@ Genel kurallar: her aşama tek başına yayınlanabilir; oyun mantığı (`econo
    (a) Dönem adlarıyla kalsın (Şan, Kesintisiz gün, Günlük ferman, Miras); (b) yalnız bitiş ve Miras ekranında görünsün, oyun içinde gizlensin; (c) olduğu gibi kalsın.
 5. **Font ve süs bütçesi?**
    (a) Tek aile, 2 dosya (Alegreya + Alegreya SC, ~90-115 KB; önerilen); (b) + İtalik (anlatı için, ~+60 KB; toplam ~170 KB); (c) daha ayırt edici bir başlık fontu (ör. Cinzel; +~30-40 KB, Türkçe glifleri alt kümede doğrulanmalı).
+
+## Aşama 1 sonucu (0.10.0)
+
+Uygulandı: parşömen okuma yüzeyleri + deri cilt çerçeve (kullanıcı kararı: okuma yüzeylerinin hepsi parşömen; üst bant ve harita kenarı deri), gömülü Cinzel + Alegreya + Alegreya SC (~82 KB WOFF2, base64 ~110 KB, OFL; lisanslar `docs/fontlar/`), açılışta üretilen doku, çift altın cetvel ve köşebentler, harita çerçevesi + vinyet, kutusuz üst bant, defter satırları, şemse "Yılı Bitir" madalyonu, kırık sözcük düzeltmesi, `TX` metin sabitleri (orta ton). Ayrıntı: `docs/gorsel-dil.md` "Uygulama notları (Saray Haritacısı, aşama 1)".
+
+Karne (başsız Chrome, 24 ekran × 2 boyut; önce = 0.9.3 af61c23, sonra = 0.10.0):
+
+| Ölçüt | 1440 önce → sonra | 375 önce → sonra |
+|---|---|---|
+| Görünür metinde gömülü font | %0 → %100 | %0 → %100 |
+| > 4 px köşe yarıçaplı öğe (daire hariç) | 477 → 0 | 317 → 0 |
+| Kutulu üst bant çipi | 11 → 0 | 6 → 0 |
+| Teknoloji sözcük içi bölünme | 20 → 0 | 0 → 0 |
+| Kontrast < 4,5 (büyük < 3) | 0 → 0 (en düşük 4,85) | 0 → 0 (5,1) |
+| 13 px altı metin / yatay taşma | 0 / 0 → 0 / 0 | 0 / 0 → 0 / 0 |
+| Kutu < 44 px hedef | 165 → 55 | 59 → 37 (< 40: 4) |
+| Tam görünen öncelikli HUD çipi (9) | 9 → 9 | 3 → 3 (mobilde kaydırılan şerit, önceki gibi) |
+| Doku + süslü ana yüzey | 0 → üst bant, panel, harita, pencere, toast | aynı |
+
+Kalan (aşama 2+): başlık ekranı, amblem/sancak, illüstrasyon, olay metinleri, mobilde haritanın üstündeki boş şerit, ses.
