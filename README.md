@@ -45,6 +45,6 @@ python3 -m http.server 8123   # sonra http://localhost:8123/
 ```
 
 - `tests/index.html`: oyunu bir iframe'de açıp bot ile yüzlerce oyun koşturan simülasyon (`runSim`, `simJob`). Kullanım: `tests/README.md`.
-- `tests/baseline-v6.json`: denge taban çizgisi (0.9.2, Fetih = bütün bölgeler; Medeniyet/Hegemonya karar penceresi); oyun mantığı değişmediyse birebir tekrarlanmalıdır.
+- `tests/baseline-v6.json`: denge taban çizgisi (0.9.2, Fetih = bütün bölgeler; Medeniyet/Hegemonya karar penceresi); oyun mantığı değişmediyse birebir tekrarlanmalıdır (0.9.3 serif tipografi sonrası da birebir).
 - `tests/qa-*.md`, `tests/economy-1c.md`: QA ve ekonomi/denge raporları.
 - `docs/faz1-tasarim.md`, `docs/gorsel-dil.md`: oyun tasarımı ve görsel dil belgeleri; `docs/ikonlar.svg`: ikon seti.

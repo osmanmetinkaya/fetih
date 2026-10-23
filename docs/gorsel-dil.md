@@ -152,36 +152,38 @@ JS tarafı: `FAC[k].col` dizileri yukarıdaki hex'lerle güncellenir (`[245,184,
 
 ## 3. Tipografi
 
-### 3.1 Font yığını (dış font yok)
+### 3.1 Font yığını (dış font yok, 0.9.3'ten beri serif)
 
 ```css
---font-ui: system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Helvetica Neue",Arial,sans-serif;
---font-num: ui-rounded,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; /* SF Rounded varsa sayılar yumuşar */
---font-mono: ui-monospace,"SF Mono",Menlo,Consolas,monospace; /* yalnız FTH-… kodu */
+--font-ui: Charter,"Bitstream Charter","Sitka Text",Cambria,"Palatino Linotype",Palatino,"Book Antiqua","Noto Serif","Droid Serif","Liberation Serif","Times New Roman",Times,serif;
+--font-display: "Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Charter,"Bitstream Charter",Cambria,"Noto Serif","Times New Roman",serif; /* h2, h3, wordmark, yükleme */
+--font-num: var(--font-ui);            /* sayılar gövde yığınıyla aynı (lining) */
+--num: lining-nums tabular-nums;       /* her sayısal alan: font-variant-numeric:var(--num) */
+--font-mono: ui-monospace,"SF Mono",Menlo,Consolas,monospace; /* YALNIZ kayıt metni textarea'ları (makine verisi) */
 ```
 
-Georgia/serif **kaldırılır** (`.title`, `h2`, `h3`, `#endSc`, `#loading`, harita etiketleri). Gerekçe: "temiz modern" yönü; Georgia'nın rakamları eski stil (değişken yükseklikte), skor sayacında titrer. Kimlik, sözcük işaretinde (wordmark) büyük harf + geniş harf aralığı + altın renkle sağlanır, serifle değil. Hepsi Türkçe glifleri (ç ğ ı İ ö ş ü, â î û) tam destekler.
+0.9.2'ye kadar arayüz sistem sans-serif kullanıyordu; arayüz "jenerik" durduğu için 0.9.3'te bütün metin (DOM + Canvas) serife geçti. Kural: **Georgia hiçbir yığında yok** (rakamları eski stil, değişken yükseklik; skor ve kaynak sayılarında titrer). Yığın üyelerinin hepsi varsayılan olarak düz (lining) rakam çizer; `font-variant-numeric:lining-nums` gövdede de açık (OpenType `lnum` destekleyen fontta garanti, desteklemeyende zararsız). Canvas'ta `font-variant-numeric` yok: harita etiketi/rozet yığını (`MAPF`) bu yüzden çalışma anında `--font-ui`'den okunur, yalnız lining rakamlı fontlar içerir. Hepsi Türkçe glifleri (İ ı Ğ ğ Ş ş Ç ç Ö ö Ü ü, Â Î Û) tam destekler (macOS'ta ölçüldü, bkz. uygulama notları).
 
 ### 3.2 Ölçek
 
-Taban: masaüstü 14 px, mobil 15 px (mobilde okuma mesafesi aynı, piksel yoğunluğu yüksek; `<520px` için `html{font-size:15px}` ve tüm ölçek `rem`).
+Taban: masaüstü 15 px, mobil 16 px (serif küçük boyda sans'tan zor okunur; gövde ≥ 15 px, ikincil metin ≥ 13 px). Bütün token'lar `calc(Npx*var(--ts))`; yazı ölçeği ayarı (%90/100/115/130) `--ts`'i değiştirir.
 
 | Token | Masaüstü | Mobil | Ağırlık | Satır yüksekliği | Kullanım |
 |---|---|---|---|---|---|
-| `--t-micro` | 11 px | 11 px | 600 | 1.25 | Yalnız harita etiketi altı, rozet yan sayısı; asla gövde metni |
-| `--t-xs` | 12 px | 12 px | 500 | 1.35 | Çip eğilimi (+3), tablo alt satırı, zaman damgası |
-| `--t-sm` | 13 px | 13.5 px | 400/500 | 1.4 | Panel gövdesi, açıklama |
-| `--t-md` | 14 px | 15 px | 400/600 | 1.45 | Varsayılan gövde, düğme etiketi |
-| `--t-lg` | 16 px | 17 px | 700 | 1.3 | Kart başlığı, olay seçeneği başlığı, HUD sayıları |
-| `--t-xl` | 20 px | 20 px | 700 | 1.25 | Panel başlığı (bölge adı `h2`) |
-| `--t-2xl` | 26 px | 24 px | 800 | 1.2 | Modal başlığı (olay, bitiş) |
-| `--t-3xl` | 40 px | 32 px | 800 | 1.1 | Skor sayacı, yıl geçiş kartı |
+| `--t-micro` | 13 px | 13 px | 600 | 1.25 | Teknoloji düğümü alt satırı, kademe başlığı; asla gövde metni |
+| `--t-xs` | 13 px | 13 px | 400/600 | 1.35 | Çip eğilimi (+3), tablo başlığı, `small`, zaman damgası |
+| `--t-sm` | 14 px | 14,5 px | 400 | 1.4 | Panel açıklaması, tablo gövdesi |
+| `--t-md` | 15 px | 16 px | 400/600 | 1.45 | Varsayılan gövde, düğme etiketi |
+| `--t-lg` | 17 px | 18 px | 700 | 1.3 | Kart başlığı, olay seçeneği başlığı, HUD sayıları |
+| `--t-xl` | 21 px | 21 px | 700 | 1.25 | Panel başlığı (bölge adı) |
+| `--t-2xl` | 27 px | 25 px | 700 | 1.2 | Modal başlığı (olay, bitiş), `--font-display` |
+| `--t-3xl` | 40 px | 34 px | 700 | 1.1 | Skor sayacı, yıl geçiş kartı |
 
-Ağırlıklar: 400 gövde, 500 etiket, 600 vurgu/düğme, 700 başlık ve sayı, 800 skor/wordmark. 300 ve altı kullanılmaz (koyu zeminde incelir).
+`small` öğeleri en az `--t-xs` (`max(.85em,var(--t-xs))`). Ağırlıklar: 400 gövde, 600 etiket/düğme (Charter/Cambria'da 600 = Bold yüzü), 700 başlık ve sayı. **800 kullanılmaz**: Charter ve Iowan'da 800 "Black" yüzüne düşer, çok kalın ve geniş. 300 ve altı kullanılmaz.
 
 ### 3.3 Sayılar
 
-- Her sayısal alan: `font-variant-numeric: tabular-nums lining-nums;` (bugün yalnız `.r b` ve `#endSc`'de var). Sayaç animasyonunda genişlik oynamasın.
+- Her sayısal alan: `font-variant-numeric: var(--num)` (= `lining-nums tabular-nums`). `tabular-nums` tek başına yazılmaz (lining'i sıfırlar). Sayaç animasyonunda genişlik oynamasın.
 - Biçim: binlik ayırıcı nokta, ondalık virgül (`fmtN` zaten `tr-TR`; `fmtX` virgüllü). HUD'da 10.000 üstü kısaltma: `12,4 B` (bin) yerine **tam sayı** tercih edilir (stoklar 4-5 haneyi nadiren geçer); 100.000 üstü `124 B`.
 - Eğilim: `+3`, `−2` (eksi için U+2212 `−`, kısa çizgi değil; tabular hizada genişliği `+` ile aynı). Sıfır: `±0` soluk.
 - Yüzde: `%62` (Türkçe yazımda işaret önde; kod zaten böyle).
@@ -189,10 +191,10 @@ Ağırlıklar: 400 gövde, 500 etiket, 600 vurgu/düğme, 700 başlık ve sayı,
 
 ### 3.4 Başlık stili
 
-- **Wordmark** "FETİH": 800, 15 px, `letter-spacing:.18em`, `--brand`, büyük harf **elle yazılı** (CSS dönüşümüne bırakılmaz).
-- **Bölüm etiketi** (`h4`, bugünkü küçük büyük harf başlıklar): 12 px, 700, `letter-spacing:.08em`, `--tx-2`, `text-transform:uppercase`. Altında 1 px `--line` yok; yukarı 20 px boşluk yeter.
-- **Panel başlığı** (`h2` bölge adı): 20 px 700 `--tx-1`, solunda 12 px sancak rozeti (şekilli, bölüm 2.6).
-- **Modal başlığı**: 26 px 800; ikon 28 px solda, başlıkla aynı satır; alt başlık (yıl, olay türü) 13 px `--tx-2`.
+- **Wordmark** "FETİH": `--font-display` 700, 16 px, `letter-spacing:.14em`, `--brand`, büyük harf **elle yazılı** (CSS dönüşümüne bırakılmaz).
+- **Bölüm etiketi** (`h4`, küçük büyük harf başlıklar): `--font-ui` 13 px, 700, `letter-spacing:.06em` (büyük harfte hafif açıklık), `--tx-2`, `text-transform:uppercase`. Küçük harfli metinde `letter-spacing` her zaman 0.
+- **Panel başlığı** (`h3` bölge adı): `--font-display` 21 px 700 `--tx-1`, solunda sancak rozeti (şekilli, bölüm 2.6).
+- **Modal başlığı**: `--font-display` 27 px 700; ikon 28 px solda, başlıkla aynı satır; alt başlık (yıl, olay türü) 14 px `--tx-2`.
 
 ### 3.5 Türkçe tuzakları
 
@@ -714,7 +716,7 @@ Oyunda "görüş" yalnız asker sayısını gizliyor (`vis(i).txt='?'`, Sisli Ha
 
 ### 8.5 Etiket tipografisi ve LOD
 
-Etiketler `--font-ui` 700 (Georgia kaldırılır), 2,8 px `rgba(16,19,26,.85)` hale. Oyuncunun bölgeleri `#FFE2A0`, diğerleri `#F1F3F7` (bugünkü gibi). Başkent etiketi büyük harf ve `letter-spacing:.06em` (`toLocaleUpperCase('tr-TR')`).
+Etiketler `--font-ui` (serif, `MAPF`) 700, 13×clamp(k,.85,1,3) px, 3,4 px `rgba(16,19,26,.85)` yuvarlak hale (0.9.3). Oyuncunun bölgeleri `#FFE2A0`, diğerleri `#F1F3F7` (bugünkü gibi). Başkent etiketi büyük harf ve `letter-spacing:.06em` (`toLocaleUpperCase('tr-TR')`).
 
 | Zoom (`cam.z`) | Görünen |
 |---|---|
@@ -1272,3 +1274,24 @@ Regresyon: QA `c_ui2` (5 boyut × 26 ekran) sayfa/pencere taşması 0, kontrast 
 - G11 (kart animasyonu düzen kayması) ve G13 (çekmece durumu yenilemede sıfırlanır) bilerek bırakıldı.
 - `hudFit` her başlık değişiminde en çok 6 zorunlu düzen ölçümü yapar (ölçülen açılışa etkisi gürültü içinde).
 - Gerçek dokunmatik cihaz, Safari/Firefox, ekran okuyucu ile denenmedi; dokunma ölçümleri CDP emülasyonu ve `elementFromPoint` sondasıyla.
+
+---
+
+## Uygulama notları (serif, 0.9.3)
+
+**Tek kaynak.** Bütün yazı aileleri `:root`'taki `--font-ui`, `--font-display`, `--font-num`, `--num` token'larından gelir; `button,input,select,textarea,optgroup` aileyi devralır; satır içi `font-size`'lar token'a bağlandı (12,5/11,5/10,5/13,5 px kalıpları kaldırıldı). Canvas: `MAPF = getComputedStyle(:root).--font-ui` (harita etiketi, rozet, hedef yüzdesi, ganimet yazısı, bitiş grafiği). Tek bilinçli istisna: kayıt metni textarea'ları (`copyText`, `showImport`) makine verisi olduğu için `--font-mono`.
+
+**Ölçek değişiklikleri (0.9.2 → 0.9.3).** Masaüstü micro/xs/sm/md/lg/xl/2xl: 11/12/13/14/16/20/26 → 13/13/14/15/17/21/27 px; mobil sm/md/lg/2xl/3xl: 13,5/15/17/24/32 → 14,5/16/18/25/34 px. Bütün 800 ağırlıkları 700'e çekildi (Charter Black'e düşmesin). `h4` .08em → .06em, wordmark .18em → .14em, yüzde halkası −.02em → 0. "⋯" rozet sayısı 10 px sistem fontu → 12 px serif. `small` en az 13 px.
+
+**Harita.** Etiket `13*clamp(k,.85,1.3)` px (eski 12*clamp(k,.8,1.3)), 700, hale 3,4 px yuvarlak birleşim; asker rozeti `max(10,13k)` px, rozet yüksekliği `max(16k, fs+4)`; yetiştirme sayacı `max(9,10k)` px 700; hedef yüzdesi 12 px; renk körü etiketi `max(10,10,5k)` px; ganimet yazısı 14 px.
+
+**Platform düşüşü (beklenen).**
+| Platform | `--font-ui` | `--font-display` | Not |
+|---|---|---|---|
+| macOS / iOS | Charter (ölçüldü: macOS 26, Chrome) | Iowan Old Style (ölçüldü) | Charter: lining + tabular, Türkçe tam; 400/700/900 yüzleri (600→Bold) |
+| Windows 10/11 | Sitka Text (yoksa Cambria) | Palatino Linotype | Cambria/Palatino Linotype lining; Sitka değişken font, Chrome/Edge'de doğru seçilir |
+| Android | Noto Serif (sistemin `serif`'i) | Noto Serif | lining; bazı eski cihazlarda Droid Serif |
+| Linux | Bitstream Charter (varsa) → Noto Serif → Liberation Serif → `serif` (genelde DejaVu Serif) | aynı | DejaVu Serif geniştir: HUD daha erken katlanır (`hudFit` bunu ölçerek yapar) |
+
+**Riskler.** Windows/Android/Linux gerçek cihazda ekran görüntüsüyle doğrulanmadı (yalnız yığın beklentisi). Sitka Text'in rakam biçimi sürüme göre değişebilir; gözlemde eski stil görülürse Sitka yığından çıkarılır (Cambria düz rakamlıdır). Geniş fallback fontlarda HUD `c3/c4/c5` sıkıştırma ve "⋯" katlama daha erken devreye girer; öncelikli 9 çip görünür kalır.
+
