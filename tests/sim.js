@@ -54,6 +54,9 @@ function botFactory(){
    own().forEach(i=>{const r=S.regions[i],front=MAP.regions[i].adj.some(j=>S.regions[j].owner!==0);const m0=r.mil;if(S.res.altin>C.milAltin&&(r.capital||r.mil||(front&&own().length>=C.milFrontOwn))&&(!med||r.mil<5&&okSpend(MIL[r.mil+1]?MIL[r.mil+1].cost:{})))upgradeMil(i);if(r.mil!==m0)acts++;
     if(r.mil>=C.suvAt)r.autoU=MAP.regions[i].adj.some(j=>S.regions[j].owner>0&&['ova','vadi'].includes(MAP.regions[j].terrain))?'suv':'piy';
     const sm=med&&own().length>=10?Math.max(C.surMax,maxFort(i)):C.surMax;if(front&&r.fort<sm&&S.res.tas>C.surTas&&(!med||okSpend(surCost(i)))){buildSur(i);acts++}});
+   // G2 (0.13.0): atölyeler: kuruluşlu bölgede boş yuvaya Demirhane → Zırhhane → Yayhane, sonra seviye yükseltme (altın eşiği milAltin). rules 1'de yok
+   if(typeof buildWS==='function'&&G1())own().forEach(i=>{const r=S.regions[i];if(!r.mil||unrOf(i))return;const ws=wsList(i);if(ws.length<wsSlots(i)&&S.res.altin>C.milAltin){const t=!ws.some(w=>w.t==='demirhane')?'demirhane':!ws.some(w=>w.t==='zirhhane')?'zirhhane':'yayhane';const n0=ws.length;buildWS(i,t);if(ws.length>n0)acts++}
+    ws.forEach((w,k)=>{if(w.lv<wsMaxLv(i,w.t)&&S.res.altin>C.milAltin){const l=w.lv;upWS(i,k);if(w.lv>l)acts++}})});
    const reserve=e.up.altin*C.resMul+C.resAdd+altRes();own().forEach(i=>{const r=S.regions[i];if(r.mil&&S.res.altin>reserve){recruit(i,r.mil>=C.okcMil&&brnd()<C.okcP?'okc':'piy',Math.max(0,Math.floor(S.regions[i].pop-maxPop(i)*C.popKeep)));acts++}});
    // Hegemonya: tutulmayan eski başkentlere uzaklık (çok kaynaklı BFS); saldırı ve asker kaydırma buna göre
    let dT=null;const hc=heg?hegHeld().filter(x=>x.st==='own').map(x=>x.i):[];if(heg){const tg=hegHeld().filter(x=>x.st==='x').map(x=>x.i);dT=S.heg.count>0&&hc.length?bfs(hc):tg.length?bfs(tg):null}

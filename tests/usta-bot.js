@@ -19,7 +19,7 @@ U.P={
  // Araştırma sırası (dal+hedef kademe). Katı sıra: ilk eksik teknolojiye bilgi biriktirilir; kuşatma gereği öne alınır (bkz. arastirma)
  tech:['str1','ure1','sal1','eko1','sav1','sal2','ure2','str2','eko2','eko3','sal3','str3','kus1','ure3','sav2','kus2','sal4','eko4','str4','kus3','sav3','ure4','kus4','sav4'],
  V:{tahil:.7,odun:.45,tas:.55,demir:.35,altin:1,bilgi:.8},   // kaynak değeri (altın eşdeğeri); kıtlık/atıllık ile çarpılır (vRes)
- comfort:{tahil:90,odun:70,tas:70,demir:60,altin:90,bilgi:40},
+ comfort:{tahil:90,odun:70,tas:70,demir:90,altin:90,bilgi:40},
  H0:45,Hmin:24,Hdec:.15,fieldsPerTurn:4,slotCost:15,  // tesis geri ödeme ufku H=max(Hmin,H0−tur·Hdec)
  keepA:12,keepT:20,                  // asgari altın / tahıl stoğu
  popKeepF:.5,popKeepN:.3,            // asker alırken korunan nüfus payı (tesisli bölge: işgücü tam kalsın / tesissiz)
@@ -31,10 +31,11 @@ U.P={
  endAt:.75,endR:1.1,
  capV:2,coalCapV:2,soften:false,look:2,holdMin:.6,holdW:1,defReach:4,longReach:6,
  ev:'value',alt:'devam',
- unrG:1,ambAt:.85                    // G1: huzursuz bölgede garnizon ≥ unrG·G; stok tavanın ambAt'ına yaklaşınca Ambar
+ unrG:1,ambAt:.85,                   // G1: huzursuz bölgede garnizon ≥ unrG·G; stok tavanın ambAt'ına yaklaşınca Ambar
+ ws:{cov:.9,grow:.06,ups:2,ironT:1,capMil:3,surResv:true,kislaSave:true,capResv:true}  // G2: kapsama hedefi; atölye kapasitesi ≥ grow·kullanıcı; yılda en çok ups yükseltme; demir stoğu ≥ ironT yıllık kit talebi
 };
-U.order=['arastirma','ilhak','savunma','saldiri','yiginak','askerSav','kurulus','sur','ambar','ekonomi','asker'];
-U.mods={};const h=U.h={};let CP=U.P;   // CP: koşudaki etkin parametreler
+U.order=['arastirma','ilhak','savunma','saldiri','yiginak','askerSav','kurulus','atolye','sur','ambar','ekonomi','asker'];
+U.mods={};const h=U.h={};let CP=U.P,CT=null;   // CP: koşudaki etkin parametreler; CT: turun bağlamı (T)
 // ---- Ortak yardımcılar ----
 const clampN=(v,a,b)=>Math.max(a,Math.min(b,v));
 const LEAVE=['suv','yen','piy','kus','okc'];   // cepheden ayrılış / saldırıya gönderiliş sırası (önce saldırı birlikleri)
@@ -70,7 +71,9 @@ h.holdThreat=j=>{if(S.turn<S.cfg.grace-CP.look)return 0;const R=S.regions,G=MAP.
  if(!vals.length)return 0;vals.sort((a,b)=>b-a);let v=vals[0];for(let k=1;k<vals.length;k++)v+=vals[k]*CP.multi;return v};
 h.sf=(i,P)=>S.regions[i].capital?P.capSafety:P.safety;
 h.req=(i,P,excl,fight)=>Math.max(h.threatRaw(i,excl,fight)*h.sf(i,P),h.g1()&&unrOf(i)?garrNeed(i)*P.unrG:0);
-const udef=k=>{const ud=mil().unitDef;return ud&&ud[k]||UNITS[k].def};
+const udef=k=>{const ud=mil().unitDef;return(ud&&ud[k]||UNITS[k].def)*(typeof eqD==='function'?eqD(0,k):1)};
+// G2 (0.13.0): atölye/donanım kuralları oyunda var mı
+h.g2=()=>h.g1()&&typeof buildWS==='function';
 // i'den ayrılabilecek birlikler: kalan rawDef ≥ req olacak kadar. fromU: bütün birlikler (gelecek tur hepsi hazır), değilse yalnız hazırlar
 h.spare=(i,req,fromU)=>{const r=S.regions[i],src=fromU?r.u:r.rd,out=Z();let def=rawDef(r.u,0);
  for(const k of LEAVE){const n=src[k];if(!n)continue;const d=udef(k),c=req<=0?n:clampN(fl((def-req)/d),0,n);out[k]=c;def-=c*d}return out};
@@ -86,9 +89,12 @@ h.tVal=(j,P)=>{const R=S.regions,G=MAP.regions,t=R[j],g=G[j],w=t.owner,y=product
  v+=.3*(g.adj.filter(q=>R[q].owner===0).length-1);return v};
 // Dinamik kaynak değeri: stok rahat düzeyin üstündeyse (atıl) düşer, altındaysa (darboğaz) artar
 // gain: üretilecek kaynağın değeri (atılsa neredeyse sıfır), değilse harcanacak kaynağın fırsat değeri
-h.vRes=(k,P,e,gain)=>{const cf=(P.comfort[k]||60)*(1+S.turn/50);let f=clampN(1.7-S.res[k]/cf,gain?.08:.25,1.7);if(gain&&e.net[k]>cf/4)f=Math.min(f,.4);if(k==='tahil'&&e.net.tahil<3)f=Math.max(f,1.5);if(k==='altin')f=Math.max(f,.8);return(P.V[k]||.5)*f};
+h.vRes=(k,P,e,gain)=>{const cf=(P.comfort[k]||60)*(1+S.turn/50);let f=clampN(1.7-S.res[k]/cf,gain?.08:.25,1.7);if(gain&&CT&&CT.resv&&CT.resv[k])f=Math.max(f,1.3);if(gain&&e.net[k]>cf/4)f=Math.min(f,.4);if(k==='tahil'&&e.net.tahil<3)f=Math.max(f,1.5);if(k==='altin')f=Math.max(f,.8);return(P.V[k]||.5)*f};
 h.costV=(c,P,e)=>{let s=0;for(const k in c)s+=(c[k]||0)*h.vRes(k,P,e);return s};
 h.reserveA=(P,e)=>P.keepA+Math.max(0,-e.net.altin)*3;
+// G2: kalıcı yatırım hedefi için ayrılan taş/odun/demir (T.resv): başka harcama bu payı yemez
+h.resvOk=(c,T)=>{const v=T&&T.resv;if(!v)return true;for(const k in v)if(c[k]&&S.res[k]-c[k]<v[k])return false;return true};
+h.resvSet=(T,c)=>{if(T.resv)return;const v={};for(const k of['tas','odun','demir'])if(c[k])v[k]=c[k];if(Object.keys(v).length)T.resv=v};
 h.reserveT=(P,e)=>P.keepT+Math.max(0,-e.net.tahil)*4;
 h.canMoveU=(a,b)=>canMove(a,b);
 h.mv=(a,b,A,st)=>{const r=S.regions[a];for(const k of UK)A[k]=Math.min(A[k]||0,r.rd[k]);if(!sumU(A))return 0;remU(r,A,true);addU(S.regions[b],A,false);st.moves++;return sumU(A)};
@@ -163,31 +169,49 @@ U.mods.yiginak=(T,P,st)=>{const R=S.regions,G=MAP.regions,o=own(),endG=h.isEnd(P
   for(const u of UK)free[i][u]-=A[u];h.mv(i,j,A,st)}};
 // Tesis: aday (yeni tesis ya da yükseltme) başına geri ödeme = maliyet değeri / ek üretim değeri; en kısa geri ödeme, ufuk içindeyse ve stok payı kalıyorsa
 U.mods.ekonomi=(T,P,st)=>{const H=Math.max(P.Hmin,P.H0-S.turn*P.Hdec);
- for(let n=0;n<P.fieldsPerTurn;n++){const e=economy(),R=S.regions,rA=h.reserveA(P,e)+(T.plan&&T.plan.deficit.length?20+T.plan.deficit.length*10:0),rT=h.reserveT(P,e)+.5*Math.max(0,S.res.altin-h.reserveA(P,e)),c=[],mf=mil().maxField;
+ for(let n=0;n<P.fieldsPerTurn;n++){const e=economy(),R=S.regions,rA=h.reserveA(P,e)+(T.plan&&T.plan.deficit.length?20+T.plan.deficit.length*10:0)+(h.g2()?T.save||0:0),rT=h.reserveT(P,e)+.5*Math.max(0,S.res.altin-h.reserveA(P,e)),c=[],mf=mil().maxField;
   for(const i of own()){const r=R[i];if(h.g1()&&unrOf(i))continue;
    r.fields.forEach((f,k)=>{if(f.lv>=mf)return;const g=fieldOut(i,f,f.lv+1)-fieldOut(i,f);if(g<=0)return;const cost=upFieldCost(f);c.push({i,k,cost,pb:h.costV(cost,P,e)/(g*h.vRes(FIELD[f.t].r,P,e,true))})});
    if(r.fields.length<slots(i))for(const t in FIELD){const g=fieldOut(i,{t,lv:1});if(g<=0)continue;const cost=newFieldCost(t);c.push({i,t,cost,pb:(h.costV(cost,P,e)+P.slotCost)/(g*h.vRes(FIELD[t].r,P,e,true))})}}
-  c.sort((a,b)=>a.pb-b.pb);const b=c.find(x=>x.pb<=H&&canPay(x.cost)&&(!x.cost.altin||S.res.altin-x.cost.altin>=rA)&&(!x.cost.tahil||S.res.tahil-x.cost.tahil>=rT));if(!b)return;
+  c.sort((a,b)=>a.pb-b.pb);const b=c.find(x=>x.pb<=H&&canPay(x.cost)&&h.resvOk(x.cost,T)&&(!x.cost.altin||S.res.altin-x.cost.altin>=rA)&&(!x.cost.tahil||S.res.tahil-x.cost.tahil>=rT));if(!b)return;
   if(b.t)buildField(b.i,b.t);else upgradeField(b.i,b.k);st.acts++;st.fieldN++}};
 // Askeri kuruluş: başkent en yüksek kademeye, yığınak merkezleri hubTier'a, savunma açığı olan bölge Kışla'ya (okçu); cephe ve cepheye yakın,
 // nüfusu yeten bölgelere Karakol. Odun/taş/demir (çoğu zaman atıl) burada harcanır.
 U.mods.kurulus=(T,P,st)=>{const R=S.regions,o=own(),e=economy(),rA=h.reserveA(P,e),cap=capIdx(),pl=T.plan||{stages:[],deficit:[]};
  T.save=0;const up=(i,maxT,sv)=>{const r=R[i];const nx=r.mil+1;if(nx>Math.min(5,maxT)||S.tech.ure<MIL[nx].tech)return false;const c=milCost(nx);
-  if(!canPay(c)||S.res.altin-(c.altin||0)<rA){/* biriktirme hedefi: altın dışındaki bedel hazırsa altını biriktir (alım ve otomatik üretim bekler) */if(sv&&!T.save&&Object.keys(c).every(k=>k==='altin'||S.res[k]>=c[k]))T.save=(c.altin||0)+rA-S.res.altin;return false}
+  if(!canPay(c)||S.res.altin-(c.altin||0)<rA){/* biriktirme hedefi: altın dışındaki bedel hazırsa altını biriktir (alım ve otomatik üretim bekler) */if(sv&&!T.save&&(Object.keys(c).every(k=>k==='altin'||S.res[k]>=c[k])||h.g2()&&P.ws.kislaSave&&i===cap&&nx===2))T.save=(c.altin||0)+rA-S.res.altin;return false}
   upgradeMil(i);if(r.mil===nx){st.acts++;st.milN++;return true}return false};
  for(const i of pl.deficit)if(R[i].owner===0&&R[i].mil<2&&(R[i].mil||draftable(i)>=4))while(up(i,2));
- if(cap!=null)while(up(cap,P.capTier,S.turn>=P.saveFrom));
+ if(cap!=null)while(up(cap,P.capTier,S.turn>=P.saveFrom||h.g2()&&P.ws.kislaSave));
+ // G2: başkentin kademesi atölye seviyesini sınırlar: capMil'e dek bedelin taş/odun/demiri ayrılır
+ if(h.g2()&&P.ws.capResv&&cap!=null&&R[cap].mil<P.ws.capMil){const nx=R[cap].mil+1;if(S.tech.ure>=MIL[nx].tech&&!canPay(milCost(nx)))h.resvSet(T,milCost(nx))}
  for(const i of pl.stages)if(R[i].owner===0)while(up(i,P.hubTier,S.turn>=P.saveFrom));
  const dF=h.ownBfs(o.filter(i=>h.enemyAdj(i).length));
  const cand=o.filter(i=>!R[i].mil&&dF[i]<=1&&draftable(i)>=P.milMinPop).sort((a,b)=>draftable(b)-draftable(a));for(const i of cand)if(!up(i,1))break};
 // Sur: savunma açığı kalan bölgede (tehdit varken) ve başkentte; taş atılsa daha cömert
 U.mods.sur=(T,P,st)=>{const R=S.regions,e=economy(),cap=capIdx(),pl=T.plan||{deficit:[]},tasIdle=h.vRes('tas',P,e)<P.V.tas*.6;
- const go=(i,mx)=>{let n=0;while(R[i].owner===0&&R[i].fort<Math.min(mx,maxFort(i))&&canPay(surCost(i))&&n<2){const f0=R[i].fort;buildSur(i);if(R[i].fort===f0)break;n++;st.acts++;st.surN++}};
- for(const i of pl.deficit)go(i,P.surMax);if(cap!=null&&(h.threatRaw(cap,null)>0||tasIdle))go(cap,P.surCapMax);
+ const go=(i,mx,em)=>{let n=0;while(R[i].owner===0&&R[i].fort<Math.min(mx,maxFort(i))&&canPay(surCost(i))&&(em||h.resvOk(surCost(i),T))&&n<2){const f0=R[i].fort;buildSur(i);if(R[i].fort===f0)break;n++;st.acts++;st.surN++}};
+ for(const i of pl.deficit)go(i,P.surMax,R[i].capital||!h.g2()||!P.ws.surResv);if(cap!=null&&(h.threatRaw(cap,null)>0||tasIdle))go(cap,P.surCapMax);
  if(tasIdle)for(const i of own())if(h.threatRaw(i,null)>rawDef(R[i].u,0)*.6)go(i,P.surMax)};
+// G2: atölyeler. Her kuruluşlu bölgede ilk yuva Demirhane; kapsama < ws.cov ya da kapasite < grow·kullanıcı ise yeni atölye (öncelik kılıç → zırh → yay),
+// sonra yükseltme (önce Demirhane: Talimhane + Demircilik ile Çelik; Yeniçeri için T3), demir stoğu ironT yıllık kit talebini karşılıyorsa. Altın/tahıl payı korunur
+U.mods.atolye=(T,P,st)=>{if(!h.g2())return;const R=S.regions,o=own(),e=economy(),rA=h.reserveA(P,e),rT=h.reserveT(P,e),W=P.ws,sm=eqSummary(),cap={kilic:0,yay:0,zirh:0},has={kilic:0,yay:0,zirh:0};
+ for(const i of o)for(const w of wsList(i)){cap[WS[w.t].k]+=w.on?wsRate(w):0;has[WS[w.t].k]++}
+ const okC=c=>canPay(c)&&S.res.altin-(c.altin||0)>=rA&&S.res.tahil-(c.tahil||0)>=rT;
+ const need=wsNeed(),ironOk=c=>S.res.demir-(c.demir||0)>=W.ironT*(need.demir||0);
+ // (1) yükseltme: kademe kaliteyi verir. Öncelik Demirhane, sonra Zırhhane; en düşük seviye önce. Karşılanamazsa bedel ayrılır (taş/odun/demir) ya da altın biriktirilir
+ let n=0;const ups=[],pr=t=>t==='demirhane'?0:t==='zirhhane'?1:2;for(const i of o){if(unrOf(i))continue;wsList(i).forEach((w,k)=>{if(w.lv<wsMaxLv(i,w.t))ups.push({i,k,w})})}
+ ups.sort((a,b)=>pr(a.w.t)-pr(b.w.t)||a.w.lv-b.w.lv||R[b.i].capital-R[a.i].capital);
+ for(const u of ups){if(n>=W.ups)break;const c=wsCost(u.w.t,u.w.lv+1);if(!okC(c)||!ironOk(c)){if(!n&&u.w.t!=='yayhane')h.resvSet(T,c);break}const l0=u.w.lv;upWS(u.i,u.k);if(u.w.lv>l0){n++;st.acts++;st.wsUp=(st.wsUp||0)+1}}
+ // (2) yeni atölye: ilk yuva Demirhane; kapsama < cov ya da kapasite < grow·kullanıcı ise (öncelik kılıç → zırh → yay). Zırh: Savunma I ya da Talimhane ile
+ const short=k=>sm[k].U>0&&(sm[k].cov<W.cov||cap[k]<W.grow*sm[k].U);
+ const cand=o.filter(i=>R[i].mil&&!unrOf(i)&&wsList(i).length<wsSlots(i)).sort((a,b)=>R[b].mil-R[a].mil||R[b].capital-R[a].capital||h.enemyAdj(a).length-h.enemyAdj(b).length);
+ for(const i of cand){const ws=wsList(i);let t=null;const zOk=S.tech.sav>=1||milTop()>=2;
+  if(!has.kilic||short('kilic'))t='demirhane';else if(zOk&&(!has.zirh||short('zirh')))t='zirhhane';else if(short('yay'))t='yayhane';
+  if(!t)continue;const c=wsCost(t,1);if(!okC(c)||!h.resvOk(c,T)||!ironOk(c))break;const l0=ws.length;buildWS(i,t);if(wsList(i).length>l0){has[WS[t].k]++;cap[WS[t].k]+=EQ.rate[1];st.acts++;st.wsN=(st.wsN||0)+1}}};
 // G1: Ambar (stok tavana yaklaşınca, en güvenli bölgede: başkent ya da en iç bölge) ve vasal ilhakı (Fetih yalnız vasal toprağından ulaşılabilir kaldıysa)
 U.mods.ambar=(T,P,st)=>{if(!h.g1())return;const near=['tahil','odun','tas','demir'].some(k=>S.res[k]>stockCap(k)*P.ambAt);if(!near)return;const c=capIdx();
- const o=own().filter(i=>(S.regions[i].amb||0)<BRK.ambMax).sort((a,b)=>(b===c)-(a===c)||h.enemyAdj(a).length-h.enemyAdj(b).length);if(!o.length)return;const i=o[0];if(canPay(ambCost(i))){buildAmbar(i);st.acts++}};
+ const o=own().filter(i=>(S.regions[i].amb||0)<BRK.ambMax).sort((a,b)=>(b===c)-(a===c)||h.enemyAdj(a).length-h.enemyAdj(b).length);if(!o.length)return;const i=o[0];if(canPay(ambCost(i))&&h.resvOk(ambCost(i),T)){buildAmbar(i);st.acts++}};
 U.mods.ilhak=(T,P,st)=>{if(!h.g1())return;const lf=fetihLeft(),vn=f=>lf.some(i=>MAP.regions[i].adj.some(j=>S.regions[j].owner===f));
  if(h.isEnd(P)&&lf.length&&!lf.some(i=>MAP.regions[i].adj.some(j=>S.regions[j].owner===0&&canAttack(j,i)&&S.regions[i].troops<20)))for(const f of S.cfg.ais.filter(f=>vasLoyal(f)&&vn(f)))if(S.res.altin>=annexCost(f)){annex(f);st.acts++;return}
  if(!fetihBlocked())return;const v=S.cfg.ais.filter(vasLoyal).sort((a,b)=>annexCost(a)-annexCost(b));for(const f of v){if(S.res.altin>=annexCost(f)){annex(f);st.acts++;if(!fetihBlocked())return}}};
@@ -198,7 +222,7 @@ const recruitPass=(T,P,st,defOnly)=>{const R=S.regions,G=MAP.regions,o=own(),e=e
  const dDf=pl.deficit.length?h.ownBfs(pl.deficit):null;
  const role=i=>pl.deficit.includes(i)?'def':dDf&&dDf[i]<=2?'near':pl.stages.includes(i)?'atk':h.enemyAdj(i).length?'front':'ic';
  const tgtTer=i=>{const k=pl.stages.indexOf(i);const j=k>=0?pl.tgt[k]:h.enemyAdj(i)[0];return j!=null?MAP.regions[j].terrain:null};
- const pick=i=>{const r=R[i],ro=role(i),can=k=>r.mil>=unitMil(k);if((ro==='def'||ro==='near')&&can('okc')&&S.res.odun>=10)return'okc';
+ const pick=i=>{const r=R[i],ro=role(i),can=k=>r.mil>=unitMil(k)&&(!h.g2()||eqCap(k)>0);if((ro==='def'||ro==='near')&&can('okc')&&S.res.odun>=10)return'okc';
   if(ro!=='def'&&ro!=='near'&&can('yen')&&S.res.altin>200)return'yen';const tt=tgtTer(i);if(can('suv')&&(tt==='ova'||tt==='vadi')&&S.res.demir>40)return'suv';
   if(ro==='front'&&h.threatRaw(i,null)>0&&can('okc')&&S.res.odun>40&&rawDef(r.u,0)<h.threatRaw(i,null)*1.6)return'okc';return'piy'};
  const keep=i=>R[i].fields.length?P.popKeepF:P.popKeepN;
@@ -260,11 +284,12 @@ U.tel=function(){telHook();const RS=['tahil','odun','tas','demir','altin','bilgi
    if(t%10===0)curve.push(n);
    if(t%5===0){const at=S.cfg.ais.map(f=>aiTroops(f)),ar=S.cfg.ais.map(f=>aiRegs(f));ser.push([t,n,totTroops(),at.reduce((a,b)=>a+b,0),Math.max(0,...at),Math.max(0,...ar),+e.net.altin.toFixed(1),+e.net.tahil.toFixed(1),Math.round(RS.reduce((a,k)=>a+e.gross[k],0)),Math.round(S.res.altin),Math.round(S.res.tahil)])}
    if([20,40,60,80].includes(t))snap[t]={own:n,troops:totTroops(),res:Object.fromEntries(RS.map(k=>[k,Math.round(S.res[k])])),net:Object.fromEntries(RS.map(k=>[k,+e.net[k].toFixed(1)])),gross:Object.fromEntries(RS.map(k=>[k,+e.gross[k].toFixed(1)])),fields:own().reduce((s,i)=>s+S.regions[i].fields.length,0),flv:+(own().reduce((s,i)=>s+S.regions[i].fields.reduce((a,f)=>a+f.lv,0),0)/Math.max(1,own().reduce((s,i)=>s+S.regions[i].fields.length,0))).toFixed(2),milMax:Math.max(0,...own().map(i=>S.regions[i].mil)),tech:techCount(),morale:Math.round(S.morale),
+    eq:typeof eqSummary==='function'&&S.cfg.rules!==1?(()=>{const q=eqSummary(),ws=own().flatMap(i=>S.regions[i].ws||[]);return{cov:Object.fromEntries(Object.entries(q).map(([k,v])=>[k,+v.cov.toFixed(2)])),T:Object.fromEntries(Object.entries(q).map(([k,v])=>[k,+v.T.toFixed(2)])),n:Object.fromEntries(Object.entries(q).map(([k,v])=>[k,Math.round(v.n)])),ws:ws.length,wsLv:ws.reduce((a,w)=>a+w.lv,0),wsMax:Math.max(0,...ws.map(w=>w.lv)),wage:+((e.wage&&e.wage.altin)||0).toFixed(1)}})():null,
     idare:+(e.idare||0).toFixed(1),cap:typeof stockCap==='function'?Object.fromEntries(RS.map(k=>[k,Math.round(stockCap(k))])):null,unr:own().filter(i=>(S.regions[i].unr||0)>0).length,
     ai:S.cfg.ais.filter(f=>aliveAI(f)).map(f=>{const a=S.ai[f];return[aiRegs(f),aiTroops(f),Math.round(a.h||0),a.tier||0,+(typeof aiB==='function'?aiB(f):0).toFixed(2),typeof aiIncome==='function'&&S.cfg.rules!==1?Math.round(aiIncome(f)):null]})}},
   end(){const med=a=>{if(!a.length)return null;const b=a.slice().sort((x,y)=>x-y);return+b[fl(b.length/2)].toFixed(1)};if(U.telCur===T0)U.telCur=null;
    return{peak:+peak.toFixed(3),peakT,aiPeak:+aiPeak.toFixed(3),aiPeakT,lost,lostAfter50,recap,aiTake,hazine,famT,idle:Object.fromEntries(RS.map(k=>[k,med(idle[k])])),snap,curve,ser,rec:Object.assign({},S.stats.recruited),
-    aiA:{n:A.n,p:A.p,pw:A.pw,coord:A.coord,grp:A.grp,cap:A.cap,capW:A.capW,aiCapLost:A.aiCapLost},idaShare:grS?+(idaS/grS).toFixed(3):0,rot:S.stats.rot?Object.fromEntries(Object.entries(S.stats.rot).map(([k,v])=>[k,Math.round(v)])):null,riot:S.stats.riot||0,annex:S.stats.annex||0}}};
+    aiA:{n:A.n,p:A.p,pw:A.pw,coord:A.coord,grp:A.grp,cap:A.cap,capW:A.capW,aiCapLost:A.aiCapLost},idaShare:grS?+(idaS/grS).toFixed(3):0,rot:S.stats.rot?Object.fromEntries(Object.entries(S.stats.rot).map(([k,v])=>[k,Math.round(v)])):null,riot:S.stats.riot||0,annex:S.stats.annex||0,milis:S.stats.milis||0,recPO:(S.stats.recruited.piy||0)+(S.stats.recruited.okc||0)}}};
  U.telCur=T0;return T0};
 
 // ---- Koşu: bot2 ile aynı satır biçimi (+ usta alanları) ----
@@ -277,7 +302,7 @@ U.run=async function(seed,maxT,C,tick,cfg){const P=CP=mergeP(C.usta);newGame(see
  for(const t of P.setup)if(S.fund>=fundCost(t)&&S.regions[c0].fields.length<slots(c0))buyStart(t);if(!S.regions[c0].fields.length)autoSetup();finishSetup();closeModal();
  const st={tm:{},atk:0,won:0,fail:0,soft:0,lostA:0,sentA:0,moves:0,rec:0,acts:0,fieldN:0,milN:0,surN:0,evC:0},P0=MAP.playN,errs=[],altD=[],TL=C.tel?U.tel():null;let t25=null,t50=null,t75=null,t100=null,coal=0;
  const altGo=()=>{let n=0;while(S.altQ&&!S.over&&n<4){const q=S.altQ;altD.push({p:q.p,t:q.t,k:P.alt});altPick(P.alt);n++}};
- for(let k=0;k<maxT&&!S.over;k++){const T={turn:S.turn,plan:null};
+ for(let k=0;k<maxT&&!S.over;k++){const T=CT={turn:S.turn,plan:null};
   for(const m of U.order){const t0=performance.now();try{U.mods[m](T,P,st)}catch(e){if(errs.length<5)errs.push({tur:S.turn,tip:'istisna',m:(m+': '+String(e&&e.stack||e)).slice(0,300)})}st.tm[m]=(st.tm[m]||0)+performance.now()-t0;if(S.over)break}
   if(C.dbg)C.dbg(T,st,h);altGo();const cw=S.coal&&S.coal.on;endTurn();closeModal();altGo();h.events(P,st);closeModal();altGo();
   if(S.coal&&S.coal.on&&!cw)coal++;const n=own().length;if(n>=P0*.25&&!t25)t25=S.turn;if(n>=P0*.5&&!t50)t50=S.turn;if(n>=P0*.75&&!t75)t75=S.turn;if(!t100&&!fetihLeft().length)t100=S.turn;

@@ -138,4 +138,12 @@ await runSim({cfgExtra:{rules:1}})          // 0.11.0 kuralları (eşdeğerlik);
 - Telemetri (`tel:true`) G1 alanları: `aiA` (rakip saldırıları: `n`, oyuncuya `p`, başarılı `pw`, aynı tur aynı bölgeye 2+ `coord`, başkente `cap`), `idaShare` (Divan gideri / brüt altın), `rot` (çürüyen stok), `riot`, `annex`; `snap` içinde `idare`, `cap` (tavan), `unr` (huzursuz bölge), `ai` ([bölge, asker, hazine, kademe, aiB, gelir]).
 - Botlar G1'i kullanır: usta bot huzursuz bölgede garnizon ≥ G, stok tavana yaklaşınca Ambar, Fetih vasal toprağı yüzünden tıkanınca sadık vasalı ilhak eder ve rakip eşiğini dengeleyici/koalisyon hedefiyle hesaplar; ref bot yalnız tıkanınca ilhak eder (rules 1'de hiçbiri çalışmaz).
 
+- `baseline-v8.json`: **0.13.0 (G2)**: atölyeler ve donanım (`rules 2`). `rows`/`rowsOff` 12 tohum (ref bot), `det`, `eqV6` (`rules:1` → `baseline-v6` birebir), `matrix` (ref bot önce/sonra), `checks`.
+- `usta-bot-v0130.md` / `.json`: G2 önce (v0.12.0, `_eski/v0120.html`) / sonra; `eq` = `g2-analyze.py` özeti.
+
+### G2 ölçüm araçları
+- `g2-jobs.py AD [src]`: tam ölçüm işleri (4 zorluk × 3 hanedan × 48 tohum × usta/ref + Kalfa Kısa/Uzun), `usta-run.mjs` ile koşulur; özet `g1-analyze.py` ve `g2-analyze.py OUT.json ÖZET.json` (kapsama, kademe, atölye sayısı/seviyesi, Sv.3+ ve ≥2 atölye payı, demir stok÷net, rakip kademesi, birlik karışımı).
+- Telemetri `snap.eq`: `cov`/`T`/`n` (kılıç, yay, zırh), `ws`, `wsLv`, `wsMax`, `wage`; `tel.milis` (kitsiz yetişen Piyade/Okçu), `tel.recPO`.
+- Botlar G2'yi kullanır: usta bot `atolye` modülü (`P.ws`: kapsama hedefi, yükseltme önceliği, demir payı, `T.resv` ile kaynak ayırma), ref bot boş yuvaya atölye ve altın > 60 iken yükseltme (`rules 1`'de hiçbiri çalışmaz).
+
 Denge değişikliğinden sonra yeni taban çizgisi kaydedilmeli.
