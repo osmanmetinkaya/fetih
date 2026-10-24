@@ -43,6 +43,9 @@ function botFactory(){
   const okSpend=c=>{const r=wRes();if(!r)return true;for(const k in c)if(k!=='tahil'&&k!=='altin'&&r[k]&&S.res[k]-c[k]<r[k])return false;return true};
   const altRes=()=>{const r=wRes();return r&&['tas','odun','bilgi'].every(k=>S.res[k]>=(r[k]||0))?r.altin:0};
   for(let k=0;k<maxT&&!S.over;k++){const e=economy();
+   // G1 (0.12.0): kalan bölgelere yalnız vasal toprağından ulaşılıyorsa sadık vasal ilhak edilir (oyuncunun da yapabildiği tek çıkış)
+   if(typeof fetihBlocked==='function'&&G1()&&fetihBlocked())for(const f of S.cfg.ais)if(vasLoyal(f)&&S.res.altin>=annexCost(f)&&fetihBlocked())annex(f);
+   if(typeof fetihBlocked==='function'&&G1()&&own().length>=MAP.playN*C.endAt){const lf=fetihLeft();if(lf.length&&!lf.some(i=>MAP.regions[i].adj.some(j=>S.regions[j].owner===0&&S.regions[i].troops<20)))for(const f of S.cfg.ais)if(vasLoyal(f)&&S.res.altin>=annexCost(f)&&lf.some(i=>MAP.regions[i].adj.some(j=>S.regions[j].owner===f))){annex(f);break}}
    if(med)startWonder();
    const br=['ure','eko','sal','sav','str','kus'].filter(b=>S.tech[b]<C.techMax).sort((a,b)=>S.tech[a]-S.tech[b]||(med?(b==='eko')-(a==='eko'):0));
    for(const b of br){if(S.res.bilgi>=TC(S.tech[b])&&(!med||techCount()<18||okSpend({bilgi:TC(S.tech[b])}))){research(b,S.tech[b]);acts++}}

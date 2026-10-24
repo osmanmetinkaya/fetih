@@ -124,4 +124,18 @@ JSON.stringify(r.rows.map(({ms,...x})=>x)) === JSON.stringify(b.rows)
 
 - `baseline-v6.json`: 0.9.2 (Medeniyet/Hegemonya oyunu kendiliğinden bitirmez; karar penceresi, fetih botu `'devam'`). `rows` (varsayılan ayar, 12 tohum) v5'ten yalnız Hegemonya koşulunu sağlayan 3 tohumda (22, 44, 99) ayrılır; `rowsOff` (`ev:false, alt:false`) v5 ile birebir aynı. `matrix`: 48 tohum (1001-1048; yol botları 2001-2024, Kalfa) 0.9.1 → 0.9.2; `det`, `maps`, `evUnit`, `audioCtx`.
 
+- `baseline-v7.json`: **0.12.0 (G1)**: varsayılan ayar artık `cfg.rules=2` (Divan gideri, taşra, huzursuzluk, yorgunluk, stok tavanı, rakip akçe ekonomisi ve akıllı hamleler). `rows`/`rowsOff` 12 tohum (ref bot); oyun mantığına dokunmayan değişiklikten sonra birebir aynı çıkmalı. `eqV6`: `cfgExtra:{rules:1}` (yalnız `?test=1`) ile `baseline-v6` `rows` ve `rowsOff` birebir (gerileme testi). `matrix`: ref bot önce/sonra özeti.
+- `usta-bot-v0120.md` / `.json`: usta ve ref bot, 4 zorluk × 3 hanedan × 48 tohum + Kalfa Kısa/Uzun, önce (v0.11.0, `_eski/v0110.html`) / sonra.
+- `_eski/v0110.html`: v0.11.0'ın dondurulmuş kopyası (G1 "önce" ölçümü; `src:'_eski/v0110.html?test=1'`).
+
+```js
+await runSim({cfgExtra:{rules:1}})          // 0.11.0 kuralları (eşdeğerlik); varsayılan rules 2
+```
+
+### G1 ölçüm araçları
+- `g1-jobs.py`: varyant işleri (`'ad@zorluk=iframe yaması'`), her işe benzersiz `src` verir: yama sonraki işlere sızmaz (`usta-run.mjs` pre'yi aynı iframe'de çalıştırır).
+- `g1-analyze.py OUT.json ÖZET.json`: kazanma, tempo, K1/K4, %75→%100, sıkıntı turu, rakip saldırısı ve eşgüdüm, başkent kaybı, isyan, çürüme, t20/40/60 anlık görüntüleri (net gelir, stok÷net, Divan gideri, rakip ordusu/hazine/kademe/gelir).
+- Telemetri (`tel:true`) G1 alanları: `aiA` (rakip saldırıları: `n`, oyuncuya `p`, başarılı `pw`, aynı tur aynı bölgeye 2+ `coord`, başkente `cap`), `idaShare` (Divan gideri / brüt altın), `rot` (çürüyen stok), `riot`, `annex`; `snap` içinde `idare`, `cap` (tavan), `unr` (huzursuz bölge), `ai` ([bölge, asker, hazine, kademe, aiB, gelir]).
+- Botlar G1'i kullanır: usta bot huzursuz bölgede garnizon ≥ G, stok tavana yaklaşınca Ambar, Fetih vasal toprağı yüzünden tıkanınca sadık vasalı ilhak eder ve rakip eşiğini dengeleyici/koalisyon hedefiyle hesaplar; ref bot yalnız tıkanınca ilhak eder (rules 1'de hiçbiri çalışmaz).
+
 Denge değişikliğinden sonra yeni taban çizgisi kaydedilmeli.

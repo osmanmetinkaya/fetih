@@ -1,6 +1,7 @@
 // Başsız Chrome ile paralel sim koşucusu (usta bot ölçümleri için).
 // node tests/usta-run.mjs JOBS.json OUT.json [paralel=8]
 //   JOBS = [{name, sim:{runSim seçenekleri}, pre?:"iframe'de eval edilecek js"}, ...]
+//   pre kullanan işe benzersiz bir sim.src ver (ör. '../index.html?test=1&j=7'): her iş taze bir iframe alır, yama sonraki işlere sızmaz
 //   Ortam: URL (varsayılan http://localhost:8123/tests/index.html), CHROME (Chrome yolu), TMP (profil klasörleri için).
 // Her işçi bir Chrome açar ve işleri sırayla çeker; sonuç OUT.json: [{name, sim, s:summary, rows}]
 import {spawn} from 'node:child_process';import fs from 'node:fs';import os from 'node:os';import path from 'node:path';
@@ -16,7 +17,7 @@ async function worker(w){const port=9400+w+(process.pid%50)*12,dir=path.join(TMP
   const call=(method,params)=>new Promise(r=>{const i=++id;pend.set(i,r);ws.send(JSON.stringify({id:i,method,params}))});
   await call('Page.enable');await call('Page.navigate',{url:URL0+'?cdp='+Date.now()});await sleep(1500);
   while(next<jobs.length){const k=next++,J=jobs[k];
-   const expr=`(async()=>{const J=${JSON.stringify(J)};if(J.pre){await runSim({seeds:[]});simFrame().eval(J.pre)}const r=await runSim(Object.assign({slice:0},J.sim));
+   const expr=`(async()=>{const J=${JSON.stringify(J)};if(J.pre){await runSim({seeds:[],src:J.sim.src});simFrame().eval(J.pre)}const r=await runSim(Object.assign({slice:0},J.sim));
     const ac=simFrame().eval('typeof SND!=="undefined"&&SND.ctx?1:0');return JSON.stringify({name:J.name,sim:J.sim,s:Object.assign({},r.summary,{opts:undefined}),audio:ac,rows:r.rows.map(({ms,...x})=>x)})})()`;
    const r=await call('Runtime.evaluate',{expression:expr,awaitPromise:true,returnByValue:true,timeout:7200000});
    const v=r.result&&r.result.result&&r.result.result.value;try{res[k]=JSON.parse(v)}catch(e){res[k]={name:J.name,err:JSON.stringify(r).slice(0,1500)}}
