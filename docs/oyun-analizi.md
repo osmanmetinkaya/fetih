@@ -522,3 +522,24 @@ Karne (başsız Chrome, 24 ekran × 2 boyut; önce = 0.9.3 af61c23, sonra = 0.10
 | Doku + süslü ana yüzey | 0 → üst bant, panel, harita, pencere, toast | aynı |
 
 Kalan (aşama 2+): başlık ekranı, amblem/sancak, illüstrasyon, olay metinleri, mobilde haritanın üstündeki boş şerit, ses.
+
+## Aşama 2 sonucu (0.11.0)
+
+Uygulandı: başlık ekranı / ana menü (prosedürel, CSS ile kayan harita rölyefi, Cinzel wordmark, Seferi Sürdür / Yeni Sefer / Günün Seferi / Miras / Ayarlar / Nasıl Oynanır, oturum tercihi, ☰ → Ana menü), yükleme ipuçları (14), 12 amblem (6 hanedan + Klasik + 4 klasik rakip + kabileler) ve sahip biçimli sancak alanı, harita rozetlerinde ve başkent sancaklarında amblem, harita çerçevesi köşe madalyonları + pusula + bölge levhası + deniz taraması, açılış kamerası, mobil HUD sırası, 44 px hedefler. Ayrıntı: `docs/gorsel-dil.md` "Uygulama notları (Saray Haritacısı, aşama 2)".
+
+Karne (başsız Chrome, 26 ekran × 2 boyut; önce = 0.10.0 b6f92bc, sonra = 0.11.0):
+
+| Ölçüt | 1440 önce → sonra | 375 önce → sonra |
+|---|---|---|
+| Görünür metinde gömülü font | %100 → %100 | %100 → %100 |
+| > 4 px köşe / 13 px altı metin / yatay taşma | 0 / 0 / 0 → 0 / 0 / 0 | aynı |
+| Kontrast < 4,5 (en düşük) | 0 (4,85) → 0 (4,85) | 0 (5,1) → 0 (5,1) |
+| Yüksek kontrastta en düşük (6 ekran) | — → 7,04 | — → 7,58 |
+| < 44 px hedef, vuruş alanı dahil | 0 → 0 | 36 → 0 |
+| < 44 px hedef, yalnız kutu | 64 → 15 (satır içi metin bağlantıları) | 42 → 4 |
+| Amblem görünen ekran (26 içinden) | 0 → 17 | 0 → 17 |
+| İkon dışı görsel öğe (amblem + süs + süslü yüzey, toplam) | 66 → 184 | 59 → 172 |
+| Harita üstü karasız şerit, açılış (harita dışı boşluk) | 44 px (30) → 0 (0) | 206 px (30) → 56 (0) |
+| Tam görünen öncelikli HUD çipi (9) | 9 → 9 | 3 → 4 (Yıl + tahıl, altın, asker, nüfus) |
+
+Kalan (aşama 3+): olay/bölge illüstrasyonları, olay metinleri, unvan amblemleri, saldırı şansının mühür biçimi, başlık müziği.
