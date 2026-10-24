@@ -46,8 +46,53 @@ await evUnit(7)    // olay birim testi: 18 olay + Biat Teklifi, her seçenek ayr
 | `declare` | `false` | `meta` ile: bot ilk fırsatta zaferi ilan eder |
 | `altChoice` | — | 0.9.2 zafer kararı (Medeniyet/Hegemonya koşulu sağlanınca çıkan pencere, `S.altQ`): `'devam'` (fetihe devam, kilometre taşı `S.altM`) ya da `'bitir'` (zaferi al). Boşsa `goal:'fetih'` → `'devam'`, `medeniyet`/`hegemonya` → `'bitir'`. Bekleyen karar olay gibi tur sonunda otomatik çözülür. Satırda `alt` ([{p,t,k}]) ve `mile` (kilometre taşı yolları), özette `altGames`, `altN`, `altBy`, `mileWin` |
 | `cfgExtra` | — | Oyun ayarına ek alanlar (ör. `{daily:'2026-10-19'}`, `{bonus:['hazine']}`) |
+| `bot.profile` | `'ref'` | `'usta'`: insan vekili bot (`usta-bot.js`, aşağıda); `bot.usta` ile parametreleri |
+| `tel` | `false` | `true`: satıra telemetri (`tel`) eklenir (iki bot için; satırların geri kalanı birebir aynı kalır) |
 
 Varsayılan ayar (Klasik + kart yok + Kıta + Normal + Çırak) Faz 0 oyunudur.
+
+## Bot profilleri: `ref` ve `usta`
+
+`bot.profile` hangi botun oynayacağını seçer. Varsayılan `'ref'` (`sim.js` içindeki bot2): bütün taban çizgileri bu botla alınmıştır ve değişmez (`baseline-v6.json` 12 tohum birebir). `'usta'`: deneyimli insan oyuncunun vekili (`docs/faz2-derinlik.md` §B.3.1 "B2"), `usta-bot.js` dosyasında; `sim.js` dosyayı ilk kullanımda oyunun iframe'inde `eval` eder.
+
+```js
+await runSim({difficulty:'kalfa', bot:{profile:'usta'}})                      // usta bot
+await runSim({difficulty:'destan', bot:{profile:'usta', usta:{atk:{r:1.5}, planR:1.4}}})  // parametreyle
+await runSim({difficulty:'kalfa', tel:true})                                  // telemetri (iki botta da)
+simJob('u', [{difficulty:'usta', bot:{profile:'usta'}}, {difficulty:'destan', bot:{profile:'usta'}}])
+```
+
+Usta bot yalnız oyuncunun arayüzde yapabildiklerini yapar (hazır askeri komşuya ya da Yol Ağı ile taşımak, komşudan saldırı, tesis/kuruluş/sur, alım, araştırma, otomatik üretimi aç/kapa, olay seçimi) ve oyuncunun gördüğünü kullanır: düşman sayısı ~5'e yuvarlı tahmindir (Casusluk ile kesin) ve tahmine +2,5 asker hata payı eklenir, rakip kişiliği Haritacılık'la bilinir. Kendi rastgeleliği yoktur, `Math.random` çağırmaz (`randLeak` 0); oyunun `rnd()` akışına yalnız oyunun kendi eylemleri dokunur. Bot hızlıdır (karar modülleri oyun başına ~40 ms; süre oyunun `endTurn`/AI'sinde geçer); `fast:true` ve `slice:0` ile başsız koşulur.
+
+**Karar modülleri** (`USTA_BOT.order`, her tur bu sırayla; her biri `USTA_BOT.mods[ad](T,P,st)`):
+
+| Modül | Ne yapar |
+|---|---|
+| `arastirma` | Katı araştırma sırası (`P.tech`, ör. `str1, ure1, sal1, eko1, …`); komşuda ≥2 surlu hedef varsa Kuşatma I-II öne alınır |
+| `savunma` | Her bölge için gereken ham savunma = komşu rakip bölgelerinin olası saldırı gücü / rakibin eşiği × güvenlik payı (başkent 1,5). Barış/ateşkes bitimine `look` tur kala sayılır; Fırsatçı'nın "savaş görmüş bölge" eşiği hesaba katılır. Açığı komşudan (Yol Ağı'yla her yerden) kapatır |
+| `saldiri` | Bütün (kaynak, hedef) çiftleri: gönderilebilir kuvvet = hazır asker − kaynakta kalması gereken savunma; eşik orana göre (küçük hedef 1,15, normal 1,3, başkent/geçit/kale/sur≥2 1,5; son aşamada kabileye 1,1), şans ≥ %80; fethedilen bölgeyi tutamayacaksa (sağ kalanlar / fetih sonrası tehdit < `holdMin`) saldırmaz. En değerli tek saldırı yapılır, sonra yeniden değerlendirilir (Akın dahil) |
+| `yiginak` | Kapanmayan açıklar talep olur; her hedef için en iyi yığınak bölgesi seçilir ve kuvvet oraya toplanır (birleşik saldırı: bir sonraki tur toplam kuvvetle); yetişmeyen en değerli hedef uzun vadeli yığınak olur. Boştaki asker açığa > uzun yığınağa > rakip cephesine akar (kabile cephesinde atıl kalmaz) |
+| `askerSav` | Önce açık olan / açığa yakın bölgelerde alım (okçu varsa okçu): alınan asker aynı tur savunur |
+| `kurulus` | Açık bölgesine Karakol/Kışla, başkent en yüksek kademeye (`capTier`), yığınak merkezleri `hubTier`'a, cepheye yakın nüfuslu bölgelere Karakol. Altın yetmiyorsa ama diğer bedel hazırsa **biriktirme hedefi** konur (alım ve otomatik üretim bekler) |
+| `sur` | Açık kalan bölgede, tehdit altındaki başkentte; taş atılsa daha cömert |
+| `ekonomi` | Tesis kur/yükselt: geri ödeme = bedelin değeri / ek üretimin değeri; kaynak değeri dinamik (`vRes`: stok rahat düzeyin üstünde → atıl, değer düşer; darboğaz → yükselir), yeni tesise yuva fırsat maliyeti; ufuk `H=max(Hmin,H0−tur·Hdec)` |
+| `asker` | Kalan altınla alım: yığınakta ova/vadi hedefi + Talimhane → süvari, surlu hedefe birkaç kuşatma, bol altın + Harbiye → yeniçeri, diğer piyade; nüfus payı (`popKeepF/N`) ve tahıl bakımı korunur. Otomatik üretim yalnız bütçe yetiyorsa açık |
+
+Tur sonunda: olay ikilemleri değer tahminiyle (`h.evPick`; ör. Kabile Biatı kabul, Hizip'te altın varsa ödül, İsyan'da garnizon yetiyorsa bastır; Biat Teklifi yalnız kalan bölgelere erişimi kesmiyorsa kabul) ve zafer kararı `'devam'`.
+
+**Genişletme:** yeni bir mekanik için yeni modül yazılır ve sıraya eklenir; ortak yardımcılar `USTA_BOT.h` (`threatRaw`, `holdThreat`, `spare`, `atkEst`, `tVal`, `vRes`, `fillDef`, `mv`, `ownBfs` …):
+
+```js
+// usta-bot.js içinde ya da koşudan önce iframe'de (simFrame().eval(...)):
+USTA_BOT.mods.tersane=(T,P,st)=>{ /* liman bölgesinde tersane kur, gemi al… */ };
+USTA_BOT.order.splice(USTA_BOT.order.indexOf('ekonomi')+1, 0, 'tersane');
+```
+
+Parametreler `USTA_BOT.P` (koşu başına `bot:{profile:'usta', usta:{…}}` ile; `atk`, `V`, `comfort` alt nesneleri birleştirilir). Satıra `usta` alanı eklenir: saldırı/başarısız saldırı, kayıp yüzdesi, taşıma, alım, tesis/kuruluş/sur sayısı, ganimet, birlik karışımı, modül süreleri (`tm`, ms).
+
+**Telemetri** (`tel:true`, iki bot için; yalnız okur, satırları başka türlü değiştirmez): satıra `tel` eklenir: `peak`/`peakT` (en yüksek toprak payı), `aiPeak` (en büyük rakibin en yüksek payı), `lost` / `lostAfter50` (rakibe ya da kabileye düşen bölge; %50'den sonra), `recap` (fethedilen bölgenin 3 tur içinde rakipçe geri alınması), `hazine` / `famT` (hazine boş / kıtlık turu), `idle` (tur 15-60 stok ÷ net gelir medyanı, kaynak başına), `snap` (tur 20/40/60/80: stok, net, brüt, tesis, kademe, teknoloji, moral), `ser` (5 turda bir: [tur, bölge, asker, rakip asker toplamı, en güçlü rakip askeri, en büyük rakip bölge sayısı, net altın, net tahıl, brüt toplam, altın, tahıl]).
+
+**Ölçüm araçları:** `usta-run.mjs` (başsız Chrome'da paralel `runSim` işleri: `URL=http://localhost:8123/tests/index.html node tests/usta-run.mjs JOBS.json OUT.json 9`; iş adı `bot|zorluk|hanedan|parça`), `usta-analyze.py OUT.json ÖZET.json` (kazanma, tempo, K1-K11, kaynak eğrileri, güç serisi). Mevcut taban: `usta-bot-v0100.md` / `.json`.
 
 ## Belirlenimcilik
 

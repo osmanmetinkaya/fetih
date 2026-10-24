@@ -4,7 +4,8 @@
 (function(){
 const DEF_SEEDS=[11,22,33,44,55,66,77,88,99,111,123,234];
 // Bot ayarları: varsayılanlar referans bot2 ile birebir aynıdır.
-const DEF_BOT={wStart:{tarla:1.6,pazar:1.5,medrese:2},wNew:{medrese:1.4,pazar:1.2,tarla:1.3},techMax:4,
+// profile: 'ref' (bu dosyadaki bot2; taban çizgileri) ya da 'usta' (usta-bot.js: insan vekili, karar modülleri; ayarları bot:{usta:{…}})
+const DEF_BOT={profile:'ref',wStart:{tarla:1.6,pazar:1.5,medrese:2},wNew:{medrese:1.4,pazar:1.2,tarla:1.3},techMax:4,
  upTahil:80,newTahil:60,milAltin:60,milFrontOwn:4,suvAt:3,surMax:2,surTas:60,resMul:4,resAdd:20,okcMil:2,okcP:.3,popKeep:.5,minReady:4,atkCh:.75,
  // 1b: olay seçimi ('first' = ilk seçilebilir seçenek, 'random' = bot üreteciyle rastgele) ve zafer yolu politikaları
  evPick:'first',endAt:.75,endCh:.6,endMove:true,medStop:99,medCh:.9,turtle:false,turtleAt:12,wNewMed:{medrese:1.8,tasocagi:1.4,kereste:1.2,pazar:1.2,tarla:1.3},hegCh:.6};
@@ -13,7 +14,9 @@ const DEF_BOT={wStart:{tarla:1.6,pazar:1.5,medrese:2},wNew:{medrese:1.4,pazar:1.
 // 1b: goal (fetih|medeniyet|hegemonya: botun izlediği yol), ferman (true: goal'u ferman olarak beyan et), pers (bütün rakiplere tek kişilik), ev/alt (false: olaylar / alternatif zaferler kapalı; Faz 1a karşılaştırması için)
 // 0.9.2: altChoice (Medeniyet/Hegemonya karar penceresi: 'devam' = fetihe devam, 'bitir' = zaferi al; null → goal fetih ise 'devam', medeniyet/hegemonya ise 'bitir')
 const DEF={seeds:DEF_SEEDS,maxTurns:240,src:'../index.html?test=1&t='+Date.now(),seedRandom:true,fast:true,slice:8,bot:{},onProgress:null,timeoutMs:15000,
- dynasty:'klasik',cards:[],mapType:'kita',difficulty:'cirak',size:'orta',dice:false,goal:'fetih',ferman:false,pers:null,ev:true,alt:true,meta:false,declare:false,cfgExtra:null,altChoice:null};
+ dynasty:'klasik',cards:[],mapType:'kita',difficulty:'cirak',size:'orta',dice:false,goal:'fetih',ferman:false,pers:null,ev:true,alt:true,meta:false,declare:false,cfgExtra:null,altChoice:null,tel:false};
+// tel:true → satıra 'tel' (telemetri: tepe pay, rakip tepe payı, %50 sonrası kayıp, geri alma, hazine/kıtlık turu, atıl kaynak, tur 20/40/60/80 kaynak; usta-bot.js U.tel) eklenir; iki bot için de yalnızca okur
+const USTA_SRC='usta-bot.js';let USTA_TXT=null;
 
 // ---- iframe içinde çalışan kod (toString ile iframe'e aktarılır; serbest adlar oyunun globallerine bağlanır) ----
 function botFactory(){
@@ -32,7 +35,7 @@ function botFactory(){
  return async function bot2(seed,maxT,C,tick,cfg){newGame(seed,cfg);const cap=capIdx(),brnd=mulberry32(seed*7919+13),goal=C.goal||'fetih',v1b=typeof evAuto==='function',med=goal==='medeniyet'&&v1b,heg=goal==='hegemonya'&&v1b;
   const pick=Object.keys(FIELD).map(k=>({k,v:fieldOut(cap,{t:k,lv:1})*(C.wStart[k]||1)})).sort((a,b)=>b.v-a.v);
   for(const p of pick){if(S.fund>=FC(p.k))buyStart(p.k)}if(!S.regions[cap].fields.length&&typeof autoSetup==='function')autoSetup();finishSetup();closeModal();
-  let t25=null,t50=null,t75=null,t100=null,acts=0,fam=0,coal=0,akin=0,dec=null;const altD=[],hasAlt=typeof altPick==='function',altK=C.altChoice||(goal==='fetih'?'devam':'bitir');
+  let t25=null,t50=null,t75=null,t100=null,acts=0,fam=0,coal=0,akin=0,dec=null;const TL=C.tel&&window.USTA_BOT?USTA_BOT.tel():null;const altD=[],hasAlt=typeof altPick==='function',altK=C.altChoice||(goal==='fetih'?'devam':'bitir');
   // 0.9.2: bekleyen zafer kararı (S.altQ) olay gibi otomatik çözülür
   const altGo=()=>{let n=0;while(hasAlt&&S.altQ&&!S.over&&n<4){const q=S.altQ;altD.push({p:q.p,t:q.t,k:altK});altPick(altK);n++}};const P=MAP.playN,errs=[],wNew=med?C.wNewMed:C.wNew;
   // Medeniyet: Büyük Eser için kaynak ayır (eşik geçildiyse sıradaki aşamanın bedeli harcanmaz)
@@ -73,11 +76,11 @@ function botFactory(){
    // 1c: ilk "Zaferi ilan et" anı ve o anda bitirilseydi skoru (meta:true; bot ilan etmez, oynamayı sürdürür). C.declare:true → bot ilk fırsatta ilan eder
    if(C.meta&&typeof declOk==='function'&&!S.over&&dec==null&&declOk()){dec=declProbe();if(C.declare){S.over='win';S.winBy='ilan';S.stats.declared=S.turn}}
    fam+=S.stats?0:famineNow();if(S.coal&&S.coal.on&&!c0)coal++;const n=own().length;if(n>=P*.25&&!t25)t25=S.turn;if(n>=P*.5&&!t50)t50=S.turn;if(n>=P*.75&&!t75)t75=S.turn;if(FL&&!t100&&!fetihLeft().length)t100=S.turn;
-   const bad=check(seed);if(bad.length&&errs.length<5)errs.push({tur:S.turn,tip:'invariant',m:bad.slice(0,4).join(', ')});
+   const bad=check(seed);if(bad.length&&errs.length<5)errs.push({tur:S.turn,tip:'invariant',m:bad.slice(0,4).join(', ')});if(TL)TL.turn();
    if(tick&&k%tick.every===tick.every-1)await tick.fn(S.turn)}
   const st=S.stats,aiS={};if(v1b)for(const f of S.cfg.ais){const a=S.ai[f],q=aiS[a.per]=aiS[a.per]||{n:0,atk:0,lost:0,end:0};q.n++;q.atk+=a.atk||0;q.lost+=a.lost||0;q.end+=S.regions.filter(r=>r.owner===f).length}
   const mx=C.meta&&typeof scoreOf==='function'?(()=>{const sc=scoreOf(S),m=mpCalc(S,{games:5}),M1=mpCalc(S,{games:0});return{score:sc.v,raw:sc.p.raw,mp:m.game,mpNew:M1.game,share:+m.share.toFixed(3),dec,stats:{surBuilt:st.surBuilt,recruited:st.recruited,famine:st.famine,capLost:st.capLost,coalBroken:st.coalBroken,plagues:st.plagues,loot:Math.round(st.loot),maxHarb:st.maxHarb,evN:st.evN,akinN:st.akinN}}})():null;
-  return{...(mx?{meta:mx}:{}),seed,end:S.turn,over:S.over||'-',winBy:S.winBy||null,own:own().length,playN:P,t25,t50,t75,t100,left:typeof fetihLeft==='function'?fetihLeft().length:null,aisEnd:v1b?S.cfg.ais.filter(f=>aliveAI(f)&&!isVas(f)).length:null,famine:st?st.famine:fam,coal,akin,acts:+(acts/S.turn).toFixed(2),
+  return{...(mx?{meta:mx}:{}),...(TL?{tel:TL.end()}:{}),seed,end:S.turn,over:S.over||'-',winBy:S.winBy||null,own:own().length,playN:P,t25,t50,t75,t100,left:typeof fetihLeft==='function'?fetihLeft().length:null,aisEnd:v1b?S.cfg.ais.filter(f=>aliveAI(f)&&!isVas(f)).length:null,famine:st?st.famine:fam,coal,akin,acts:+(acts/S.turn).toFixed(2),
    ev:st?st.events:null,evN:st?st.evN:null,choices:st?st.choices:null,coalBroken:st?st.coalBroken:null,coalJoin:st?st.coalJoin:null,wonder:v1b?S.wonder.stage:null,aiWonder:v1b?S.aiW.stage:null,medClosed:v1b?S.medClosed!=null:null,
    tech:v1b?techCount():null,hegMax:st?st.hegMax:null,hegHeld:st?st.hegHeld:null,w1:st?st.wonderT:null,wT:st?st.wT||[]:null,capLost:st?st.capLost:null,vassals:st?st.vassals:null,maxReg:st?st.maxRegions:null,atkWon:st?st.atkWon:null,atkLost:st?st.atkLost:null,defWon:st?st.defWon:null,defLost:st?st.defLost:null,
    pers:v1b?S.cfg.ais.map(f=>S.ai[f].per):null,aiS,alt:altD,mile:hasAlt?Object.keys(S.altM||{}):null,errors:errs}}
@@ -132,14 +135,17 @@ async function runSim(opts={}){
  const t0=performance.now(),rows=[],LEAK={n:0};let fatal=null;
  try{const win=await getFrame(o.src,o.timeoutMs);
   const bot2=win.eval('('+botFactory.toString()+')()');
+  // usta profili / telemetri: usta-bot.js iframe'de eval edilir (bir kez); play = seçilen botun koşu işlevi
+  if((C.profile==='usta'||o.tel)&&!win.USTA_BOT){if(!USTA_TXT)USTA_TXT=await fetch(USTA_SRC+'?t='+Date.now()).then(r=>r.text());win.eval(USTA_TXT)}
+  const play=C.profile==='usta'?win.USTA_BOT.run:bot2;
   // hızlı kip: refresh yalnızca oyun mantığını etkileyen görüşü günceller, çizim/panel atlanır
   if(o.fast)win.eval('refresh=function(){computeVision()}');else win.refresh=FRAME.orig.refresh;
-  const hasRnd=win.eval('typeof rnd==="function"'),cfg={dyn:o.dynasty,muts:o.cards||[],map:o.mapType,size:o.size,diff:o.difficulty,dice:o.dice,ev:o.ev,alt:o.alt,ferman:o.ferman?o.goal:null};if(o.pers)cfg.pers=o.pers;if(o.cfgExtra)Object.assign(cfg,o.cfgExtra);C.goal=o.goal;C.meta=o.meta;C.declare=o.declare;C.altChoice=o.altChoice;
+  const hasRnd=win.eval('typeof rnd==="function"'),cfg={dyn:o.dynasty,muts:o.cards||[],map:o.mapType,size:o.size,diff:o.difficulty,dice:o.dice,ev:o.ev,alt:o.alt,ferman:o.ferman?o.goal:null};if(o.pers)cfg.pers=o.pers;if(o.cfgExtra)Object.assign(cfg,o.cfgExtra);C.goal=o.goal;C.meta=o.meta;C.declare=o.declare;C.altChoice=o.altChoice;C.tel=o.tel;
   for(let s=0;s<o.seeds.length;s++){const seed=o.seeds[s],ts=performance.now();
    // Yeni sürümde oyun RNG'si S.rs ile zaten belirlenimci: Math.random'a giden her çağrı bir sızıntıdır (sayılır). Eski sürümde (rnd yok) seedRandom Math.random'ı sabitler.
    if(hasRnd){const R=FRAME.orig.random;win.Math.random=function(){LEAK.n++;return R.call(this)}}else if(o.seedRandom)win.Math.random=win.eval('mulberry32')(seed*7919+13);else win.Math.random=FRAME.orig.random;
    say(`Tohum ${seed} (${s+1}/${o.seeds.length}) başlıyor…`);let r;
-   try{r=await bot2(seed,o.maxTurns,C,o.slice&&{every:o.slice,fn:async t=>{say(`Tohum ${seed} (${s+1}/${o.seeds.length}) · yıl ${t}`);await sleep(0)}},cfg)}
+   try{r=await play(seed,o.maxTurns,C,o.slice&&{every:o.slice,fn:async t=>{say(`Tohum ${seed} (${s+1}/${o.seeds.length}) · yıl ${t}`);await sleep(0)}},cfg)}
    catch(e){r={seed,end:win.eval('S&&S.turn'),over:'-',own:null,errors:[{tip:'istisna',m:String(e&&e.stack||e).slice(0,300)}]}}
    r.ms=Math.round(performance.now()-ts);rows.push(r);if(out)out.innerHTML=table(rows);await sleep(0)}
   win.Math.random=FRAME.orig.random;win.refresh=FRAME.orig.refresh;
@@ -149,7 +155,7 @@ async function runSim(opts={}){
  const sum={n:rows.length,win:wins.length,lose:rows.filter(r=>r.over==='lose').length,winRate:rows.length?+(wins.length/rows.length).toFixed(3):0,
   avgEnd:avg(ends),avgWinEnd:avg(wins.map(r=>r.end)),minWinEnd:wins.length?Math.min(...wins.map(r=>r.end)):null,maxWinEnd:wins.length?Math.max(...wins.map(r=>r.end)):null,
   avgT50:avg(rows.map(r=>r.t50).filter(v=>v!=null)),avgT75:avg(rows.map(r=>r.t75).filter(v=>v!=null)),avgT100:avg(rows.map(r=>r.t100).filter(v=>v!=null)),avg75to100:avg(rows.filter(r=>r.t100&&r.t75).map(r=>r.t100-r.t75)),unfinished:rows.filter(r=>r.over==='-').length,byWin:{fetih:wins.filter(r=>(r.winBy||'fetih')==='fetih').length,medeniyet:wins.filter(r=>r.winBy==='medeniyet').length,hegemonya:wins.filter(r=>r.winBy==='hegemonya').length},avgEv:avg(rows.map(r=>r.ev).filter(v=>v!=null)),evPer75:(()=>{const a=rows.filter(r=>r.ev!=null&&r.end);return a.length?+(a.reduce((s,r)=>s+r.ev*75/r.end,0)/a.length).toFixed(1):null})(),coalBroken:rows.reduce((s,r)=>s+(r.coalBroken||0),0),avgT25:avg(rows.map(r=>r.t25).filter(v=>v!=null)),avgFamine:avg(rows.map(r=>r.famine||0)),avgActs:avg(rows.map(r=>r.acts||0)),coalGames:rows.filter(r=>r.coal).length,altGames:rows.filter(r=>r.alt&&r.alt.length).length,altN:rows.reduce((a,r)=>a+(r.alt?r.alt.length:0),0),altBy:{medeniyet:rows.filter(r=>r.alt&&r.alt.some(x=>x.p==='medeniyet')).length,hegemonya:rows.filter(r=>r.alt&&r.alt.some(x=>x.p==='hegemonya')).length},mileWin:rows.filter(r=>r.over==='win'&&r.mile&&r.mile.length).length,errors:errN,fatal,randLeak:LEAK.n,
-  ms:Math.round(performance.now()-t0),gameVersion:FRAME&&FRAME.ver,opts:{seeds:o.seeds,maxTurns:o.maxTurns,fast:o.fast,dynasty:o.dynasty,cards:o.cards,mapType:o.mapType,difficulty:o.difficulty,size:o.size,dice:o.dice,goal:o.goal,ferman:o.ferman,altChoice:o.altChoice,pers:o.pers,ev:o.ev,alt:o.alt,bot:C}};
+  ms:Math.round(performance.now()-t0),gameVersion:FRAME&&FRAME.ver,opts:{seeds:o.seeds,maxTurns:o.maxTurns,fast:o.fast,dynasty:o.dynasty,cards:o.cards,mapType:o.mapType,difficulty:o.difficulty,size:o.size,dice:o.dice,goal:o.goal,ferman:o.ferman,altChoice:o.altChoice,pers:o.pers,ev:o.ev,alt:o.alt,tel:o.tel,bot:C}};
  const res={summary:sum,rows,when:new Date().toISOString()};window.SIM_RESULT=res;
  if(out)out.innerHTML=summaryHtml(sum)+table(rows);say(fatal?'Hata: '+fatal:`Bitti: ${sum.win}/${sum.n} kazanma, ${(sum.ms/1000).toFixed(1)} sn`);return res}
 
