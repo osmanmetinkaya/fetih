@@ -5,10 +5,10 @@
 const DEF_SEEDS=[11,22,33,44,55,66,77,88,99,111,123,234];
 // Bot ayarları: varsayılanlar referans bot2 ile birebir aynıdır.
 // profile: 'ref' (bu dosyadaki bot2; taban çizgileri) ya da 'usta' (usta-bot.js: insan vekili, karar modülleri; ayarları bot:{usta:{…}})
-const DEF_BOT={profile:'ref',wStart:{tarla:1.6,pazar:1.5,medrese:2},wNew:{medrese:1.4,pazar:1.2,tarla:1.3},techMax:4,
+const DEF_BOT={profile:'ref',wStart:{tarla:1.6,pazar:1.5,medrese:2},wNew:{medrese:1.4,pazar:1.2,tarla:1.3,balik:1.2},techMax:4,portAltin:60,seaPorts:2,
  upTahil:80,newTahil:60,milAltin:60,milFrontOwn:4,suvAt:3,surMax:2,surTas:60,resMul:4,resAdd:20,okcMil:2,okcP:.3,popKeep:.5,minReady:4,atkCh:.75,
  // 1b: olay seçimi ('first' = ilk seçilebilir seçenek, 'random' = bot üreteciyle rastgele) ve zafer yolu politikaları
- evPick:'first',endAt:.75,endCh:.6,endMove:true,medStop:99,medCh:.9,turtle:false,turtleAt:12,wNewMed:{medrese:1.8,tasocagi:1.4,kereste:1.2,pazar:1.2,tarla:1.3},hegCh:.6};
+ evPick:'first',endAt:.75,endCh:.6,endMove:true,medStop:99,medCh:.9,turtle:false,turtleAt:12,wNewMed:{medrese:1.8,tasocagi:1.4,kereste:1.2,pazar:1.2,tarla:1.3,balik:1.2},hegCh:.6};
 // Oyun ayarı: dynasty (klasik|boru|tunc|kartal|bilge|deniz|akinci), cards ([kart id'leri]), mapType (kita|vadi|dag|korfez), difficulty (cirak|kalfa|usta|destan), size (kisa|orta|uzun).
 // Varsayılan = Klasik + kart yok + Kıta + Normal + Çırak (Faz 0 oyunu).
 // 1b: goal (fetih|medeniyet|hegemonya: botun izlediği yol), ferman (true: goal'u ferman olarak beyan et), pers (bütün rakiplere tek kişilik), ev/alt (false: olaylar / alternatif zaferler kapalı; Faz 1a karşılaştırması için)
@@ -50,13 +50,18 @@ function botFactory(){
    const br=['ure','eko','sal','sav','str','kus'].filter(b=>S.tech[b]<C.techMax).sort((a,b)=>S.tech[a]-S.tech[b]||(med?(b==='eko')-(a==='eko'):0));
    for(const b of br){if(S.res.bilgi>=TC(S.tech[b])&&(!med||techCount()<18||okSpend({bilgi:TC(S.tech[b])}))){research(b,S.tech[b]);acts++}}
    own().forEach(i=>{const r=S.regions[i];r.fields.forEach((f,j)=>{if(S.res.tahil>C.upTahil&&(!med||okSpend(upFieldCost(f)))){const b4=f.lv;upgradeField(i,j);if(f.lv>b4)acts++}});
-    if(r.fields.length<slots(i)&&S.res.tahil>C.newTahil){const have=new Set(r.fields.map(f=>f.t));const best=Object.keys(FIELD).filter(t=>!have.has(t)).map(t=>({t,v:fieldEff(i,t)*(wNew[t]||1)})).sort((a,b)=>b.v-a.v)[0];if(best&&(!med||okSpend(newFieldCost(best.t)))){buildField(i,best.t);acts++}}});
+    if(r.fields.length<slots(i)&&S.res.tahil>C.newTahil){const have=new Set(r.fields.map(f=>f.t));const best=Object.keys(FIELD).filter(t=>!have.has(t)&&(typeof fieldOk!=='function'||fieldOk(i,t))).map(t=>({t,v:fieldEff(i,t)*(wNew[t]||1)})).sort((a,b)=>b.v-a.v)[0];if(best&&(!med||okSpend(newFieldCost(best.t)))){buildField(i,best.t);acts++}}});
    own().forEach(i=>{const r=S.regions[i],front=MAP.regions[i].adj.some(j=>S.regions[j].owner!==0);const m0=r.mil;if(S.res.altin>C.milAltin&&(r.capital||r.mil||(front&&own().length>=C.milFrontOwn))&&(!med||r.mil<5&&okSpend(MIL[r.mil+1]?MIL[r.mil+1].cost:{})))upgradeMil(i);if(r.mil!==m0)acts++;
     if(r.mil>=C.suvAt)r.autoU=MAP.regions[i].adj.some(j=>S.regions[j].owner>0&&['ova','vadi'].includes(MAP.regions[j].terrain))?'suv':'piy';
     const sm=med&&own().length>=10?Math.max(C.surMax,maxFort(i)):C.surMax;if(front&&r.fort<sm&&S.res.tas>C.surTas&&(!med||okSpend(surCost(i)))){buildSur(i);acts++}});
    // G2 (0.13.0): atölyeler: kuruluşlu bölgede boş yuvaya Demirhane → Zırhhane → Yayhane, sonra seviye yükseltme (altın eşiği milAltin). rules 1'de yok
    if(typeof buildWS==='function'&&G1())own().forEach(i=>{const r=S.regions[i];if(!r.mil||unrOf(i))return;const ws=wsList(i);if(ws.length<wsSlots(i)&&S.res.altin>C.milAltin){const t=!ws.some(w=>w.t==='demirhane')?'demirhane':!ws.some(w=>w.t==='zirhhane')?'zirhhane':'yayhane';const n0=ws.length;buildWS(i,t);if(ws.length>n0)acts++}
     ws.forEach((w,k)=>{if(w.lv<wsMaxLv(i,w.t)&&S.res.altin>C.milAltin){const l=w.lv;upWS(i,k);if(w.lv>l)acts++}})});
+   // G3 (0.14.0): en çok seaPorts kıyı bölgesinde (doğal liman önce): altın > portAltin+40 iken Liman/Tersane, > portAltin iken gemi (Tersane Sv.2'de Karamürsel, öncesinde Çektiri) ticaret tavanının %90'ına kadar; liman doluysa yükselt. rules 1'de yok
+   if(typeof buildShip==='function'&&G3())own().filter(i=>isCoast(i)&&!unrOf(i)).sort((a,b)=>natPort(b)-natPort(a)||a-b).slice(0,C.seaPorts).forEach(i=>{const p=portOf(i);if(S.res.altin<=C.portAltin)return;
+    const l0=p.lv,y0=p.yard,b0=p.b,inf=S.res.altin>C.portAltin+40;if(!p.lv){if(inf)buildPort(i)}else if(!p.yard){if(inf)upYard(i)}else{const t=p.yard>=2?'karamursel':'cektiri';
+     if(portUsed(i)+1>portCap(i)){if(inf&&p.lv<4&&portReqOk(p.lv+1))buildPort(i)}else if(inf&&p.yard<2&&p.lv>=2)upYard(i);else{const tr=economy().trade;if(!p.b&&tr&&tr.v<.9*tr.cap&&!shipWhy(i,t))buildShip(i,t)}}
+    if(p.lv!==l0||p.yard!==y0||p.b!==b0)acts++});
    const reserve=e.up.altin*C.resMul+C.resAdd+altRes();own().forEach(i=>{const r=S.regions[i];if(r.mil&&S.res.altin>reserve){recruit(i,r.mil>=C.okcMil&&brnd()<C.okcP?'okc':'piy',Math.max(0,Math.floor(S.regions[i].pop-maxPop(i)*C.popKeep)));acts++}});
    // Hegemonya: tutulmayan eski başkentlere uzaklık (çok kaynaklı BFS); saldırı ve asker kaydırma buna göre
    let dT=null;const hc=heg?hegHeld().filter(x=>x.st==='own').map(x=>x.i):[];if(heg){const tg=hegHeld().filter(x=>x.st==='x').map(x=>x.i);dT=S.heg.count>0&&hc.length?bfs(hc):tg.length?bfs(tg):null}

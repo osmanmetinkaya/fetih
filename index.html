@@ -872,7 +872,7 @@ td.over{color:var(--bad);font-weight:700}
 'use strict';
 // ======================= SABİTLER =======================
 const W=1600,H=1100,NEUTRAL=5,BLOCK=-1,WOOD=8,SAVE='fetih-save',META_KEY='fetih-meta-v1';
-const GAME_VERSION='0.13.0',SAVE_VER=10,SAVE_OLD=['fetih-save-v4'],SAVE_BAD='fetih-save-bozuk',TEST=/[?&]test\b/.test(location.search);
+const GAME_VERSION='0.14.0',SAVE_VER=11,SAVE_OLD=['fetih-save-v4'],SAVE_BAD='fetih-save-bozuk',TEST=/[?&]test\b/.test(location.search);
 const ROM=['','I','II','III','IV','V'];
 // ---- Arayüz metinleri (0.10.0, Saray Haritacısı): tek kaynak. Ton "orta": başlık ve kısa açıklamalar dönem ağzıyla, sayı/maliyet/uyarı/karar bilgisi açık ve kısa.
 // Günlük (S.log) ve oyun mantığı dizgeleri burada değil (testler ve kayıtlar onlara bağlı). İleride dil çerçevesi bu nesneyi değiştirir. ----
@@ -926,6 +926,11 @@ const TX={
  rulesNote2:'Kurallar güncellendi (0.13.0): asker artık kılıç, yay ve zırh kuşanıyor. Atölyeler (Demirhane, Yayhane, Zırhhane) kit döver; kılıçsız asker milis olur (saldırı ×0,70). Başkentine bir Demirhane kuruldu (Bölge › Asker).',
  wsT:'Atölyeler',wsD:'Askeri kuruluşa bağlı yuvada kurulur (Karakol/Kışla 1, Talimhane/Ordugâh 2, Harbiye 3); demir ve odunla kit döver. Kademe = atölye seviyesi; Sv.3-5 için Talimhane/Ordugâh/Harbiye ve dal I-III gerekir.',wsNone:'Atölye için önce Karakol kur.',wsFull:'Atölye yuvaları dolu: seviye yükselt ya da kuruluşu büyüt.',
  eqT:'Donanım deposu',eqOnlyT:'Yalnız donanımlı yetiştir',eqOnlyD:'Otomatik üretim boşta silah yoksa durur (milis yetişmez).',milisW:'Boşta silah yok: milis olarak yetişir (saldırı ×0,70).',
+ // G3 (0.14.0): liman, tersane, gemi, dış ticaret, balıkçılık
+ rulesNote3:'Kurallar güncellendi (0.14.0): kıyı bölgelerinde Liman ve Tersane kurulabiliyor; gemiler dış ticaretle altın getirir (Bölge › Liman). Kıyıda ve nehir boyunda Balıkhane tesisi var.',
+ seaT:'Liman ve tersane',seaD:'Kıyı bölgesinin yapısı (tesis yuvası kullanmaz). Liman gemi yeri verir, tersane gemi yapar; gemiler dış ticaretle altın getirir. Ticaret, ticaret dışı brüt altının %60\'ını geçemez ve gemi arttıkça doygunlaşır.',
+ tradeT:'Dış ticaret',tradeTip:'Gemilerin yükü × 6 altın × liman çarpanı, gemi arttıkça doygunlaşır (30 yükte yarıya). Tavan: ticaret dışı brüt altının %60\'ı (Pazar, arazi, başkent, kavşak, liman). Abluka (savaştaki rakip komşu kıyıda) ×0,75, Tüccar ×0,60; huzursuz liman ×0,5; korsan baskınında 3 yıl 0.',
+ pirT:'Korsan riski',noCoast:'Bu bölgenin kıyısı yok.',
  suvNo:'Süvari kılıçsız yetişmez: Demirhane kılıç dövmeli.',yenNo:t=>`Yeniçeri ${EQ.ad[t]} (T${t}) kılıç ve Dövme (T2) zırh ister.`,eqTip:'Her asker depodan bir kit kuşanır: önce Yeniçeri, sonra Süvari, sonra Piyade/Okçu; en iyi kit seçkine. Kitsiz asker milistir: saldırı ×0,70 (savunmada ceza yok).'};
 const txTabs=()=>{for(const e of document.querySelectorAll('[data-tx]'))e.textContent=TX.tab[e.dataset.tx][0];for(const e of document.querySelectorAll('[data-txs]'))e.textContent=TX.tab[e.dataset.txs][1]};
 const FAC=[
@@ -972,6 +977,8 @@ const FIELD={
  demir:{ad:'Demir Madeni',e:'⚒️',r:'demir',base:2.5,fund:150,cost:{tahil:35,odun:15},ask:'Birliklerin silahı, saldırı gücü.',eff:{maden:1.8,dag:1.4,tepe:1,ova:.4,vadi:.4,orman:.5}},
  pazar:{ad:'Pazar Yeri',e:'🪙',r:'altin',base:3,fund:130,cost:{tahil:30,tas:10},ask:'Birlik alımı ve maaşlar.',eff:{vadi:1.4,ova:1.2,tepe:1,orman:.8,dag:.7,maden:1}},
  medrese:{ad:'Medrese',e:'📜',r:'bilgi',base:2,fund:160,cost:{tahil:40,tas:15},ask:'Askeri teknoloji araştırması.',eff:{}},
+ // G3 (0.14.0): yalnız kıyıda, Nehir Vadisi'nde ya da nehir kenarında (fieldOk); verim fishEff, Sulama ve kuraklık etkilemez
+ balik:{ad:'Balıkhane',e:'🐟',r:'tahil',base:2.5,fund:90,cost:{tahil:15,odun:15},ask:'Kıyıda ve nehir boyunda yedek gıda: Sulama ve kuraklık etkilemez. Her seviye azami nüfus +3.',eff:{},only:true},
 };
 const LVM=[0,1,2.2,3.6,5.2,7];
 const MIL=[null,
@@ -1037,8 +1044,8 @@ const DYN={
   start:{u:{piy:12,okc:4},fund:260,mil:1,fort:2,capTerr:['tepe','dag']},mods:{defAdd:.15,maxFortAdd:1,surCost:.75,unitDef:{okc:1.9},atkAdd:-.1,unitAdd:{suv:{demir:1}},gecitDef:.2,gecitMorale:1},ab:'gecit',aiPerk:'Sur tavanı 3, savunma +%10'},
  bilge:{ad:'Bilge Hanedanı',e:'📜',aiAd:'Bilgeler',tema:'Medrese ve âlimler',g:['Medrese ×1,4','Teknoloji maliyeti ×0,85','Antik Harabe bilgi 2→4'],z:['Birlik altın maliyeti ×1,2','Altın maaşı ×1,1'],
   start:{u:{piy:15},fund:260,mil:1,fort:1,tech:{str:1},fundCost:{medrese:110}},mods:{fieldBy:{medrese:1.4},tcost:.85,featY:{harabe:{bilgi:4}},unitGold:1.2,upGold:1.1},ab:'kulliye',aiPerk:'Teknoloji hızı ×1,25',lock:{mp:60,alt:'ya da 1 Medeniyet zaferi (Çırak dışı)',or:'medeniyet'}},
- deniz:{ad:'Deniz Beyleri',e:'⚓',aiAd:'Deniz Beyleri',tema:'Kıyı tüccarları',g:['Liman altın 2→3, tahıl 2→3','Pazar Yeri ×1,15','Ticaret Kavşağı altın 3→4'],z:['Ordu tahıl gideri ×1,2','Ganimet payı −%5'],
-  start:{u:{piy:15},fund:260,mil:1,fort:1,res:{altin:40},capCoastal:true},mods:{featY:{liman:{altin:3,tahil:3},kavsak:{altin:4}},fieldBy:{pazar:1.15},upTahil:1.2,lootAdd:-.05},ab:'harac',aiPerk:'Liman/Kavşak başına kazanç +1',lock:{mp:90,alt:'ya da aynı anda 4 Liman tut (Çırak dışı)',or:'liman'}},
+ deniz:{ad:'Deniz Beyleri',e:'⚓',aiAd:'Deniz Beyleri',tema:'Kıyı tüccarları',g:['Liman altın 2→3, tahıl 2→3','Pazar Yeri ×1,15','Ticaret Kavşağı altın 3→4','Dış ticaret ×1,15, gemi bakımı −%25'],z:['Ordu tahıl gideri ×1,2','Ganimet payı −%5'],
+  start:{u:{piy:15},fund:260,mil:1,fort:1,res:{altin:40},capCoastal:true},mods:{featY:{liman:{altin:3,tahil:3},kavsak:{altin:4}},fieldBy:{pazar:1.15},upTahil:1.2,lootAdd:-.05,tradeM:1.15,shipUp:.75},ab:'harac',aiPerk:'Liman/Kavşak başına kazanç +1',lock:{mp:90,alt:'ya da aynı anda 4 Liman tut (Çırak dışı)',or:'liman'}},
  akinci:{ad:'Akıncı Sancağı',e:'🏇',aiAd:'Akıncılar',tema:'Yağmacı uç beyleri',g:['Ganimet payı +%5 (tavan %75→%85)','Fetihte moral +5→+6'],z:['Azami tesis seviyesi −1','Fethedilen bölge nüfusu ×0,7→×0,6'],
   start:{u:{piy:14,suv:3},fund:180,mil:1,fort:1},mods:{lootAdd:.05,lootCap:.85,conqMorale:6,maxFieldAdd:-1,conqPop:.6},ab:'yagma',aiPerk:'Kabilelere daha kolay saldırır',lock:{mp:120,alt:'ya da tek oyunda 6000 ganimet (Çırak dışı)',or:'ganimet'}},
 };
@@ -1081,12 +1088,13 @@ const SIZES={
  orta:{ad:'Normal',d:'~55 bölge, 4 rakip',mult:1,minD:null,nAI:4,heg:3,nBase:1,sp:90,lock:0},
  uzun:{ad:'Uzun',d:'~78 bölge, 4 rakip, güçlü kabileler',mult:1.4,minD:82,nAI:4,heg:3,nBase:1.2,sp:130,lock:40},
 };
+// G3 (0.14.0): eco 0,88/1,00/1,06/1,25 → 0,86/0,93/1,06/1,30 (usta bot bantları, liman/ticaret/balıkçılıkla yeniden ölçüldü)
 // G2 (0.13.0): eco 1,25/1,40/1,55/1,75 → 0,88/1,00/1,06/1,25 ve tCap −0,10: rakip donanım kademesi artık güçlü bir çarpan (EQ.A/EQ.D), oyuncunun eski +%25-35 demir donanımı kalktı (usta bot ile ölçüldü)
 const DIFFS={
- cirak: {ad:'Çırak', d:'Bilinen oyun: rakipler ölçülü.',aiGain:1.00,aiBStep:.030,aiBCap:.50,aiSiege:0,  needAdd:0,   grace:12,neutral:1.0,fund:260,res:1.0,coalAt:null,evBias:1.3,mp:.4,mpNew:.6,sc:.6,eco:.88,aiTech:.9,tStep:.030,tCap:.30,eqCap:2,smart:.35,noise:.25,balK:.8,coal2:.50,musterT:2},
- kalfa: {ad:'Kalfa', d:'Rakipler daha hızlı büyür; %35 toprağa ulaşınca koalisyon kurarlar.',aiGain:1.60,aiBStep:.035,aiBCap:.55,aiSiege:0,  needAdd:-.05,grace:12,neutral:1.1,fund:260,res:1.0,coalAt:.35,evBias:1.0,mp:1.0,sc:1,eco:1.00,aiTech:1.0,tStep:.035,tCap:.35,eqCap:3,smart:.85,noise:.15,balK:1.0,coal2:.35,musterT:3},
- usta:  {ad:'Usta',  d:'Sert rakipler, kısa barış, az hazine.',aiGain:1.95,aiBStep:.040,aiBCap:.62,aiSiege:.05,needAdd:-.10,grace:10,neutral:1.2,fund:240,res:.9, coalAt:.33,evBias:0.83,mp:1.4,sc:1.4,eco:1.06,aiTech:1.1,tStep:.040,tCap:.40,eqCap:4,smart:1.0,noise:.10,balK:1.25,coal2:.33,musterT:4,lock:{alt:"Kalfa'da 1 zafer",win:'kalfa'}},
- destan:{ad:'Destan',d:'Efsaneler için.',aiGain:2.10,aiBStep:.045,aiBCap:.70,aiSiege:.10,needAdd:-.15,grace:8, neutral:1.3,fund:210,res:.8, coalAt:.30,evBias:0.71,mp:1.9,sc:1.9,eco:1.25,aiTech:1.2,tStep:.045,tCap:.45,eqCap:5,smart:1.0,noise:.05,balK:1.5,coal2:.30,musterT:4,lock:{alt:"Usta'da 1 zafer",win:'usta'}},
+ cirak: {ad:'Çırak', d:'Bilinen oyun: rakipler ölçülü.',aiGain:1.00,aiBStep:.030,aiBCap:.50,aiSiege:0,  needAdd:0,   grace:12,neutral:1.0,fund:260,res:1.0,coalAt:null,evBias:1.3,mp:.4,mpNew:.6,sc:.6,eco:.86,pir:.02,aiTech:.9,tStep:.030,tCap:.30,eqCap:2,smart:.35,noise:.25,balK:.8,coal2:.50,musterT:2},
+ kalfa: {ad:'Kalfa', d:'Rakipler daha hızlı büyür; %35 toprağa ulaşınca koalisyon kurarlar.',aiGain:1.60,aiBStep:.035,aiBCap:.55,aiSiege:0,  needAdd:-.05,grace:12,neutral:1.1,fund:260,res:1.0,coalAt:.35,evBias:1.0,mp:1.0,sc:1,eco:.93,pir:.02,aiTech:1.0,tStep:.035,tCap:.35,eqCap:3,smart:.85,noise:.15,balK:1.0,coal2:.35,musterT:3},
+ usta:  {ad:'Usta',  d:'Sert rakipler, kısa barış, az hazine.',aiGain:1.95,aiBStep:.040,aiBCap:.62,aiSiege:.05,needAdd:-.10,grace:10,neutral:1.2,fund:240,res:.9, coalAt:.33,evBias:0.83,mp:1.4,sc:1.4,eco:1.06,pir:.03,aiTech:1.1,tStep:.040,tCap:.40,eqCap:4,smart:1.0,noise:.10,balK:1.25,coal2:.33,musterT:4,lock:{alt:"Kalfa'da 1 zafer",win:'kalfa'}},
+ destan:{ad:'Destan',d:'Efsaneler için.',aiGain:2.10,aiBStep:.045,aiBCap:.70,aiSiege:.10,needAdd:-.15,grace:8, neutral:1.3,fund:210,res:.8, coalAt:.30,evBias:0.71,mp:1.9,sc:1.9,eco:1.30,pir:.04,aiTech:1.2,tStep:.045,tCap:.45,eqCap:5,smart:1.0,noise:.05,balK:1.5,coal2:.30,musterT:4,lock:{alt:"Usta'da 1 zafer",win:'usta'}},
 };
 const AI_COLORS=['Kızıl','Mavi','Yeşil','Mor'];
 const RULERS=['Alp Er','Tarkan','Bilge Kağan','Yağmur Hatun','Arslan Bey','Ertuğrul','Tomris','Kutlu Bey','Turna Hatun','Atsız','Bumin','Börte','İlteriş','Sançar','Kara Yülük','Ay Hatun'];
@@ -1723,7 +1731,7 @@ function initGame(seed,cfg){cfg=normCfg(cfg);
  if(cfg.pers||!(cfg.dyn==='klasik'&&cfg.diff==='cirak')){const pp=PERS4.slice();for(let k=pp.length-1;k>0;k--){const j=fl(rng()*(k+1));[pp[k],pp[j]]=[pp[j],pp[k]]}
   AIS.forEach((f,k)=>{S.ai[f].per=cfg.pers||pp[k%pp.length];S.ai[f].ruler=RULERS[fl(rng()*RULERS.length)]})}
  else AIS.forEach(f=>S.ai[f].per='klasik');
- def1b(S);def2(S,true);
+ def1b(S);def2(S,true);def3(S);
  if(fx.fortStart)S.regions.forEach((r,i)=>{if(r.owner!==BLOCK)r.fort=Math.min(r.fort+fx.fortStart,r.owner===0?maxFort(i):aiFortMax(r.owner)+1)});
  ui.sel=starts[0];ui.rtab='genel';ui.tab='bolge';
  log(cfg.dyn==='klasik'?`${FAC[0].ad} ${G[starts[0]].name} bölgesinde kuruluyor.`:`${dynOf().e} ${dynOf().ad}, ${G[starts[0]].name} bölgesinde kuruluyor.`,'good');
@@ -1738,6 +1746,11 @@ function def2(s,fresh){const R=s.regions,nn=v=>typeof v==='number'&&isFinite(v)&
   s.eq={kilic:[0,T.piy+T.suv,0,T.yen,0,0],yay:[0,T.okc,0,0,0,0],zirh:[0,0,0,0,0,0],lu:{kilic:T.piy+T.suv+T.yen,yay:T.okc,zirh:T.piy+T.suv+T.yen+T.okc}}}
  for(const k of['kilic','yay','zirh']){s.eq[k][0]=0;if(!nn(s.eq.lu[k]))s.eq.lu[k]=0}
  if(fresh&&s.cfg.rules!==1){const c=R.find(r=>r.owner===0&&r.capital);if(c&&c.mil>=1&&!c.ws.length)c.ws.push({t:'demirhane',lv:1,on:true})}return s}
+// G3 durumu: bölge limanları (r.port) ve gemi listesi (S.ships). Eksik/bozuk alanlar güvenli varsayılanla (liman yok); oyuncu limanına bağlı olmayan gemi düşer
+function def3(s){const R=s.regions,int=(v,a,b)=>typeof v==='number'&&isFinite(v)?Math.max(a,Math.min(b,Math.floor(v))):a;
+ for(const r of R){const p=r.port;if(!p||typeof p!=='object'||Array.isArray(p)){r.port={lv:0,yard:0,b:null};continue}p.lv=int(p.lv,0,4);p.yard=int(p.yard,0,p.lv);
+  if(!p.b||typeof p.b!=='object'||!SHIPS[p.b.t]||p.yard<SHIPS[p.b.t].yd)p.b=null;else p.b={t:p.b.t,left:int(p.b.left,1,SHIPS[p.b.t].turns)};if(typeof p.pir!=='number'||!isFinite(p.pir))p.pir=0}
+ if(!Array.isArray(s.ships))s.ships=[];s.ships=s.ships.filter(x=>x&&SHIPS[x.t]&&Number.isInteger(x.r)&&R[x.r]&&R[x.r].owner===0&&R[x.r].port.lv>0).map(x=>({t:x.t,r:x.r}));return s}
 function def1b(s,mig){const c=s.cfg,R=s.regions,d=(k,v)=>{if(s[k]==null||typeof s[k]!==typeof v)s[k]=v};
  d('stats',{});const st=s.stats;for(const[k,v]of Object.entries({maxRegions:R.filter(r=>r.owner===0).length,atkWon:0,atkLost:0,defWon:0,defLost:0,capsTaken:0,capLost:0,loot:0,famine:0,famineStreak:0,plagues:0,surBuilt:0,coalBroken:0,coalJoin:0,events:0,choices:0,lostT:0,lastAtk:0,vassals:0,hegMax:0,hegHeld:0,wonderT:0,maxHarb:0,akinN:0,yagmaN:0,haracN:0,declared:0}))if(typeof st[k]!=='number')st[k]=v;
  for(const k of['bestB','worstB','lastLoss'])if(!st[k]||typeof st[k]!=='object')st[k]=null;
@@ -1781,6 +1794,8 @@ const MIG={
  // v9→v10 (G2, 0.13.0): donanım envanteri mevcut ordudan (Piyade/Süvari Kaba demir kılıç, Yeniçeri Çelik kılıç, Okçu yay, zırh yok: ordu milis olmaz), başkente Demirhane Sv.1; bölgelerde atölye yok, 'yalnız donanımlı' kapalı; bir kez bildirim
  9:s=>{if(!Array.isArray(s.regions))return s;for(const r of s.regions)if(r&&typeof r==='object'){r.ws=[];r.eqOnly=false}delete s.eq;def2(s,false);
   const c=s.regions.find(r=>r&&r.owner===0&&r.capital);if(c&&c.mil>=1&&s.cfg&&s.cfg.rules!==1)c.ws.push({t:'demirhane',lv:1,on:true});s.flags=s.flags&&typeof s.flags==='object'?s.flags:{};s.flags.rulesNote=s.flags.rulesNote===1?3:2;return s},
+ // v10→v11 (G3, 0.14.0): bölgelerde liman/tersane yok, gemi yok (eski oyun kıyıdan sıfır başlar); balıkhane yeni tesis; bir kez bildirim
+ 10:s=>{if(!Array.isArray(s.regions))return s;for(const r of s.regions)if(r&&typeof r==='object')r.port={lv:0,yard:0,b:null};s.ships=[];if(s.cfg&&s.cfg.rules!==1){s.flags=s.flags&&typeof s.flags==='object'?s.flags:{};s.flags.rulesNote=(s.flags.rulesNote|0)|4}return s},
 };
 function migrate(s){let v=s.ver==null?4:+s.ver;if(!(v>=4))throw Error('Bilinmeyen kayıt sürümü: '+s.ver);if(v>SAVE_VER)throw Error(`Kayıt daha yeni bir oyun sürümünden (v${v}, bu oyun v${SAVE_VER})`);
  while(v<SAVE_VER){if(!MIG[v])throw Error('Göç adımı yok: v'+v);s=MIG[v](s)||s;v++;s.ver=v}return s}
@@ -1792,10 +1807,13 @@ function validSave(s){const R=s&&s.regions;if(!s||typeof s!=='object'||typeof s.
  if(!Object.keys(s.tech).every(k=>nn(s.tech[k])&&s.tech[k]<=4))return'Teknoloji değerleri bozuk';
  if(!R.every(r=>okU(r.u)&&okU(r.rd)&&['troops','ready','fort','mil','pop','unr','dev','amb'].every(k=>r[k]==null||nn(r[k]))&&r.fields.every(f=>f&&FIELD[f.t]&&nn(f.lv))))return'Bölge birlik/tesis değerleri bozuk';
  if(!R.every(r=>r.ws==null||Array.isArray(r.ws)&&r.ws.every(w=>w&&WS[w.t]&&w.lv>=1&&w.lv<=5)))return'Atölye verisi bozuk';
+ // G3: liman (seviye 0-4, tersane ≤ liman, tezgâhta geçerli gemi) ve gemi listesi (geçerli tür, var olan bölge)
+ if(!R.every(r=>r.port==null||r.port&&typeof r.port==='object'&&Number.isInteger(r.port.lv)&&r.port.lv>=0&&r.port.lv<=4&&Number.isInteger(r.port.yard)&&r.port.yard>=0&&r.port.yard<=r.port.lv&&(r.port.b==null||r.port.b&&SHIPS[r.port.b.t]&&nn(r.port.b.left))))return'Liman verisi bozuk';
+ if(s.ships!=null&&(!Array.isArray(s.ships)||!s.ships.every(x=>x&&SHIPS[x.t]&&Number.isInteger(x.r)&&x.r>=0&&x.r<R.length)))return'Gemi verisi bozuk';
  if(s.eq!=null&&(typeof s.eq!=='object'||!['kilic','yay','zirh'].every(k=>Array.isArray(s.eq[k])&&s.eq[k].length===6&&s.eq[k].every(nn))))return'Donanım verisi bozuk';
  const c=s.cfg;if(!c||typeof c!=='object'||!DYN[c.dyn]||!MAPTYPES[c.map]||!SIZES[c.size]||!DIFFS[c.diff]||!Array.isArray(c.muts))return'Oyun ayarı (hanedan/harita/zorluk) bozuk';
  s.cfg=Object.assign(normCfg({...c}),c);if(typeof s.rs!=='number')s.rs=(s.seed^s.turn)|0;s.ai=s.ai||{};s.cd=s.cd||{akin:0,harac:0,yagma:0};s.truce=s.truce||{};s.coal=s.coal||{on:false,until:0,cd:0,n:0};
- if(!Array.isArray(s.coal.mem))s.coal.mem=s.coal.on?s.cfg.ais.slice():[];if(!Array.isArray(s.coal.out))s.coal.out=[];def1b(s,true);def2(s,false);
+ if(!Array.isArray(s.coal.mem))s.coal.mem=s.coal.on?s.cfg.ais.slice():[];if(!Array.isArray(s.coal.out))s.coal.out=[];def1b(s,true);def2(s,false);def3(s);
  s.evQ=s.evQ.filter(q=>q&&EVM[q.id]);return''}
 function parseSave(raw){let s;try{s=JSON.parse(raw)}catch(e){throw Error('JSON okunamadı ('+e.message+')')}
  if(!s||typeof s!=='object'||Array.isArray(s)||!Array.isArray(s.regions)||!s.regions.length)throw Error('Bu bir Fetih oyun kaydı değil (bölge listesi yok)');
@@ -1857,7 +1875,9 @@ function baseMil(t){const s=t.sal,v=t.sav,k=t.kus,e=t.eko,u=t.ure,g=t.str;return
  atkDyn:0,defDyn:0,suvAtk:1,iron:.3,unitDef:null,fieldBy:{},fieldAll:1,resMult:{},unitGold:1,unitAdd:{},upGold:1,upGoldRate:.1,upTahil:1,
  lootCap:.75,conqMorale:5,conqPop:.7,yenMil:0,tcost:1,featY:{},gecitDef:0,gecitMorale:0,
  // G2: kit demiri çarpanı (Çelik Dövme −%15; Tunç ×0,75, Demir Kıtlığı ×0,7), Demirhane ek kit, kılıç/yay saldırı eki, Yeniçeri kılıç kademesi
- kitIron:s>=2?.85:1,wsAdd:0,kitA:0,yenT:3}}
+ kitIron:s>=2?.85:1,wsAdd:0,kitA:0,yenT:3,
+ // G3: dış ticaret ve gemi bakımı çarpanı (Deniz Beyleri)
+ tradeM:1,shipUp:1}}
 function applyMods(M,L){for(const o of L)for(const[k,v]of Object.entries(o||{}))switch(k){
  case'atkAdd':M.atkDyn+=v;break;case'defAdd':M.defDyn+=v;break;case'equipAdd':M.equip+=v;break;case'fortPer':M.fortPer+=v;break;case'maxFortAdd':M.maxFort+=v;break;
  case'surCost':M.surDisc*=v;break;case'maxFieldAdd':M.maxField=Math.max(1,M.maxField+v);break;case'growth':M.growth*=v;break;case'sightAdd':M.sight=Math.max(0,M.sight+v);break;
@@ -1989,6 +2009,97 @@ function eqTierTxt(o){if(o===NEUTRAL)return'T1';if(!isAI(o))return'';const T=aiT
 // Ülke kuşanma özeti (Ordu sekmesi, saldırı penceresi): tür başına kit, kullanıcı, kapsama, ortalama kademe
 function eqSummary(){const st=eqState(),o={};for(const k in EQK){const a=S.eq[k],n=eqSum(a),U=st.users[k];let q=0;for(let t=1;t<=5;t++)q+=t*a[t];o[k]={n,U,cov:U?Math.min(1,n/U):1,T:n?q/n:0,mil:Math.max(0,U-n)}}return o}
 
+// ======================= G3 (0.14.0): LİMAN, TERSANE, GEMİ, DIŞ TİCARET, BALIKÇILIK (docs/faz2-derinlik.md §D) =======================
+// Liman kenti = kıyı bölgesi. Bölge yapısı r.port={lv,yard,b:{t,left}|null,pir} (tesis/atölye yuvası kullanmaz). Gemiler ülke listesinde S.ships=[{t,r}] (r: bağlı liman).
+// Dış ticaret = min(TG·Σ(Y·R)/(1+Ytot/YK), capF·ticaret dışı brüt altın): Pazar'ın üstüne gelir, tavan hiyerarşiyi korur (iç pazarın malını satar). Gemi askerî değildir (taşıma/deniz savaşı yok).
+// Bedeller (belgede liman taş 25/40/80/120, tersane taş 20-40): taş kuruluş ve surda darboğaz olduğu için ölçümle odun ağırlıklı (aynı toplam değer yaklaşık)
+const PORT=[null,
+ {ad:'İskele',cap:2,cost:{odun:35,tas:10,altin:20}},
+ {ad:'Liman',cap:4,cost:{odun:45,tas:25,altin:30}},
+ {ad:'Büyük Liman',cap:6,cost:{odun:70,tas:50,altin:40},req:['eko',2]},
+ {ad:'Mendirekli Liman',cap:8,cost:{odun:100,tas:80,altin:60,demir:20},req:['eko',4]}];
+const YARD=[null,
+ {ad:'Kızak',cost:{odun:35,tas:5,altin:20},work:4,wage:{tahil:.5,altin:.3}},
+ {ad:'Tersane',cost:{odun:50,tas:10,altin:30},work:8,wage:{tahil:1,altin:.6}},
+ {ad:'Tersane-i Âmire',cost:{odun:75,tas:20,altin:40},work:12,wage:{tahil:1.5,altin:.9}},
+ {ad:'Kalyon Havuzu',cost:{odun:110,tas:30,altin:60,demir:20},work:16,wage:{tahil:2,altin:1.2}}];
+const SHIPS={
+ cektiri:{ad:'Çektiri',yd:1,Y:1,slot:1,cost:{odun:35,altin:20,demir:5},turns:3,crew:3,up:{tahil:.8,altin:.4},storm:.008,d:'Küçük kürekli tekne: ucuz, kısa sürede yapılır.'},
+ karamursel:{ad:'Karamürsel',yd:2,Y:2,slot:1,cost:{odun:70,altin:45,demir:15},turns:4,crew:5,up:{tahil:1.5,altin:.8},storm:.006,d:'Yelkenli yük gemisi: en verimli tüccar.'},
+ kadirga:{ad:'Kadırga',yd:3,Y:2,slot:1,cost:{odun:100,altin:70,demir:40},turns:5,crew:10,up:{tahil:2.5,altin:1.2},storm:.004,esc:.5,d:'Kürekli savaş gemisi: limanın korsan riskini yarıya indirir (2 kadırga: sıfır).'},
+ kalyon:{ad:'Kalyon',yd:4,Y:5,slot:2,cost:{odun:180,altin:120,demir:60,tas:20},turns:6,crew:12,up:{tahil:3,altin:2},storm:.003,bilgi:1,d:'Büyük okyanus gemisi: çok yük, uzak diyarlardan kitap (+1 bilgi/yıl).'}};
+const SHK=Object.keys(SHIPS);
+const SEA={TG:6,YK:30,capF:.6,nat:1.15,natCap:2,natHalf:.5,net:.05,netMax:.2,blk:.75,blkT:.6,unr:.5,idle:.5,refund:.5,sell:.3,pirN:2,pirT:3,lootLv:30,aiShip:.6,
+ fish:{lim:1.6,coast:1.3,vadi:1,bank:.8,port2:1.15,salt:.3,pop:3},
+ // rakip: liman seviyesi akçe getirisi (doygunluklu), azami seviye, bedel; balıkçılık (gelişmiş bölgede)
+ // ölçümle küçük tutuldu (y 1,2 / balık 0,6 ile usta bot Kalfa'da −20 puan: rakip gelirindeki küçük artış orduya katlanarak yansıyor)
+ ai:{y:.5,sat:8,max:1,maxT:3,maxD:1,cost:22,costE:1.3,fish:.2}};
+const G3=()=>G1()&&!!S.ships;
+const natPort=i=>MAP.regions[i].feat==='liman';
+const isCoast=i=>!!MAP.regions[i].coast&&!MAP.regions[i].block;
+const portOf=i=>S.regions[i].port||(S.regions[i].port={lv:0,yard:0,b:null});
+const portLv=i=>(S.regions[i].port&&S.regions[i].port.lv)||0;
+const portCap=i=>{const l=portLv(i);return l?PORT[l].cap+(natPort(i)?SEA.natCap:0):0};
+const shipsAt=i=>S.ships?S.ships.filter(s=>s.r===i):[];
+const portUsed=i=>{const p=portOf(i);let n=p.b?SHIPS[p.b.t].slot:0;for(const s of S.ships||[])if(s.r===i)n+=SHIPS[s.t].slot;return n};
+function portCost(i,lv){let c=PORT[lv].cost;if(lv===1&&natPort(i))c=scaleC(c,SEA.natHalf);return S.flags&&S.flags.bdisc?scaleC(c,1-S.flags.bdisc):c}
+const yardCost=lv=>S.flags&&S.flags.bdisc?scaleC(YARD[lv].cost,1-S.flags.bdisc):YARD[lv].cost;
+const portReqOk=lv=>{const q=PORT[lv]&&PORT[lv].req;return!q||S.tech[q[0]]>=q[1]};
+const canSea=i=>G3()&&S.regions[i].owner===0&&isCoast(i);
+function buildPort(i){if(!canSea(i)||unrOf(i))return;const p=portOf(i),nx=p.lv+1;if(nx>4||!portReqOk(nx))return;const c=portCost(i,nx);if(!canPay(c))return;pay(c);S.flags.bdisc=0;p.lv=nx;S.stats.portBuilt=(S.stats.portBuilt||0)+1;log(`${rName(i)}: ${PORT[nx].ad} kuruldu (Liman Sv.${nx}, ${portCap(i)} gemi yeri).`,'good');refresh()}
+function upYard(i){if(!canSea(i)||unrOf(i))return;const p=portOf(i),nx=p.yard+1;if(nx>4||nx>p.lv)return;const c=yardCost(nx);if(!canPay(c))return;pay(c);S.flags.bdisc=0;p.yard=nx;log(`${rName(i)}: ${YARD[nx].ad} kuruldu (Tersane Sv.${nx}).`,'good');refresh()}
+// Gemi siparişi: tersane seviyesi, boş gemi yeri, tayfa (alınabilir nüfus), bedel peşin; tersane aynı anda 1 gemi yapar
+function shipWhy(i,t){const p=portOf(i),T=SHIPS[t];if(!p.yard)return'Önce tersane kur';if(p.yard<T.yd)return`Tersane Sv.${T.yd} (${YARD[T.yd].ad}) gerekli`;if(p.b)return'Tersane meşgul';
+ if(portUsed(i)+T.slot>portCap(i))return'Limanda yer yok';if(draftable(i)<T.crew)return`Tayfa için ${T.crew} nüfus gerekli`;if(unrOf(i))return TX.unrT;if(!canPay(T.cost))return'Yetersiz kaynak';return''}
+function buildShip(i,t){if(!canSea(i)||!SHIPS[t]||shipWhy(i,t))return;const p=portOf(i);pay(SHIPS[t].cost);p.b={t,left:SHIPS[t].turns};log(`${rName(i)}: ${SHIPS[t].ad} tezgâha kondu (${SHIPS[t].turns} yıl).`);refresh()}
+function cancelShip(i){const p=portOf(i);if(!p.b||S.regions[i].owner!==0)return;const c=SHIPS[p.b.t].cost;for(const k in c)S.res[k]+=c[k]*SEA.refund;log(`${rName(i)}: ${SHIPS[p.b.t].ad} yapımı durduruldu (bedelin yarısı geri alındı).`);p.b=null;refresh()}
+function sellShip(k){const s=S.ships&&S.ships[k];if(!s||S.regions[s.r].owner!==0)return;const T=SHIPS[s.t],r=S.regions[s.r];for(const q in T.cost)S.res[q]+=T.cost[q]*SEA.sell;r.pop=Math.min(maxPop(s.r),r.pop+T.crew);S.ships.splice(k,1);log(`${rName(s.r)}: ${T.ad} satıldı (bedelin %30'u, tayfa karaya döndü).`);refresh()}
+// tersane işçisi (yalnız yapım sürerken): işgücünden ve alınabilir nüfustan düşer
+const yardWork=i=>{const p=S.regions[i].port;return p&&p.b&&p.yard&&S.regions[i].owner===0?YARD[p.yard].work:0};
+// Gemi bakımı + tersane ücreti (yapım sürerken tam, boşta %50)
+function seaUp(){const o={tahil:0,altin:0,bilgi:0};if(!G3())return o;const su=mil().shipUp;for(const s of S.ships){const u=SHIPS[s.t].up;o.tahil+=u.tahil*su;o.altin+=u.altin*su}
+ for(const i of own()){const p=S.regions[i].port;if(!p||!p.yard)continue;const w=YARD[p.yard].wage,m=p.b?1:SEA.idle;o.tahil+=w.tahil*m;o.altin+=w.altin*m}return o}
+// Limanın ticaret çarpanı: doğal liman, ticaret ağı (her ek liman kenti +%5, en çok +%20), abluka (savaştaki rakip komşu kıyıda; Tüccar ×0,60), huzursuzluk, korsan baskını
+function blockers(i){const o=[];if(S.turn<S.cfg.grace)return o;for(const j of MAP.regions[i].adj){const w=S.regions[j].owner;if(isAI(w)&&!isVas(w)&&!truceOn(w)&&isCoast(j)&&!o.includes(w))o.push(w)}return o}
+function portR(i,netF){const r=S.regions[i];if(r.port&&r.port.pir>S.turn)return 0;let m=(natPort(i)?SEA.nat:1)*netF;const b=blockers(i);if(b.length)m*=b.some(f=>S.ai[f]&&S.ai[f].per==='tuccar')?SEA.blkT:SEA.blk;if(unrOf(i))m*=SEA.unr;return m}
+function tradeInfo(gAlt){const o={v:0,raw:0,g:gAlt,cap:Math.max(0,SEA.capF*gAlt),Y:0,YR:0,sat:1,n:0,ports:0,bilgi:0,blk:[],pir:[]};if(!G3())return o;
+ const P=own().filter(i=>portLv(i)>0);o.ports=P.length;if(!S.ships.length)return o;const netF=1+Math.min(SEA.netMax,SEA.net*Math.max(0,P.length-1)),R={};
+ for(const s of S.ships){if(S.regions[s.r].owner!==0)continue;const T=SHIPS[s.t];if(R[s.r]==null){R[s.r]=portR(s.r,netF);for(const f of blockers(s.r))if(!o.blk.includes(f))o.blk.push(f);if(S.regions[s.r].port.pir>S.turn)o.pir.push(s.r)}
+  o.n++;o.Y+=T.Y;o.YR+=T.Y*R[s.r];if(T.bilgi)o.bilgi+=T.bilgi}
+ o.sat=1/(1+o.Y/SEA.YK);o.raw=SEA.TG*o.YR*o.sat*mil().tradeM;o.v=Math.min(o.raw,o.cap);return o}
+// Korsan riski (yıllık, liman başına; ≥2 gemili limanda): zorluk %2-4 · kadırga refakati −%50 her biri · haraç bağışıklığı · 'yok say' ×1,5
+function pirP(i){if(!G3())return 0;const sh=shipsAt(i);if(sh.length<SEA.pirN||S.flags.pirImm>S.turn)return 0;const kad=sh.filter(s=>s.t==='kadirga').length;
+ return Math.max(0,(DIFFS[S.cfg.diff].pir||.02)*(1-SHIPS.kadirga.esc*kad)*(S.flags.pirX>S.turn?1.5:1))}
+// Yıl sonu: tezgâhtaki gemiler (huzursuz limanda durur), fırtına zarı, korsan zarı. Bütün zarlar rnd(); sıra sabit (gemi listesi, bölge sırası)
+function shipTick(ev){if(!G3())return;const st=S.stats,sea=st.sea=st.sea||{built:0,sunk:0,pir:0,lost:0};
+ for(const i of own()){const p=S.regions[i].port;if(!p||!p.b||unrOf(i))continue;if(--p.b.left<=0){const T=SHIPS[p.b.t],r=S.regions[i];S.ships.push({t:p.b.t,r:i});r.pop=Math.max(0,r.pop-T.crew);sea.built++;log(`⚓ ${rName(i)}: ${T.ad} denize indi.`,'good');p.b=null}}
+ if(!S.ships.length)return;const sunk=[];
+ S.ships=S.ships.filter(s=>{if(rnd()<SHIPS[s.t].storm){sunk.push(s);return false}return true});
+ if(sunk.length){sea.sunk+=sunk.length;ev.push({m:`🌊 Fırtına: ${sunk.map(s=>`${SHIPS[s.t].ad} (${rName(s.r)})`).join(', ')} battı; tayfasıyla birlikte.`,c:'bad'})}
+ for(const i of own()){const p=pirP(i);if(p<=0||!(rnd()<p))continue;sea.pir++;const small=S.ships.findIndex(s=>s.r===i&&(s.t==='cektiri'||s.t==='karamursel'));
+  if(small>=0&&rnd()<.5){const s=S.ships.splice(small,1)[0];sea.lost++;ev.push({m:`🏴 Korsanlar ${rName(i)} açıklarında bir ${SHIPS[s.t].ad} ele geçirdi.`,c:'bad'})}
+  else{S.regions[i].port.pir=S.turn+SEA.pirT;ev.push({m:`🏴 Korsan baskını: ${rName(i)} limanının ticareti ${SEA.pirT} yıl durdu. (Kadırga refakati riski yarıya indirir.)`,c:'bad'})}}}
+// Liman kenti el değiştirdi: liman 1 seviye düşer, tezgâhtaki gemi kaybolur; oyuncunun gemilerinin yarısı fatihe geçer (rakipte akçe olarak bedelin %60'ı), kalanı en yakın boş limana kaçar ya da batar
+function portFall(i,old,o){const p=S.regions[i].port;if(!p)return 0;let fleet=0;const lv0=p.lv;
+ if(old===0&&G3()){const here=S.ships.filter(s=>s.r===i).sort((a,b)=>SHK.indexOf(b.t)-SHK.indexOf(a.t));if(here.length){S.ships=S.ships.filter(s=>s.r!==i);const nGo=fl(here.length/2);let lost=0,fled=0;
+  here.forEach((s,k)=>{if(k<nGo){if(isAI(o)&&S.ai[o]){const c=SHIPS[s.t].cost;S.ai[o].h=(S.ai[o].h||0)+SEA.aiShip*Object.values(c).reduce((a,b)=>a+b,0)}lost++;return}
+   const d=bfs(i),to=own().filter(j=>j!==i&&portLv(j)>0&&portUsed(j)+SHIPS[s.t].slot<=portCap(j)).sort((a,b)=>d[a]-d[b]||a-b)[0];if(to!=null){S.ships.push({t:s.t,r:to});fled++}else lost++});
+  if(S.stats){const sea=S.stats.sea=S.stats.sea||{built:0,sunk:0,pir:0,lost:0};sea.lost+=lost}
+  log(`⚓ ${rName(i)} düştü: ${nGo?`${nGo} gemi ${facName(o)} eline geçti`:''}${nGo&&fled?', ':''}${fled?`${fled} gemi kaçtı`:''}${here.length-nGo-fled>0?`, ${here.length-nGo-fled} gemi battı`:''}.`,'bad')}}
+ if(o===0&&isAI(old)&&lv0)fleet=SEA.lootLv*lv0;
+ p.lv=Math.max(0,lv0-1);p.yard=Math.min(p.yard||0,p.lv);p.b=null;p.pir=0;return fleet}
+// Rakip limanı (akçe modeli): liman seviyesi gelir getirir (doğal liman ×1,15, Tüccar ×1,5, Deniz Beyleri ×1,2; toplam seviyeyle doygun), gelişim bütçesinden kurulur
+const aiPortMax=f=>Math.min(4,(S.ai[f]&&S.ai[f].per==='tuccar'?SEA.ai.maxT:SEA.ai.max)+(aiDyn(f)==='deniz'?SEA.ai.maxD:0));
+const aiPortCost=lv=>Math.round(SEA.ai.cost*(lv+1)**SEA.ai.costE);
+function aiTrade(f){if(!G3())return 0;let y=0,L=0;const m=(S.ai[f]&&S.ai[f].per==='tuccar'?1.5:1)*(aiDyn(f)==='deniz'?1.2:1);
+ S.regions.forEach((r,i)=>{if(r.owner!==f||!r.port||!r.port.lv)return;L+=r.port.lv;y+=SEA.ai.y*r.port.lv*(natPort(i)?SEA.nat:1)});return y*m/(1+L/SEA.ai.sat)}
+// ---- balıkçılık: Balıkhane (nehirde "Dalyan") kıyıda, Nehir Vadisi'nde ya da nehir kenarında; verim kıyı 1,3 · doğal liman 1,6 · vadi 1,0 · nehir kenarı 0,8 ----
+const RIVB={m:null,a:null};
+function rivBank(i){if(RIVB.m!==MAP){RIVB.m=MAP;RIVB.a=MAP.regions.map((g,k)=>!g.block&&g.adj.some(j=>MAP.cross.has(pkey(k,j))))}return RIVB.a[i]}
+function fishEff(i){if(!G1())return 0;const g=MAP.regions[i],F=SEA.fish;if(g.block)return 0;return g.feat==='liman'?F.lim:g.coast?F.coast:g.terrain==='vadi'?F.vadi:rivBank(i)?F.bank:0}
+const fieldOk=(i,t)=>t!=='balik'||fishEff(i)>0;
+const fieldAd=(i,t)=>t==='balik'&&!isCoast(i)?'Dalyan':FIELD[t].ad;
+
 function crossAt(a,b){return MAP.cross.get(pkey(a,b))}
 function riverF(o,a,b){const c=crossAt(a,b);if(!c||c.bridge)return 1;return o===0?mil().river:.7}
 function atkParts(o,n,from,to){const p=[];if(o===0){const M=mil(),cov=n>0?Math.min(1,S.res.demir/(n*M.iron)):1;
@@ -2048,11 +2159,13 @@ function conquer(i,o,comp,fr){
  const r=S.regions[i],old=r.owner,g=MAP.regions[i],store=o===0?lootStore(i):null,wasCap=r.capital,kill=r.troops,dev0=r.dev||0;let loot=null;EQV++;r.owner=o;r.u=Object.assign(Z(),comp);r.rd=Z();sync(r);r.fort=Math.max(0,r.fort-1);r.pop*=o===0?mil().conqPop:.7;r.raid=0;
  if(r.mil>1)r.mil--;r.fields.forEach(f=>{if(f.lv>1)f.lv--});
  if(r.ws&&r.ws.length){r.ws.forEach(w=>{if(w.lv>1)w.lv--});r.ws.length=Math.min(r.ws.length,EQ.slots[r.mil]||0)}
+ const fleet=G1()?portFall(i,old,o):0;// G3: liman −1, gemiler el değiştirir
  if(G1()){const U=BRK.unr;if(o===0){r.unr=r.lost0&&S.turn-r.lost0<=30?U.geri:old===NEUTRAL?U.kabile:wasCap?U.cap:U.rakip;if(isAI(old)&&r.dev){store.altin+=15*r.dev;r.dev--}}else{r.unr=0;if(old===0)r.lost0=S.turn}
   if(isAI(old)&&S.ai&&S.ai[old]&&o!==old){const a=S.ai[old];a.lostR=(a.lostR||[]).filter(x=>x.t>=S.turn-1&&x.i!==i);a.lostR.push({i,t:S.turn,by:o})}}
  if(o===0){r.auto=true;const rate=lootRate(fr==null?.7:fr);loot={store,rate,got:{},lost:{},yorgun:yorgun()};for(const k in store){loot.got[k]=store[k]*rate;loot.lost[k]=store[k]-loot.got[k];S.res[k]+=loot.got[k]}
   // G2: savaş ganimeti kılıç (öldürülen düşmanın %15'i, T1) + rakip cephaneliği (2,5·(gelişim+1) kılıç, rakibin kademesinde)
   if(G1()){eqState();const E=S.eq,k1=EQ.loot*kill,T=isAI(old)?aiTierOf(old):1,k2=isAI(old)?EQ.aiLoot*(dev0+1):0;E.kilic[1]+=k1;if(k2)E.kilic[T]+=k2;eqTouch();loot.kits={n:k1+k2,T:k2?T:1}}}
+ if(fleet&&loot){S.res.altin+=fleet;loot.fleet=fleet}
  if(old===0)S.morale=Math.max(0,S.morale-6);
  if(r.capital){r.capital=false;if(old!==NEUTRAL){const rest=S.regions.map((x,k)=>k).filter(k=>S.regions[k].owner===old);
   if(rest.length){const c=rest.sort((a,b)=>S.regions[b].troops-S.regions[a].troops)[0];S.regions[c].capital=true;
@@ -2072,26 +2185,29 @@ function capFall(i,old,o){const W=S.wonder,C=S.coal,A=S.aiW;
  if(A.f===old&&(A.stage||S.medClosed===old)){log(`📜 ${facName(old)} başkentini kaybetti: Büyük Eseri yıkıldı.`,'good');A.stage=0;A.next=S.turn+VIC.medeniyet.aiEvery;if(S.medClosed===old){S.medClosed=null;log('📜 Medeniyet yolu yeniden açıldı.','good')}}}
 
 // ======================= EKONOMİ & NÜFUS =======================
-function maxPop(i){const g=MAP.regions[i],r=S.regions[i];let m=TER[g.terrain].pop+(r.capital?25:0)+(g.feat==='liman'||g.feat==='kavsak'?10:0)+(g.feat==='verimli'?15:0);for(const f of r.fields)if(f.t==='tarla')m+=6*f.lv;return m}
+function maxPop(i){const g=MAP.regions[i],r=S.regions[i];let m=TER[g.terrain].pop+(r.capital?25:0)+(g.feat==='liman'||g.feat==='kavsak'?10:0)+(g.feat==='verimli'?15:0);for(const f of r.fields)if(f.t==='tarla')m+=6*f.lv;else if(f.t==='balik')m+=SEA.fish.pop*f.lv;return m}
 const popFloor=i=>Math.ceil(maxPop(i)*.25);
 // G2: atölye işçisi (3·Sv) asker alınabilir nüfustan ve işgücünden düşer
-const draftable=i=>Math.max(0,fl(S.regions[i].pop-popFloor(i)-wsWork(i)));
-const workforce=i=>clamp((S.regions[i].pop-wsWork(i))/(maxPop(i)*.5),.4,1);
+// G3: tersane işçisi (yapım sürerken) de
+const draftable=i=>Math.max(0,fl(S.regions[i].pop-popFloor(i)-wsWork(i)-yardWork(i)));
+const workforce=i=>clamp((S.regions[i].pop-wsWork(i)-yardWork(i))/(maxPop(i)*.5),.4,1);
 function slots(i){const g=MAP.regions[i],r=S.regions[i];return TER[g.terrain].slots+(r.capital?1:0)+(g.feat==='verimli'?1:0)}
-function fieldEff(i,t){const g=MAP.regions[i],F=FIELD[t];let e=F.eff[g.terrain]||1;if(g.feat==='verimli'&&(t==='tarla'||t==='pazar'))e*=1.5;if(g.feat==='damar'&&(t==='demir'||t==='tasocagi'))e*=1.6;return e}
-function fieldOut(i,f,lv=f.lv){const F=FIELD[f.t],M=mil();let v=F.base*LVM[lv]*fieldEff(i,f.t)*M.fieldMult*(S.regions[i].owner===0?workforce(i):1);if(F.r==='tahil')v*=M.tarla;if(F.r==='altin')v*=M.altinMult;
- if(M.fieldBy[f.t])v*=M.fieldBy[f.t];if(M.fieldAll!==1)v*=M.fieldAll;if(M.resMult[F.r])v*=M.resMult[F.r];if(F.r==='tahil'&&S.buffs&&S.buffs.length&&S.regions[i].owner===0)v*=buffMul('tarla');return v}
+function fieldEff(i,t){const g=MAP.regions[i],F=FIELD[t];if(t==='balik'){const e=fishEff(i);return e&&portLv(i)>=2?e*SEA.fish.port2:e}let e=F.eff[g.terrain]||1;if(g.feat==='verimli'&&(t==='tarla'||t==='pazar'))e*=1.5;if(g.feat==='damar'&&(t==='demir'||t==='tasocagi'))e*=1.6;return e}
+function fieldOut(i,f,lv=f.lv){const F=FIELD[f.t],M=mil();let v=F.base*LVM[lv]*fieldEff(i,f.t)*M.fieldMult*(S.regions[i].owner===0?workforce(i):1);const fi=f.t==='balik';if(F.r==='tahil'&&!fi)v*=M.tarla;if(F.r==='altin')v*=M.altinMult;
+ if(M.fieldBy[f.t])v*=M.fieldBy[f.t];if(M.fieldAll!==1)v*=M.fieldAll;if(M.resMult[F.r])v*=M.resMult[F.r];if(F.r==='tahil'&&!fi&&S.buffs&&S.buffs.length&&S.regions[i].owner===0)v*=buffMul('tarla');return v}
 function prodParts(i){const g=MAP.regions[i],r=S.regions[i],p=[],M=mil(),am=M.altinMult,rm=M.resMult,fy=r.owner===0&&g.feat&&M.featY[g.feat]||g.feat&&FEAT[g.feat].y;
  for(const[k,v]of Object.entries(TER[g.terrain].y))p.push([TER[g.terrain].ad,k,(k==='altin'?v*am:v)*(rm[k]||1)]);
  if(fy)for(const[k,v]of Object.entries(fy))p.push([FEAT[g.feat].ad,k,k==='altin'?v*am:v]);
  if(r.capital)for(const[k,v]of Object.entries({tahil:2,altin:3,demir:2,bilgi:3}))p.push(['★ Başkent',k,k==='altin'?v*am:v]);
- r.fields.forEach(f=>p.push([`${FIELD[f.t].e} ${FIELD[f.t].ad} Sv.${f.lv}`,FIELD[f.t].r,fieldOut(i,f)]));return p}
+ r.fields.forEach(f=>{p.push([`${FIELD[f.t].e} ${fieldAd(i,f.t)} Sv.${f.lv}`,FIELD[f.t].r,fieldOut(i,f)]);if(f.t==='balik'&&f.lv>=3&&isCoast(i))p.push(['🧂 Tuzlama','altin',SEA.fish.salt*f.lv*am*(r.owner===0?workforce(i):1)])});return p}
 function production(i){const r=S.regions[i],y={},m=(r.raid>S.turn?.5:1)*(r.qt>S.turn?.5:1)*(r.owner===0&&G1()?tasra(i)*huzur(i):1);prodParts(i).forEach(([,k,v])=>y[k]=(y[k]||0)+v*m);return y}
 function economy(){const gross={tahil:0,odun:0,tas:0,demir:0,altin:0,bilgi:0};let troops=0,uw=0,pop=0,mpop=0;
  own().forEach(i=>{const r=S.regions[i];addY(gross,production(i));troops+=r.troops;pop+=r.pop;mpop+=maxPop(i);uw+=UK.reduce((s,k)=>s+r.u[k]*UNITS[k].up,0)});
  const M=mil(),up={tahil:uw*.15*M.upkeep*M.upTahil,altin:uw*M.upGoldRate*M.upkeep*M.upGold},net={},wg=wsWage();up.tahil+=wg.tahil;up.altin+=wg.altin;
+ // G3: dış ticaret (ticaret dışı brüt altına göre tavanlı; vasal haracı tavana sayılmaz), Kalyon bilgisi, gemi bakımı + tersane ücreti
+ let tr=null,su=null;if(G3()){tr=tradeInfo(gross.altin);gross.altin+=tr.v;gross.bilgi+=tr.bilgi;su=seaUp();up.tahil+=su.tahil;up.altin+=su.altin}
  if(S.flags){const mc=S.flags.merc;if(mc&&mc.u>S.turn)up.altin+=3;for(const f of S.cfg.ais)if(isVas(f))gross.altin+=VIC.hegemonya.tribute(aiRegs(f))}const ida=idare();for(const k in gross)net[k]=gross[k]-(up[k]||0)-(k==='altin'?ida:0);
- return{gross,up,net,troops,pop,mpop,idare:ida,wage:wg}}
+ return{gross,up,net,troops,pop,mpop,idare:ida,wage:wg,trade:tr,sea:su}}
 // Ganimet: fethedilen bölgenin stoğu (üretim + garnizon sandığı). Yalnızca bir kısmı ele geçer, kalanı yangın ve yağmada zayi olur.
 function lootStore(i,tr){const r=S.regions[i],g=MAP.regions[i],y=production(i),t=tr==null?r.troops:tr,s={};
  for(const k of['tahil','odun','tas','demir','altin'])s[k]=(y[k]||0)*8;
@@ -2100,7 +2216,7 @@ function lootStore(i,tr){const r=S.regions[i],g=MAP.regions[i],y=production(i),t
 const lootRate=fr=>clamp(.3+.3*fr+mil().loot+(S.buffs&&hasBuff('bey')?.1:0),.25,mil().lootCap)*yorgun();
 const lootLine=(st,rate)=>Object.entries(st).filter(([k,v])=>v*rate>=.5).map(([k,v])=>RM[k].e+Math.round(v*rate)).join(' ')||'—';
 function lootHtml(L){if(!L)return'';const ks=Object.keys(L.store).filter(k=>L.store[k]>=.5);
- return`<h4>💰 Ganimet · bölge stokunun %${Math.round(L.rate*100)}'i ele geçti</h4>${L.kits&&L.kits.n>=.5?`<div class=kv><span>${ic('saldiri')} Ele geçen kılıç</span><span class=pos>+${fl(L.kits.n)} (${EQ.ad[L.kits.T]})</span></div>`:''}${L.yorgun&&L.yorgun<1?`<p class=muted style="font-size:var(--t-xs);margin:0 0 4px">${TX.yorgun(Math.round((1-L.yorgun)*100))}</p>`:''}<table><tr><th>Kaynak</th><th>Bölge stoku</th><th>Alınan</th><th>Zayi</th></tr>${ks.map(k=>`<tr><td>${RM[k].e} ${RM[k].ad}</td><td>${Math.round(L.store[k])}</td><td class=pos>+${Math.round(L.got[k])}</td><td class=neg>-${Math.round(L.lost[k])}</td></tr>`).join('')}</table><p class=muted style="font-size:var(--t-xs);margin:6px 0 0">Kalan kısım savaşta yangın, yağma ve bozulmayla zayi oldu. Ne kadar az kayıp verirsen o kadar çok kurtarırsın.</p>`}
+ return`<h4>💰 Ganimet · bölge stokunun %${Math.round(L.rate*100)}'i ele geçti</h4>${L.fleet?`<div class=kv><span>${ic('liman')} Filo ganimeti (rakip limanı)</span><span class=pos>+${fl(L.fleet)} 🪙</span></div>`:''}${L.kits&&L.kits.n>=.5?`<div class=kv><span>${ic('saldiri')} Ele geçen kılıç</span><span class=pos>+${fl(L.kits.n)} (${EQ.ad[L.kits.T]})</span></div>`:''}${L.yorgun&&L.yorgun<1?`<p class=muted style="font-size:var(--t-xs);margin:0 0 4px">${TX.yorgun(Math.round((1-L.yorgun)*100))}</p>`:''}<table><tr><th>Kaynak</th><th>Bölge stoku</th><th>Alınan</th><th>Zayi</th></tr>${ks.map(k=>`<tr><td>${RM[k].e} ${RM[k].ad}</td><td>${Math.round(L.store[k])}</td><td class=pos>+${Math.round(L.got[k])}</td><td class=neg>-${Math.round(L.lost[k])}</td></tr>`).join('')}</table><p class=muted style="font-size:var(--t-xs);margin:6px 0 0">Kalan kısım savaşta yangın, yağma ve bozulmayla zayi oldu. Ne kadar az kayıp verirsen o kadar çok kurtarırsın.</p>`}
 function popGrowth(i){const r=S.regions[i],mx=maxPop(i);return Math.max(0,Math.min(mx-r.pop,(mx-r.pop)*.08*(r.owner===0?mil().growth:1)+.5))}
 const fieldCount=()=>own().reduce((s,i)=>s+S.regions[i].fields.length,0);
 function newFieldCost(t){return scaleC(FIELD[t].cost,1+.2*fieldCount())}
@@ -2118,7 +2234,7 @@ const techName=(b,k)=>BR.find(x=>x.id===b).t[k-1].ad;
 
 // ======================= OYUNCU EYLEMLERİ =======================
 const fundCost=t=>{const fc=startOf(cfgOf()).fundCost;return fc&&fc[t]!=null?fc[t]:FIELD[t].fund};
-function buyStart(t){const c=capIdx(),fc=fundCost(t);if(S.phase!=='kurulus'||S.fund<fc||S.regions[c].fields.length>=slots(c))return;S.fund-=fc;
+function buyStart(t){const c=capIdx(),fc=fundCost(t);if(!FIELD[t]||!fieldOk(c,t)||S.phase!=='kurulus'||S.fund<fc||S.regions[c].fields.length>=slots(c))return;S.fund-=fc;
  const lv=t==='tarla'&&(cfgOf().bonus||[]).includes('ciftci')&&!S.regions[c].fields.some(f=>f.t==='tarla')?2:1;S.regions[c].fields.push({t,lv});refresh()}
 function unbuyStart(k){const c=capIdx(),f=S.regions[c].fields[k];if(S.phase!=='kurulus'||!f||f.gift)return;S.fund+=fundCost(f.t);S.regions[c].fields.splice(k,1);refresh()}
 // Önerilen kuruluş: başkentte en verimli tesisleri hazinenin yettiği kadar al (Hızlı Başla ve bot için)
@@ -2127,7 +2243,7 @@ function autoSetup(){const c=capIdx(),W0={tarla:1.6,pazar:1.5,medrese:2};const p
 function finishSetup(){const c=capIdx();if(!S.regions[c].fields.length)return;S.res.altin+=S.fund;
  log(`Kuruluş tamamlandı: ${S.regions[c].fields.map(f=>FIELD[f.t].ad).join(', ')}.${S.fund?` Kalan ${S.fund} akçe hazineye aktarıldı.`:''} Barış dönemi: rakipler ${S.cfg.grace}. yıla kadar sana saldırmaz.`,'good');
  S.fund=0;S.phase='oyun';closeModal();ui.tab='bolge';ui.rtab='tesis';refresh()}
-function buildField(i,t){const c=newFieldCost(t),r=S.regions[i];if(r.owner!==0||unrOf(i)||r.fields.length>=slots(i)||!canPay(c))return;pay(c);r.fields.push({t,lv:1});log(`${MAP.regions[i].name}: ${FIELD[t].ad} kuruldu.`);refresh()}
+function buildField(i,t){const c=newFieldCost(t),r=S.regions[i];if(!FIELD[t]||!fieldOk(i,t)||r.owner!==0||unrOf(i)||r.fields.length>=slots(i)||!canPay(c))return;pay(c);r.fields.push({t,lv:1});log(`${MAP.regions[i].name}: ${FIELD[t].ad} kuruldu.`);refresh()}
 function upgradeField(i,k){const r=S.regions[i],f=r.fields[k];if(!f||r.owner!==0||unrOf(i)||f.lv>=mil().maxField)return;const c=upFieldCost(f);if(!canPay(c))return;pay(c);f.lv++;log(`${MAP.regions[i].name}: ${FIELD[f.t].ad} Sv.${f.lv} oldu.`);refresh()}
 function upgradeMil(i){const r=S.regions[i],nx=r.mil+1;if(r.owner!==0||nx>5||S.tech.ure<MIL[nx].tech||!canPay(milCost(nx)))return;pay(milCost(nx));S.flags.bdisc=0;r.mil=nx;log(`${MAP.regions[i].name}: ${MIL[nx].ad} kuruldu (kademe ${nx}).`,'good');refresh()}
 // G1: Ambar (bölge yapısı, Sv.1-3; tesis yuvası kullanmaz): her seviye bütün dökme kaynakların tavanına +120
@@ -2229,6 +2345,7 @@ function endTurn(){if(!S)return;if(S.over){if(!TEST)afterModal();return}if(S.pha
  let made=0,noPop=0;own().forEach(i=>{const r=S.regions[i];if(!r.mil||!r.auto||unrOf(i))return;const ut=autoType(i),U=UNITS[ut],c=unitCost(i,ut),fw=g2&&EQW[ut]&&ut!=='suv'&&ut!=='yen'?fl(eqFreeW(ut)+1e-6):Infinity,n=Math.min(autoRate(i),maxAfford(c),fl(draftable(i)/U.pop),eqCap(ut),r.eqOnly?fw:Infinity);
   if(n<autoRate(i)&&draftable(i)<U.pop*autoRate(i))noPop++;if(n>0){if(fw<n)st.milis=(st.milis||0)+n-fw;for(const k in c)S.res[k]-=c[k]*n;addU(r,{[ut]:n},false);r.pop-=n*U.pop;made+=n;st.recruited[ut]+=n}});
  if(made)log(`Askeri kuruluşlar ${made} birlik yetiştirdi.${noPop?` (${noPop} bölgede nüfus yetersiz)`:''}`);
+ if(g2)shipTick(ev);// G3: tezgâh, fırtına, korsan
  S.regions.forEach((r,i)=>{if(r.owner===BLOCK)return;if(r.owner===0&&famine)r.pop*=.95;else r.pop+=popGrowth(i)});
  const mabet=own().filter(i=>MAP.regions[i].feat==='mabet').length,gecit=M.gecitMorale?own().filter(i=>MAP.regions[i].feat==='gecit').length*M.gecitMorale:0;
  if(ok)S.morale=Math.min(M.maxMorale,S.morale+M.moraleRec+mabet*2+gecit);S.morale=Math.max(0,S.morale);
@@ -2372,6 +2489,12 @@ const EVENTS=[
  {id:'E18',ad:'Usta Akıncı Beyi',e:'🏇',tur:'iyi',auto:true,w:5,cond:()=>conqLast(5)>=3&&!hasBuff('bey'),
   opts:[{fx:()=>{addBuff('bey',1,null);return'Sonraki saldırında moral yerine ×1,15 ve ganimet +%10.'}}]},
  // Sistem olayı S3: Biat Teklifi (Hegemonya). Diğer sistem olayları (S1 koalisyon, S2 eser yarışı, S4 barış bitti) yıl raporunda.
+ // G3 (0.14.0): korsanlar (≥2 gemili limanın varken)
+ {id:'E19',ad:'Korsan Reisi',e:'🏴',tur:'secim',w:6,cond:()=>G3()&&S.turn>=12&&own().some(i=>shipsAt(i).length>=SEA.pirN)&&!(S.flags.pirImm>S.turn),
+  txt:()=>'Kıyılarında dolaşan bir korsan reisi, gemilerine dokunmamak için haraç istiyor.',
+  opts:[{t:'Haraç ver',d:'−40🪙 · 15 yıl korsan baskını yok',ok:()=>S.res.altin>=40,fx:()=>{S.res.altin-=40;S.flags.pirImm=S.turn+15;return'−40🪙, 15 yıl korsan bağışıklığı'}},
+   {t:'Kadırgaları yolla',d:'Kadırga gerekir: korsan yuvası basılır, +35🪙 ganimet, 10 yıl korsan baskını yok',ok:()=>!!S.ships&&S.ships.some(s=>s.t==='kadirga'),fx:()=>{S.flags.pirImm=S.turn+10;return give({altin:35})+', 10 yıl korsan bağışıklığı'}},
+   {t:'Yok say',d:'10 yıl korsan riski ×1,5',c:'bad',fx:()=>{S.flags.pirX=S.turn+10;return'10 yıl korsan riski ×1,5'}}]},
  {id:'S3',ad:'Biat Teklifi',e:'⛓',tur:'sistem',sys:true,
   txt:d=>`${facName(d.f)}${persTag(d.f)} yenik düştü ve elçi gönderdi: sana biat etmek istiyor.`,
   opts:[{t:'Biatı kabul et',d:'Vasal olur: sana saldırmaz, her yıl haraç (4 + 2×bölge 🪙) öder, koalisyona katılmaz. +40🪙. Başkenti Hegemonya\'ya, bölgeleri (8 yıllık sadakat süresinden sonra) Fetih\'e senin sayılır.',ok:d=>aliveAI(d.f)&&!isVas(d.f),fx:d=>makeVassal(d.f)},
@@ -2458,8 +2581,9 @@ function pickFocus(f,front){const P=aiPer(f),R=S.regions,G=MAP.regions,atP=S.tur
   const v=P.stackWeak?-t.troops:(o===0?P.score.player:0)+(t.capital?P.score.cap:0)+(G[j].feat?P.score.feat:0)-t.troops/30;if(v>bv){bv=v;b=i}}return b}
 // ---- G1 rakip ekonomisi ("akçe"): gelir = bölge verimi × zorluk × kişilik × kart × dengeleyici; harcama: bakım → rezerv (3 yıllık bakım) → ordu/gelişim/donanım/sur ----
 function aiYield(i){const g=MAP.regions[i],r=S.regions[i],f=r.owner,P=aiPer(f);let y=3+Object.values(TER[g.terrain].y).reduce((a,b)=>a+b,0)+2.5*(r.dev||0)+(r.capital?8:0);
- if(g.feat){const tr=g.feat==='liman'||g.feat==='kavsak';y+=tr?3*(P.feat?1.5:1)+(aiDyn(f)==='deniz'?2:0):1}return y}
-function aiIncome(f){const D=DIFFS[S.cfg.diff],P=aiPer(f),C=S.coal;let y=0;S.regions.forEach((r,i)=>{if(r.owner===f)y+=aiYield(i)});
+ if(g.feat){const tr=g.feat==='liman'||g.feat==='kavsak';y+=tr?3*(P.feat?1.5:1)+(aiDyn(f)==='deniz'?2:0):1}
+ if(G3()&&(r.dev||0)>=1)y+=SEA.ai.fish*fishEff(i);return y}// G3: gelişmiş kıyı/nehir bölgesinde balıkçılık
+function aiIncome(f){const D=DIFFS[S.cfg.diff],P=aiPer(f),C=S.coal;let y=0;S.regions.forEach((r,i)=>{if(r.owner===f)y+=aiYield(i)});y+=aiTrade(f);// G3: liman ticareti
  return y*D.eco*P.eco*fxOf().aiGain*(1+balance().inc)*(C&&C.on&&C.mem.includes(f)?1.1:1)*(S.flags.aiHalf===S.turn?.5:1)}
 const aiUpkeep=f=>AIX.up*S.regions.reduce((s,r)=>s+(r.owner===f?UK.reduce((a,k)=>a+r.u[k]*UNITS[k].up,0):0),0);
 // Eksik rakip alanları (yeni oyun, v8 göçü, doğrulama): hazine, teknoloji puanı ve kademe mevcut duruma göre türetilir
@@ -2483,8 +2607,13 @@ function aiEcon(f,mine,front,sm,plan){const R=S.regions,G=MAP.regions,D=DIFFS[S.
  a.tp+=(.4+.05*mine.length)*D.aiTech+.25*mine.filter(i=>G[i].feat==='harabe').length;
  const sp=Math.max(0,a.h-3*up);if(sp<=0)return Z();a.h-=sp;const b=P.bud,tot=b[0]+b[1]+b[2]+b[3];let arm=sp*b[0]/tot;
  if(a.tier<D.eqCap){a.eP+=sp*b[2]/tot;while(a.tier<D.eqCap&&a.eP>=TIER.need(a.tier+1)&&S.turn>=TIER.from(a.tier+1)){a.tier++;if(S.tech.str>=2)log(`${facName(f)} ordusu donanım kademesi ${ROM[a.tier]}'e yükseldi.`)}}else arm+=sp*b[2]/tot;
- const pf=i=>G[i].adj.some(j=>R[j].owner===0),dv=mine.filter(i=>(R[i].dev||0)<3&&!pf(i));
- if(dv.length){a.dP+=sp*b[1]/tot;const yv=i=>Object.values(TER[G[i].terrain].y).reduce((x,y)=>x+y,0)+(R[i].capital?1:0)-(front.includes(i)?.5:0);dv.sort((x,y)=>yv(y)-yv(x));
+ const pf=i=>G[i].adj.some(j=>R[j].owner===0),dv=mine.filter(i=>(R[i].dev||0)<3&&!pf(i)),pc=G3()?mine.filter(i=>isCoast(i)&&portLv(i)<aiPortMax(f)&&!pf(i)):[];
+ // G3: gelişim bütçesi bölge gelişimi ile liman arasında getiri/bedel oranına göre paylaşılır (liman adayı yoksa sıra eskisi gibi)
+ if(dv.length||pc.length){a.dP+=sp*b[1]/tot;const yv=i=>Object.values(TER[G[i].terrain].y).reduce((x,y)=>x+y,0)+(R[i].capital?1:0)-(front.includes(i)?.5:0);dv.sort((x,y)=>yv(y)-yv(x));
+  // liman yalnız sıradaki gelişimden daha iyi getiri/bedel oranındaysa önce kurulur (gelişim sırası değişmez: ölçümle, oran sıralaması rakip gelirini hızlandırıyordu)
+  const tm=S.ai[f].per==='tuccar'?1.5:1,c0=dv.length?25*((R[dv[0]].dev||0)+1)**1.5:Infinity;
+  if(pc.length){const pq=pc.map(i=>({i,c:aiPortCost(portLv(i)),g:SEA.ai.y*(natPort(i)?SEA.nat:1)*tm})).sort((x,y)=>y.g/y.c-x.g/x.c||x.i-y.i);
+   for(const x of pq){if(x.g/x.c<=2.5/c0||a.dP<x.c)break;a.dP-=x.c;portOf(x.i).lv++}}
   for(const i of dv){const c=25*((R[i].dev||0)+1)**1.5;if(a.dP<c)break;a.dP-=c;R[i].dev=(R[i].dev||0)+1}}else arm+=sp*b[1]/tot;
  const fc=P.fort[1]+(aiDyn(f)==='kartal'?1:0),fs=front.filter(i=>R[i].fort<fc);
  if(fs.length){a.sP+=sp*b[3]/tot;const th=i=>G[i].adj.reduce((s,j)=>s+(aiHostile(f,R[j].owner)?R[j].troops:0),0)+(R[i].capital?20:0);const t=fs.reduce((x,y)=>th(y)>th(x)?y:x);const c=20*(R[t].fort+1);if(a.sP>=c&&th(t)>0){a.sP-=c;R[t].fort++}}else arm+=sp*b[3]/tot;
@@ -2826,14 +2955,14 @@ function mirBack(){const b=MIR_BACK;MIR_BACK=null;if(b==='over'&&S&&S.over)after
 
 // ---- İkon kimlikleri (docs/gorsel-dil.md §7.3). e (emoji) alanları paylaşım metni ve günlük için kalır ----
 {const set=(T,m)=>{for(const k in m)if(T[k])T[k].i=m[k]};RES.forEach(r=>r.i=r.k);
- set(FIELD,{tarla:'tarla',kereste:'kereste',tasocagi:'tasocagi',demir:'demirmaden',pazar:'pazar',medrese:'medrese'});
+ set(FIELD,{tarla:'tarla',kereste:'kereste',tasocagi:'tasocagi',demir:'demirmaden',pazar:'pazar',medrese:'medrese',balik:'liman'});
  set(UNITS,{piy:'piyade',okc:'okcu',suv:'suvari',kus:'kusatma',yen:'yeniceri'});
  BR.forEach(b=>b.i={sal:'saldiri',sav:'asker',kus:'kusatma',eko:'tahil',ure:'kisla',str:'goz'}[b.id]);
  for(const k in DYN)DYN[k].i='d-'+k;
  set(MUTS,{kitlik:'tahil',erken:'saldiri',kabile:'nufus',sur:'sur',parali:'altin',altincag:'kupa',bereket:'verimli',demirsiz:'demir',veba:'olum',sis:'goz',kanli:'olum',baris:'ateskes',ittifak:'koalisyon',surgun:'sancak'});
  set(MAPTYPES,{kita:'harita',vadi:'nehir',dag:'gecit',korfez:'liman'});for(const k in VIC)VIC[k].i='v-'+k;
  set(BONUS,{hazine:'ganimet',ciftci:'tarla',muhafiz:'asker',haritaci:'harita',kisla:'kisla'});for(const k in COS)COS[k].i='sancak';
- const EI={E01:'altin',E02:'tahil',E03:'tahil',E04:'moral',E05:'olum',E06:'ateskes',E07:'nufus',E08:'bilgi',E09:'sur',E10:'suvari',E11:'olay',E12:'demirmaden',E13:'vasal',E14:'piyade',E15:'moral',E16:'baskent',E17:'uyari',E18:'yagma',S3:'vasal'};
+ const EI={E01:'altin',E02:'tahil',E03:'tahil',E04:'moral',E05:'olum',E06:'ateskes',E07:'nufus',E08:'bilgi',E09:'sur',E10:'suvari',E11:'olay',E12:'demirmaden',E13:'vasal',E14:'piyade',E15:'moral',E16:'baskent',E17:'uyari',E18:'yagma',E19:'liman',S3:'vasal'};
  EVENTS.forEach(E=>E.i=EI[E.id]||'olay')}
 // ======================= KATMAN: SAHİPLİK (§8.1) =======================
 const OVL=document.createElement('canvas');OVL.width=W;OVL.height=H;const octx=OVL.getContext('2d');let ovImg=null;
@@ -3207,9 +3336,9 @@ function pRegion(){const i=ui.sel;let h='';
  h+=`<div class=rh>${emb(r.owner,'md',facName(r.owner))}<h2>${g.name}${r.capital?' ★':''}</h2></div><div class=muted>${TER[g.terrain].ad} · ${facName(r.owner)}${persTag(r.owner)}${isVas(r.owner)?' · ⛓ vasalın':''}${truceOn(r.owner)?` · <span class=good>🤝 ateşkes (${S.truce[r.owner]-S.turn} yıl)</span>`:''}${r.raid>S.turn?' · <span class=bad>🏇 yağmalandı</span>':''}</div>
  ${g.feat?`<div class=feat><b>${FEAT[g.feat].ad}</b> — ${FEAT[g.feat].d}</div>`:''}
  <div class=stats><div><span>Asker</span><b>${vis(i).txt}</b>${mine?`<small>hazır ${r.ready}</small>`:''}</div><div><span>Nüfus</span><b>${fl(r.pop)}</b><small>/ ${mx}${mine?` · +${r1(popGrowth(i))}/yıl`:''}</small></div><div><span>Savunma</span><b>×${defMult(i,0).toFixed(2)}</b><small>sur ${r.fort}</small></div></div>`;
- if(mine){const tabs=[['genel','Genel'],['tesis',`Tesisler ${r.fields.length}/${slots(i)}`],['asker','Asker'],['sur','Savunma']];
-  h+=`<div class=sub>${tabs.map(([k,a])=>`<button class="${ui.rtab===k?'on':''}" onclick="setRTab('${k}')">${a}</button>`).join('')}</div>`;
-  h+=({genel:rgGenel,tesis:rgTesis,asker:rgAsker,sur:rgSur})[ui.rtab](i)}
+ if(mine){const tabs=[['genel','Genel'],['tesis',`Tesisler ${r.fields.length}/${slots(i)}`],['asker','Asker'],['sur','Savunma']];if(G3()&&isCoast(i))tabs.push(['liman','Liman']);const tk=tabs.some(x=>x[0]===ui.rtab)?ui.rtab:'genel';
+  h+=`<div class=sub>${tabs.map(([k,a])=>`<button class="${tk===k?'on':''}" onclick="setRTab('${k}')">${a}</button>`).join('')}</div>`;
+  h+=({genel:rgGenel,tesis:rgTesis,asker:rgAsker,sur:rgSur,liman:rgLiman})[tk](i)}
  else h+=rgGenel(i);
  return h}
 function rgGenel(i){const g=MAP.regions[i],r=S.regions[i],mine=r.owner===0;let h=`<div class=kv style="margin-top:8px"><span>Birlikler</span><span>${mine||mil().spy?compTxt(r.u):'bileşim bilinmiyor'}</span></div>`;
@@ -3221,6 +3350,8 @@ function rgGenel(i){const g=MAP.regions[i],r=S.regions[i],mine=r.owner===0;let h
    if(u){const p=riotP(i);h+=`<div class="card" style="margin:6px 0"><b>🔥 ${TX.unrT}</b><div class=unrb role=img aria-label="${TX.unrT} ${u}/14"><span class=unrf style="width:${Math.round(Math.min(100,u/14*100))}%"></span></div><small>${TX.unrTxt(u,Math.round(huzur(i)*100))}</small><small class="${p?'bad':'good'}">${TX.garr(garrHave(i),garrNeed(i),p?r1(p*100):0)}${garrHave(i)>=2*garrNeed(i)?' · bastırma: 2 yıl/yıl':''}</small><small class=muted>${TX.unrNo}</small></div>`}
    h+=`<div class=kv><span>🏚️ ${TX.tasraT}</span><span class="${t<1?'bad':''}">${d>=99?'—':TX.tasraTxt(Math.round(t*100),d)}</span></div>`}
   if(wf<1)h+=`<div class=warn>Nüfus azami değerin yarısının altında. Tesisler tam kapasite çalışmıyor. Asker almayı yavaşlat ya da tahıl stoğunu koru ki nüfus büyüsün.</div>`}
+ if(G3()&&isCoast(i)){const pl=portLv(i);if(mine)h+=`<div class=kv><span>${ic('liman')} Liman</span><span>${pl?`${PORT[pl].ad} · gemi ${portUsed(i)}/${portCap(i)}`:'yok'} · <button type=button class=lnk onclick="setRTab('liman')">Liman ›</button></span></div>`;
+  else if(pl)h+=`<div class=kv><span>${ic('liman')} Liman Sv.${pl}</span><span>${isAI(r.owner)?`ele geçirirsen filo ganimeti +${SEA.lootLv*pl} 🪙 · liman Sv.${pl-1}'e düşer`:''}</span></div>`}
  const parts=mine?prodParts(i):prodParts(i).filter(p=>!p[0].startsWith('★'));
  h+=`<h4>${mine?'Yıllık üretim':'Ele geçirirsen üretir'}</h4><table>${parts.map(([s,k,v])=>`<tr><td>${s}</td><td>${RM[k].e} ${RM[k].ad}</td><td class=pos>${sgn(v)}</td></tr>`).join('')||'<tr><td class=muted>Üretim yok</td></tr>'}</table>`;
  h+=`<h4>Savunma çarpanı</h4>${defParts(i,0).map(([k,v])=>`<div class=kv><span>${k}</span><span>+${pct(v)}</span></div>`).join('')||'<p class=muted style="margin:0">Ek savunma yok.</p>'}`;
@@ -3240,12 +3371,12 @@ function rgTesis(i){const r=S.regions[i],M=mil(),sl=slots(i),un=unrOf(i);
  r.fields.forEach((f,k)=>{const F=FIELD[f.t];let act;
   if(f.lv>=5)act='<span class=ok>Azami</span>';else if(f.lv>=M.maxField){const q=fieldReq(f.lv+1+baseMil(S.tech).maxField-M.maxField)||['eko',1];act=`<small class=muted>🔒 ${q[1]<=4?techName(q[0],q[1]):'Azami'}</small>`}
   else{const c=upFieldCost(f),ok=canPay(c)&&!un;act=`<button class="btn sm ${ok?'primary':''}" ${ok?'':'disabled'} onclick="upgradeField(${i},${k})">⬆ ${costTxt(c)}</button>`}
-  h+=`<div class=card style="margin-bottom:8px"><div class=rh style="justify-content:space-between"><span>${ic(F.i)} <b>${F.ad}</b> ${lvDots(f.lv)}</span>${act}</div>
+  h+=`<div class=card style="margin-bottom:8px"><div class=rh style="justify-content:space-between"><span>${ic(F.i)} <b>${fieldAd(i,f.t)}</b> ${lvDots(f.lv)}</span>${act}</div>
   <small>${RM[F.r].e} Şimdi <b>+${r1(fieldOut(i,f))}</b>/yıl${f.lv<5?` → Sv.${f.lv+1}: <b class=pos>+${r1(fieldOut(i,f,f.lv+1))}</b>`:''} · verim ${pct(fieldEff(i,f.t))}</small><small class=muted>⚔ ${F.ask}</small></div>`});
  h+=`<h4>Yeni tesis kur (${r.fields.length}/${sl})</h4>`;
  if(r.fields.length>=sl)h+=`<p class=muted>${TX.slotsFull}</p>`;
- else for(const[k,F]of Object.entries(FIELD)){const c=newFieldCost(k),eff=fieldEff(i,k);
-  h+=`<div class=item><div>${ic(F.i)} <b>${F.ad}</b><small>${RM[F.r].e} +${r1(fieldOut(i,{t:k,lv:1}))}/yıl · <span class="${eff>=1.3?'good':eff<.8?'bad':''}">verim ${pct(eff)}</span></small></div><button class="btn sm" ${canPay(c)&&!un?'':'disabled'} onclick="buildField(${i},'${k}')">${costTxt(c)}</button></div>`}
+ else for(const[k,F]of Object.entries(FIELD)){if(!fieldOk(i,k))continue;const c=newFieldCost(k),eff=fieldEff(i,k);
+  h+=`<div class=item><div>${ic(F.i)} <b>${fieldAd(i,k)}</b><small>${RM[F.r].e} +${r1(fieldOut(i,{t:k,lv:1}))}/yıl · <span class="${eff>=1.3?'good':eff<.8?'bad':''}">verim ${pct(eff)}</span></small></div><button class="btn sm" ${canPay(c)&&!un?'':'disabled'} onclick="buildField(${i},'${k}')">${costTxt(c)}</button></div>`}
  if(G1()){const a=r.amb||0,c=ambCost(i);h+=`<h4>🏚️ ${TX.ambT} ${lvDots(a,BRK.ambMax)}</h4><p class=muted style="font-size:var(--t-xs);margin:0 0 6px">${TX.ambD} Ülkede ${ambLv()} Sv. · tavan ${fl(stockCap('tahil'))}.</p>${a<BRK.ambMax?`<button class="btn sm ${canPay(c)?'primary':''}" ${canPay(c)?'':'disabled'} onclick="buildAmbar(${i})">🏗 Ambar Sv.${a+1} · ${costTxt(c)}</button>`:'<span class=ok>Azami</span>'}`}
  return h}
 function rgAsker(i){const r=S.regions[i],M=mil();
@@ -3266,6 +3397,30 @@ function rgAsker(i){const r=S.regions[i],M=mil();
   <small class=muted>${U.d}</small><small>${costTxt(c)} · 👥${U.pop} · bakım ×${U.up}</small>${un&&G1()?eqRecTxt(k):''}
   ${!un?`<small class=muted>🔒 ${MIL[um].ad} gerekli</small>`:mx>0?`<div class=rec><input type=range id=rc${k} min=1 max=${mx} value=${mx} oninput="$('#rv${k}').textContent=this.value"><b id=rv${k} style="min-width:24px">${mx}</b><button class="btn primary sm" onclick="recruit(${i},'${k}',+$('#rc${k}').value)">Topla</button></div>`:`<small class=muted>${left<U.w?'Bu turun kapasitesi doldu.':draftable(i)<U.pop?'Askere alınabilir nüfus yok.':G1()&&eqCap(k)<1?'Donanım yok.':'Yetersiz kaynak.'}</small>`}</div>`}
  return h}
+// G3: Bölge › Liman: ülke ticaret özeti, liman seviyesi ve gemi yerleri, tersane ve tezgâh, gemi siparişi (marjinal getiri), limandaki gemiler, korsan riski
+function rgLiman(i){const p=portOf(i),un=unrOf(i),e=economy(),tr=e.trade||tradeInfo(0),cap=portCap(i),used=portUsed(i),nat=natPort(i);
+ let h=`<p class=muted style="font-size:var(--t-xs);margin-top:0">${TX.seaD}</p>`;
+ if(un)h+=`<div class=warn>${ic('uyari')}<span>${TX.unrT}: liman kurulmaz, tezgâh durur, ticaret ×0,5.</span></div>`;
+ h+=`<div class=card style="margin-bottom:8px" data-tip="${esc(TX.tradeTip)}"><b>${ic('liman')} ${TX.tradeT}: <span class=pos>+${r1(tr.v)}</span> 🪙/yıl</b><small>tavan ${r1(tr.cap)} · doygunluk %${Math.round(tr.sat*100)} · ${tr.n} gemi, ${tr.Y} yük · ${tr.ports} liman kenti${tr.bilgi?` · +${tr.bilgi} 📜`:''}</small>${tr.blk.length?`<small class=bad>Abluka: ${tr.blk.map(f=>esc(facName(f))).join(', ')}</small>`:''}${tr.pir.length?`<small class=bad>Korsan baskını: ${tr.pir.map(rName).join(', ')}</small>`:''}${tr.n&&tr.raw>tr.cap+.05?`<small class=warnt>${ic('uyari')} Tavana dayandı: yeni gemi ticareti artırmaz. Ticaret dışı altını (Pazar Yeri) büyüt.</small>`:''}</div>`;
+ const nx=p.lv+1;let up;
+ if(p.lv>=4)up='<span class=ok>Azami</span>';else if(!portReqOk(nx))up=`<small class=muted>${ic('kilit')} ${techName(PORT[nx].req[0],PORT[nx].req[1])}</small>`;
+ else{const c=portCost(i,nx),ok=canPay(c)&&!un;up=`<button class="btn sm ${ok?'primary':''}" ${ok?'':'disabled'} onclick="buildPort(${i})" aria-label="${p.lv?'Limanı Sv.'+nx+'\'e yükselt':'İskele kur'}">${p.lv?'⬆':'🏗'} ${costTxt(c)}</button>`}
+ h+=`<h4>${ic('liman')} Liman ${lvDots(p.lv,4)}</h4><div class=card style="margin-bottom:8px"><div class=rh style="justify-content:space-between"><span><b>${p.lv?PORT[p.lv].ad:'Liman yok'}</b>${nat?' <small class=good>doğal liman</small>':''}</span>${up}</div>
+ <small>Gemi yeri <b>${used}/${cap}</b>${p.lv<4?` · Sv.${nx} ${PORT[nx].ad}: ${PORT[nx].cap+(nat?SEA.natCap:0)} yer`:''}</small>${cap?`<div class=unrb role=img aria-label="Gemi yeri ${used}/${cap}"><span class=unrf style="width:${Math.round(Math.min(1,used/cap)*100)}%;background:var(--brand)"></span></div>`:''}${nat?'<small class=muted>Doğal liman: İskele yarı fiyata, +2 gemi yeri, ticaret ×1,15.</small>':''}</div>`;
+ if(!p.lv)return h;
+ const ny=p.yard+1;let yu;if(p.yard>=4)yu='<span class=ok>Azami</span>';else if(ny>p.lv)yu=`<small class=muted>${ic('kilit')} Liman Sv.${ny}</small>`;
+ else{const c=yardCost(ny),ok=canPay(c)&&!un;yu=`<button class="btn sm ${ok?'primary':''}" ${ok?'':'disabled'} onclick="upYard(${i})" aria-label="Tersane Sv.${ny} kur">${p.yard?'⬆':'🏗'} ${costTxt(c)}</button>`}
+ h+=`<h4>${ic('kereste')} Tersane ${lvDots(p.yard,4)}</h4><div class=card style="margin-bottom:8px"><div class=rh style="justify-content:space-between"><span><b>${p.yard?YARD[p.yard].ad:'Tersane yok'}</b>${ny<=4?` <small class=muted>Sv.${ny}: ${SHIPS[SHK[ny-1]].ad}</small>`:''}</span>${yu}</div>
+ <small class=muted>${p.yard?`👥 işçi ${YARD[p.yard].work} (yapım sürerken) · ücret ${costTxt(YARD[p.yard].wage)}/yıl, boşta yarısı`:'Tersane seviyesi liman seviyesini geçemez; aynı anda bir gemi yapar.'}</small>
+ ${p.b?`<div class=rh style="justify-content:space-between;margin-top:4px"><small>Tezgâhta <b>${SHIPS[p.b.t].ad}</b> · ${p.b.left} yıl kaldı${un?' · huzursuzluk: durdu':''}</small><button class="btn sm" onclick="cancelShip(${i})" aria-label="Gemi yapımını durdur">✕ Durdur (½ iade)</button></div>`:''}</div>`;
+ if(p.yard){h+=`<h4>Gemi yap</h4>`;for(const t of SHK){const T=SHIPS[t],why=shipWhy(i,t),gn=T.yd<=p.yard?tradeGain(i,t)-T.up.altin:null;
+  h+=`<div class=item><div>${ic('liman')} <b>${T.ad}</b><small>yük ${T.Y}${T.slot>1?` · ${T.slot} yer`:''} · ${T.turns} yıl · tayfa ${T.crew} · bakım ${costTxt(T.up)}/yıl · fırtına %${r1(T.storm*100)}${T.esc?' · refakat':''}${T.bilgi?' · +1 📜':''}</small>${gn!=null?`<small class="${gn>0?'good':'bad'}">Ticarete katkı ≈ ${gn>=0?'+':''}${r1(gn)} 🪙/yıl (bakım düşülmüş)</small>`:''}${why&&why!=='Yetersiz kaynak'?`<small class=muted>${ic('kilit')} ${why}</small>`:''}</div><button class="btn sm" ${why?'disabled':''} onclick="buildShip(${i},'${t}')" aria-label="${T.ad} yap">🏗 ${costTxt(T.cost)}</button></div>`}}
+ const list=(S.ships||[]).map((s,k)=>({s,k})).filter(x=>x.s.r===i);
+ h+=`<h4>Limandaki gemiler (${list.length})</h4>`+(list.length?list.map(({s,k})=>{const T=SHIPS[s.t];return`<div class=item><div>${ic('liman')} <b>${T.ad}</b><small>yük ${T.Y} · bakım ${costTxt(T.up)}/yıl · fırtına %${r1(T.storm*100)}/yıl</small></div><button class="btn sm" onclick="sellShip(${k})" aria-label="${T.ad} sat">Sat ${costTxt(scaleC(T.cost,SEA.sell))}</button></div>`}).join(''):`<p class=muted style="margin:0">Limanda gemi yok.</p>`);
+ const pp=pirP(i);h+=`<div class=kv><span>🏴 ${TX.pirT}</span><span class="${pp?'bad':'muted'}">${pp?'%'+r1(pp*100)+'/yıl':list.length<SEA.pirN?'yok (2 gemiden az)':'yok'}${S.flags.pirImm>S.turn?` · haraç ${S.flags.pirImm-S.turn} yıl`:''}${S.flags.pirX>S.turn?' · ×1,5':''}</span></div>`;
+ return h}
+// gemi eklenirse ticaretin artışı (altın/yıl; tavan ve doygunluk dahil)
+function tradeGain(i,t){if(!G3())return 0;const e=economy(),g=e.trade?e.trade.g:0,a=tradeInfo(g).v;S.ships.push({t,r:i});const b=tradeInfo(g).v;S.ships.pop();return b-a}
 // G2: bölgenin atölyeleri (Asker sekmesi): seviye, kit/yıl, girdi, işçi, ücret, yükselt/durdur; boş yuvaya yeni atölye; 'yalnız donanımlı' ayarı
 function wsLockTxt(t,nx){const b=WS[t].br,q=[];if(nx>=3&&S.tech[b]<nx-2)q.push(techName(b,nx-2));if(nx>=3&&milTop()<nx)q.push(MIL[nx].ad);return q.join(' + ')||'Azami'}
 function rgWS(i){if(!G1())return'';const r=S.regions[i],ws=wsList(i),sl=wsSlots(i),un=unrOf(i);
@@ -3319,6 +3474,8 @@ function pEco(){const e=economy(),o=own(),M=mil(),g1=G1(),cap=k=>stockCap(k);
   h+=`<div class=kv data-tip="${esc(TX.divanTip)}"><span>${TX.divan(r1(n),n0)}</span><span class="${e.idare?'neg':'muted'}">${e.idare?'−'+r1(e.idare)+' 🪙/yıl':'yok'}${e.idare&&e.gross.altin>0?` · brüt altının %${Math.round(e.idare/e.gross.altin*100)}'i`:''}</span></div>
   <div class=kv><span>🏚️ ${TX.tasraT} (ortalama)</span><span class="${ts<.95?'bad':''}">%${Math.round(ts*100)}</span></div>
   ${(()=>{const w=e.wage||{altin:0,tahil:0},nd=wsNeed(),ws=S.stats.ws&&S.stats.ws.y===S.turn-1?S.stats.ws:null;return w.altin?`<div class=kv><span>${ic('demir')} ${TX.wsT}</span><span>ücret −${costTxt(w)}/yıl (Ordu sütununda) · kit girdisi en çok ${costTxt(nd)}/yıl${ws?` · geçen yıl ${fl(ws.kilic+ws.yay+ws.zirh)} kit${ws.re?`, ${fl(ws.re)} yeniden dövme`:''}`:''}</span></div>`:''})()}
+  ${e.trade&&(e.trade.n||e.trade.ports)?`<div class=kv data-tip="${esc(TX.tradeTip)}"><span>${ic('liman')} ${TX.tradeT}</span><span class=pos>+${r1(e.trade.v)} 🪙/yıl <small class=muted>(tavan ${r1(e.trade.cap)}, doygunluk %${Math.round(e.trade.sat*100)}, ${e.trade.n} gemi${e.trade.blk.length?', abluka':''})</small></span></div>`:''}
+  ${e.sea&&(e.sea.altin||e.sea.tahil)?`<div class=kv><span>${ic('liman')} Gemi bakımı ve tersane</span><span>−${costTxt({tahil:e.sea.tahil,altin:e.sea.altin})}/yıl (Ordu sütununda)</span></div>`:''}
   <div class=kv data-tip="${esc(TX.capTip)}"><span>🌾 ${TX.capT}</span><span>${fl(cap('tahil'))} (dökme) · 🪙 ${fl(cap('altin'))} · Ambar ${ambLv()} Sv.</span></div>
   ${un.length?`<div class=kv><span>🔥 ${TX.unrT}</span><span class=bad>${un.length} bölge · ${un.map(rName).slice(0,4).join(', ')}${un.length>4?'…':''}</span></div>`:''}
   ${rot.length?`<div class=warn>${ic('uyari')}<span>${TX.rotWarn(rot.join(' '))}</span></div>`:''}`}
@@ -3450,6 +3607,7 @@ function showHelp(){const c=S?S.cfg:normCfg(CFG_KLASIK);modal(`<h3>⚔ Fetih: Na
 <p><b>Ganimet:</b> Fethettiğin bölgenin stokundan yalnızca bir pay (%30–70) ele geçer. Kalanı yangın ve yağmada zayi olur. Kayıpsız kazanmak daha çok ganimet kurtarır. Toprağın %15'i geçince savaş yorgunluğu bu payı ×0,6'ya dek düşürür.</p>
 <p><b>Büyüklüğün bedeli:</b> ${idareN0()} bölgeden sonra her yıl <b>Divan gideri</b> (altın) ödenir. Başkentten uzak bölgeler daha az üretir (taşra verimi, en az %65). Yeni fethedilen bölge <b>huzursuzdur</b>: üretimi düşük başlar, ~10 yılda düzelir; garnizon yetmezse isyan çıkabilir. Stokların bir <b>tavanı</b> var: fazlası çürür; Ambar tavanı yükseltir.</p>
 <p><b>Donanım:</b> her asker depodan bir <b>kılıç</b> (Okçu: yay) ve <b>zırh</b> kuşanır. Kitsiz asker <b>milis</b> olur: saldırısı ×0,70. Kitleri bölgelerdeki <b>atölyeler</b> döver (Bölge › Asker: Demirhane, Yayhane, Zırhhane; kademe = atölye seviyesi, Kaba demir ×1,00 → Usta işi ×1,68 saldırı, zırh savunmaya ×1,38'e kadar). Süvari kılıçsız, Yeniçeri Çelik kılıç ve Dövme zırh olmadan yetişmez. Rakipler de donanım kademesiyle savaşır (Casusluk ile görünür).</p>
+<p><b>Deniz:</b> kıyı bölgesinde <b>Liman</b> (gemi yeri 2/4/6/8, doğal limanda +2) ve <b>Tersane</b> kurulur (Bölge › Liman). Tersane Çektiri, Karamürsel, Kadırga ve Kalyon yapar; gemiler pahalıdır, tayfası nüfustan çıkar, her yıl tahıl ve altın bakımı ister, fırtınada batabilir. Gemiler <b>dış ticaret</b> altını getirir: gemi arttıkça doygunlaşır ve ticaret dışı brüt altının %60'ını geçemez (Pazar'ın yerine değil, üstüne). Savaştaki rakip komşu kıyıdaysa abluka, iki gemili limanda korsan riski var (Kadırga refakati yarıya indirir). Liman kenti düşerse gemilerin yarısı düşmana geçer. <b>Balıkhane</b> kıyıda, Nehir Vadisi'nde ve nehir kenarında tahıl üretir (Sulama ve kuraklık etkilemez). Rakipler de liman kurar ve ticaretten kazanır.</p>
 <p><b>Rakipler:</b> Rakiplerin bir hazinesi var: bölgelerinden gelir alır, ordu besler, toprak geliştirir ve donanımını yükseltir. Sen büyüdükçe birleşir ve güçlenirler; son toprakların direnişi çetindir. Vasalın bölgeleri ${VAS_LOYAL} yıllık sadakatten sonra senin sayılır; sadık vasal ilhak edilebilir.</p>
 <p><b>Hanedan ve kartlar:</b> Her hanedanın güçlü ve zayıf yanları, kural kartlarının etkileri <b>Ordu</b> sekmesinin başında ve sonunda.</p>
 <p><b>Zafer (🏆 Zafer sekmesi):</b> ⚔ <b>Fetih</b>: haritadaki bütün bölgeleri al (${c.ais.length} rakip ve bağımsız kabileler; vasalının bölgeleri senin sayılır). Rakipleri yıkmak tek başına yetmez; son bölgeler Zafer sekmesinde listelenir. 📜 <b>Medeniyet</b>: ${VIC.medeniyet.tech} teknoloji + başkentte 5 aşamalı Büyük Eser. 👑 <b>Hegemonya</b>: rakiplerin eski başkentlerinden ${SIZES[c.size].heg}'ini elinde ya da vasalının elinde ${VIC.hegemonya.hold} yıl tut. Bu ikisi oyunu kendiliğinden bitirmez: koşul sağlanınca zaferi alıp almayacağını sen seçersin (fetihe devam edersen kilometre taşı olarak kalır); Ferman olarak beyan ettiğin yol sormadan bitirir. İlk ${c.grace} yıl rakipler sana saldırmaz.${c.coalAt!=null?` Toprakların %${Math.round(c.coalAt*100)}'e ulaşınca rakipler koalisyon kurar.`:''}</p>
@@ -3553,7 +3711,7 @@ async function start(){if(!storeCheck())note('st','⚠ Tarayıcı kaydı kapalı
  $('#loading').style.display=ART?'none':'flex';if(!ART)loadMsg('FETİH');
  TT.load=false;if(ok){if(TT.on)ttMenu();else{ttSeen();resume()}}else if(ST.bad)showBad();else if(TT.on)ttMenu();else showTitle()}
 // kayıtlı seferin bekleyen penceresine dön (kuruluş, bitiş ya da ferman)
-function resume(){if(!S||!ART)return;if(S.flags&&S.flags.rulesNote){const v=S.flags.rulesNote;delete S.flags.rulesNote;note('rules',(v&1?TX.rulesNote:'')+(v===3?' ':'')+(v&2?TX.rulesNote2:''),'warn');save()}if(S.phase==='kurulus')showSetup();else if(S.over)afterModal();else showEvent()}
+function resume(){if(!S||!ART)return;if(S.flags&&S.flags.rulesNote){const v=S.flags.rulesNote;delete S.flags.rulesNote;note('rules',[v&1&&TX.rulesNote,v&2&&TX.rulesNote2,v&4&&TX.rulesNote3].filter(Boolean).join(' '),'warn');save()}if(S.phase==='kurulus')showSetup();else if(S.over)afterModal();else showEvent()}
 // ======================= BAŞLIK EKRANI / ANA MENÜ (0.11.0) =======================
 // Kayıt yoksa açılışın ilk ekranı; kayıt varsa PREF.title: 'oturum' (yalnız yeni sekme oturumunda; aynı oturumda yenileme doğrudan oyuna), 'hep', 'yok'. ☰ → Ana menü ile de açılır.
 // Oyun iskeleti arkada inert kalır; pencereler (sihirbaz, ayarlar, miras, yardım) başlığın üstünde açılır ve kapanınca başlığa dönülür. TEST kipinde hiç görünmez.

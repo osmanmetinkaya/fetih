@@ -146,4 +146,14 @@ await runSim({cfgExtra:{rules:1}})          // 0.11.0 kuralları (eşdeğerlik);
 - Telemetri `snap.eq`: `cov`/`T`/`n` (kılıç, yay, zırh), `ws`, `wsLv`, `wsMax`, `wage`; `tel.milis` (kitsiz yetişen Piyade/Okçu), `tel.recPO`.
 - Botlar G2'yi kullanır: usta bot `atolye` modülü (`P.ws`: kapsama hedefi, yükseltme önceliği, demir payı, `T.resv` ile kaynak ayırma), ref bot boş yuvaya atölye ve altın > 60 iken yükseltme (`rules 1`'de hiçbiri çalışmaz).
 
+- `baseline-v9.json`: **0.14.0 (G3)**: liman, tersane, gemi, dış ticaret, balıkçılık (`rules 2`). `rows`/`rowsOff` 12 tohum (ref bot), `det`, `eqV6` (`rules:1` → `baseline-v6` birebir), `checks`.
+- `usta-bot-v0140.md` / `.json`: G3 önce (v0.13.0, `_eski/v0130.html`; ana matris için `usta-bot-v0130.json` "after") / sonra; `sea` = `g3-analyze.py` özeti.
+
+### G3 ölçüm araçları
+- `g3-jobs.py AD [src] [all|sea]`: G2 matrisi + deniz bloğu (Kalfa × Körfez/Klasik, Kıta/Deniz Beyleri, Körfez/Deniz Beyleri × 48 tohum × usta/ref); hücre adı boy alanında `korfezD`/`kitaD`.
+- `g3-var.py AD 'ad@zorluk,..=iframe yaması' …`: usta bot varyant işleri (Klasik/Börü/Kartal × 48), kalibrasyon için (ör. `SEA.ai.max=0` rakip limanları kapalı, `window.buildPort=function(){}` oyuncu limanı kapalı).
+- `g3-analyze.py OUT.json ÖZET.json`: liman/gemi/balıkhane kuran oyun payı, t40/60/80 gemi-yük-ticaret-tavan, t50-80 ticaret ÷ brüt altın (`trShare`), tavana dayanma payı (`capHit`), batan gemi/korsan, rakip liman seviyesi.
+- Telemetri `snap.sea` (`ports`, `plv`, `yard`, `ships`, `Y`, `tr`, `cap`, `raw`, `up`, `fish`, `aiPort`) ve `tel.sea` (`seaT`, `capT`, `trShare`, `shipMax`, `fishMax`, `firstShip`, `port`, `st`: yapılan/batan/korsan/kaybedilen gemi).
+- Botlar G3'ü kullanır: usta bot `liman` modülü (`P.sea`: paket geri ödemesi = liman + tersane + gemi bedelinin değeri ÷ ticaret artışı − bakım; ilk adım; çok iyi pakette `T.saveSea` ile altın biriktirme; korsan riski ≥ %3 ise Kadırga; olay E19 seçimi), Balıkhane `ekonomi` modülünde tesis adayı; ref bot en çok 2 kıyı bölgesinde Liman → Tersane → Çektiri/Karamürsel, `wNew.balik` 1,2 (`rules 1`'de hiçbiri çalışmaz).
+
 Denge değişikliğinden sonra yeni taban çizgisi kaydedilmeli.

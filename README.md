@@ -15,6 +15,7 @@ Kurulum yok; `index.html` dosyasını tarayıcıda açman yeterli. İlerleme tar
 - **Büyük, gerçekçi harita.** Yaklaşık 55 bölge; dağlar, ormanlar, tarlalar, nehirler ve yollar tek bir rölyefe işlenmiş. Geçilmez sıradağlar, dağ geçitleri, nehirler ve köprüler savaşı belirler.
 - **Ekonomi ve nüfus.** 6 kaynağın her birinin askeri bir rolü var. Askerler nüfustan çıkar; çok asker almak üretimi düşürür. Tesisler 5 seviyeye kadar gelişir.
 - **Ordu.** Karakol → Kışla → Talimhane → Ordugâh → Harbiye; her kademe yeni bir birlik açar (piyade, okçu, süvari, kuşatma, yeniçeri). Fetihte ganimetin yalnızca bir kısmı ele geçer, kalanı zayi olur.
+- **Deniz ve ticaret.** Kıyı bölgelerinde liman ve tersane; Çektiri, Karamürsel, Kadırga ve Kalyon dış ticaretle altın getirir (tavanlı, doygunlaşan; fırtına, korsan, abluka). Kıyıda ve nehir boyunda Balıkhane.
 - **6 dallı teknoloji ağacı** (dal başına 4 kademe).
 - **Miras ve "bir oyun daha".** Her oyun sonunda miras puanı (MP) kazanırsın; hanedan, kart ve harita açarsın. Oyun sonu ekranı skor, rekor, rütbe ve ödül sırasını gösterir; tek tıkla yeni oyuna geçersin.
 - **Günlük meydan okuma** (tarihten tohum), seri, paylaşılabilir sonuç kodu ve 25 başarım.

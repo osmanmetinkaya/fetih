@@ -32,9 +32,10 @@ U.P={
  capV:2,coalCapV:2,soften:false,look:2,holdMin:.6,holdW:1,defReach:4,longReach:6,
  ev:'value',alt:'devam',
  unrG:1,ambAt:.85,                   // G1: huzursuz bölgede garnizon ≥ unrG·G; stok tavanın ambAt'ına yaklaşınca Ambar
- ws:{cov:.9,grow:.06,ups:2,ironT:1,capMil:3,surResv:true,kislaSave:true,capResv:true}  // G2: kapsama hedefi; atölye kapasitesi ≥ grow·kullanıcı; yılda en çok ups yükseltme; demir stoğu ≥ ironT yıllık kit talebi
+ ws:{cov:.9,grow:.06,ups:2,ironT:1,capMil:3,surResv:true,kislaSave:true,capResv:true},  // G2: kapsama hedefi; atölye kapasitesi ≥ grow·kullanıcı; yılda en çok ups yükseltme; demir stoğu ≥ ironT yıllık kit talebi
+ sea:{from:20,hK:1,kadAt:.03,acts:1,saveK:.5,kalyon:true}  // G3: paket geri ödemesi ≤ hK·H ise adım; korsan riski ≥ kadAt ise Kadırga; geri ödeme ≤ saveK·hK·H ise altın biriktirilir
 };
-U.order=['arastirma','ilhak','savunma','saldiri','yiginak','askerSav','kurulus','atolye','sur','ambar','ekonomi','asker'];
+U.order=['arastirma','ilhak','savunma','saldiri','yiginak','askerSav','liman','kurulus','atolye','sur','ambar','ekonomi','asker'];
 U.mods={};const h=U.h={};let CP=U.P,CT=null;   // CP: koşudaki etkin parametreler; CT: turun bağlamı (T)
 // ---- Ortak yardımcılar ----
 const clampN=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -74,6 +75,8 @@ h.req=(i,P,excl,fight)=>Math.max(h.threatRaw(i,excl,fight)*h.sf(i,P),h.g1()&&unr
 const udef=k=>{const ud=mil().unitDef;return(ud&&ud[k]||UNITS[k].def)*(typeof eqD==='function'?eqD(0,k):1)};
 // G2 (0.13.0): atölye/donanım kuralları oyunda var mı
 h.g2=()=>h.g1()&&typeof buildWS==='function';
+// G3 (0.14.0): liman/gemi/ticaret kuralları oyunda var mı
+h.g3=()=>h.g1()&&typeof buildShip==='function'&&G3();
 // i'den ayrılabilecek birlikler: kalan rawDef ≥ req olacak kadar. fromU: bütün birlikler (gelecek tur hepsi hazır), değilse yalnız hazırlar
 h.spare=(i,req,fromU)=>{const r=S.regions[i],src=fromU?r.u:r.rd,out=Z();let def=rawDef(r.u,0);
  for(const k of LEAVE){const n=src[k];if(!n)continue;const d=udef(k),c=req<=0?n:clampN(fl((def-req)/d),0,n);out[k]=c;def-=c*d}return out};
@@ -169,7 +172,7 @@ U.mods.yiginak=(T,P,st)=>{const R=S.regions,G=MAP.regions,o=own(),endG=h.isEnd(P
   for(const u of UK)free[i][u]-=A[u];h.mv(i,j,A,st)}};
 // Tesis: aday (yeni tesis ya da yükseltme) başına geri ödeme = maliyet değeri / ek üretim değeri; en kısa geri ödeme, ufuk içindeyse ve stok payı kalıyorsa
 U.mods.ekonomi=(T,P,st)=>{const H=Math.max(P.Hmin,P.H0-S.turn*P.Hdec);
- for(let n=0;n<P.fieldsPerTurn;n++){const e=economy(),R=S.regions,rA=h.reserveA(P,e)+(T.plan&&T.plan.deficit.length?20+T.plan.deficit.length*10:0)+(h.g2()?T.save||0:0),rT=h.reserveT(P,e)+.5*Math.max(0,S.res.altin-h.reserveA(P,e)),c=[],mf=mil().maxField;
+ for(let n=0;n<P.fieldsPerTurn;n++){const e=economy(),R=S.regions,rA=h.reserveA(P,e)+(T.plan&&T.plan.deficit.length?20+T.plan.deficit.length*10:0)+(h.g2()?T.save||0:0)+(T.saveSea||0),rT=h.reserveT(P,e)+.5*Math.max(0,S.res.altin-h.reserveA(P,e)),c=[],mf=mil().maxField;
   for(const i of own()){const r=R[i];if(h.g1()&&unrOf(i))continue;
    r.fields.forEach((f,k)=>{if(f.lv>=mf)return;const g=fieldOut(i,f,f.lv+1)-fieldOut(i,f);if(g<=0)return;const cost=upFieldCost(f);c.push({i,k,cost,pb:h.costV(cost,P,e)/(g*h.vRes(FIELD[f.t].r,P,e,true))})});
    if(r.fields.length<slots(i))for(const t in FIELD){const g=fieldOut(i,{t,lv:1});if(g<=0)continue;const cost=newFieldCost(t);c.push({i,t,cost,pb:(h.costV(cost,P,e)+P.slotCost)/(g*h.vRes(FIELD[t].r,P,e,true))})}}
@@ -177,7 +180,7 @@ U.mods.ekonomi=(T,P,st)=>{const H=Math.max(P.Hmin,P.H0-S.turn*P.Hdec);
   if(b.t)buildField(b.i,b.t);else upgradeField(b.i,b.k);st.acts++;st.fieldN++}};
 // Askeri kuruluş: başkent en yüksek kademeye, yığınak merkezleri hubTier'a, savunma açığı olan bölge Kışla'ya (okçu); cephe ve cepheye yakın,
 // nüfusu yeten bölgelere Karakol. Odun/taş/demir (çoğu zaman atıl) burada harcanır.
-U.mods.kurulus=(T,P,st)=>{const R=S.regions,o=own(),e=economy(),rA=h.reserveA(P,e),cap=capIdx(),pl=T.plan||{stages:[],deficit:[]};
+U.mods.kurulus=(T,P,st)=>{const R=S.regions,o=own(),e=economy(),rA=h.reserveA(P,e)+(T.saveSea||0),cap=capIdx(),pl=T.plan||{stages:[],deficit:[]};
  T.save=0;const up=(i,maxT,sv)=>{const r=R[i];const nx=r.mil+1;if(nx>Math.min(5,maxT)||S.tech.ure<MIL[nx].tech)return false;const c=milCost(nx);
   if(!canPay(c)||S.res.altin-(c.altin||0)<rA){/* biriktirme hedefi: altın dışındaki bedel hazırsa altını biriktir (alım ve otomatik üretim bekler) */if(sv&&!T.save&&(Object.keys(c).every(k=>k==='altin'||S.res[k]>=c[k])||h.g2()&&P.ws.kislaSave&&i===cap&&nx===2))T.save=(c.altin||0)+rA-S.res.altin;return false}
   upgradeMil(i);if(r.mil===nx){st.acts++;st.milN++;return true}return false};
@@ -209,6 +212,24 @@ U.mods.atolye=(T,P,st)=>{if(!h.g2())return;const R=S.regions,o=own(),e=economy()
  for(const i of cand){const ws=wsList(i);let t=null;const zOk=S.tech.sav>=1||milTop()>=2;
   if(!has.kilic||short('kilic'))t='demirhane';else if(zOk&&(!has.zirh||short('zirh')))t='zirhhane';else if(short('yay'))t='yayhane';
   if(!t)continue;const c=wsCost(t,1);if(!okC(c)||!h.resvOk(c,T)||!ironOk(c))break;const l0=ws.length;buildWS(i,t);if(wsList(i).length>l0){has[WS[t].k]++;cap[WS[t].k]+=EQ.rate[1];st.acts++;st.wsN=(st.wsN||0)+1}}};
+// G3: liman, tersane, gemi. Her kıyı bölgesi ve gemi türü için paket: eksik liman seviyeleri (yer + kapı) + eksik tersane seviyeleri + gemi bedeli;
+// getiri = gemi eklenince ticaret artışı (tavan ve doygunluk dahil; tradeGain) − bakım. Geri ödeme (değer/değer) ≤ hK·H olan en iyi paketin ilk adımı atılır
+// (liman → tersane → gemi). Doğal liman ve düşman komşusuz kıyı önce (eşitlikte); korsan riski ≥ kadAt ve kadırga yoksa Kadırga. Çok iyi paket için altın biriktirilir.
+// Balıkhane ekonomi modülünde sıradan tesis adayıdır (fieldOut > 0 olan bölgede).
+U.mods.liman=(T,P,st)=>{if(!h.g3()||S.turn<P.sea.from)return;const W=P.sea,H=Math.max(P.Hmin,P.H0-S.turn*P.Hdec)*W.hK;let acts=0;
+ for(let rep=0;rep<W.acts;rep++){const e=economy(),tr=e.trade;if(!tr)return;const rA=h.reserveA(P,e)+(T.save||0),rT=h.reserveT(P,e),vA=h.vRes('altin',P,e,true);
+  const okC=c=>canPay(c)&&h.resvOk(c,T)&&S.res.altin-(c.altin||0)>=rA&&S.res.tahil-(c.tahil||0)>=rT;let best=null;
+  for(const i of own()){if(!isCoast(i)||unrOf(i))continue;const p=portOf(i),safe=h.enemyAdj(i).length?1:0,kad=shipsAt(i).some(s=>s.t==='kadirga');
+   for(const t of SHK){const S1=SHIPS[t];if(t==='kalyon'&&!W.kalyon)continue;if(t==='kadirga'&&(kad||Math.max(pirP(i),shipsAt(i).length>=1?(DIFFS[S.cfg.diff].pir||0):0)<W.kadAt))continue;
+    let L=Math.max(p.lv,S1.yd),ok=true;while(L<=4&&portUsed(i)+S1.slot>PORT[L].cap+(natPort(i)?SEA.natCap:0))L++;if(L>4)continue;for(let q=p.lv+1;q<=L;q++)if(!portReqOk(q))ok=false;if(!ok)continue;
+    const cost={};const add=c=>{for(const k in c)cost[k]=(cost[k]||0)+c[k]};for(let q=p.lv+1;q<=L;q++)add(portCost(i,q));for(let q=p.yard+1;q<=S1.yd;q++)add(yardCost(q));add(S1.cost);
+    let g=tradeGain(i,t)*vA-h.costV(S1.up,P,e);if(t==='kadirga')g+=pirP(i)*.5*(tr.v*SEA.pirT)*vA;if(p.yard<S1.yd&&!p.yard)g-=h.costV(YARD[1].wage,P,e)*SEA.idle;if(g<=0)continue;
+    const pb=(h.costV(cost,P,e)+(S1.crew*.5))/g+safe*2-(natPort(i)?1:0);
+    if(!best||pb<best.pb)best={i,t,pb,L,cost}}}
+  if(!best||best.pb>H)return;const p=portOf(best.i),S1=SHIPS[best.t];let c,go;
+  if(p.lv<best.L){c=portCost(best.i,p.lv+1);go=()=>buildPort(best.i)}else if(p.yard<S1.yd){c=yardCost(p.yard+1);go=()=>upYard(best.i)}else if(!p.b){c=S1.cost;go=()=>buildShip(best.i,best.t)}else return;
+  if(!okC(c)){if(best.pb<=W.saveK*H&&!(T.plan&&T.plan.deficit.length)){if(Object.keys(c).every(k=>k==='altin'||S.res[k]>=c[k]))T.saveSea=Math.max(0,(c.altin||0)+h.reserveA(P,e)-S.res.altin);else h.resvSet(T,c)}return}
+  const s0=JSON.stringify(p)+S.ships.length;go();if(JSON.stringify(p)+S.ships.length===s0)return;acts++;st.acts++;st.seaN=(st.seaN||0)+1}};
 // G1: Ambar (stok tavana yaklaşınca, en güvenli bölgede: başkent ya da en iç bölge) ve vasal ilhakı (Fetih yalnız vasal toprağından ulaşılabilir kaldıysa)
 U.mods.ambar=(T,P,st)=>{if(!h.g1())return;const near=['tahil','odun','tas','demir'].some(k=>S.res[k]>stockCap(k)*P.ambAt);if(!near)return;const c=capIdx();
  const o=own().filter(i=>(S.regions[i].amb||0)<BRK.ambMax).sort((a,b)=>(b===c)-(a===c)||h.enemyAdj(a).length-h.enemyAdj(b).length);if(!o.length)return;const i=o[0];if(canPay(ambCost(i))&&h.resvOk(ambCost(i),T)){buildAmbar(i);st.acts++}};
@@ -227,7 +248,7 @@ const recruitPass=(T,P,st,defOnly)=>{const R=S.regions,G=MAP.regions,o=own(),e=e
   if(ro==='front'&&h.threatRaw(i,null)>0&&can('okc')&&S.res.odun>40&&rawDef(r.u,0)<h.threatRaw(i,null)*1.6)return'okc';return'piy'};
  const keep=i=>R[i].fields.length?P.popKeepF:P.popKeepN;
  const mr=o.filter(i=>R[i].mil>0);const pr={def:0,near:1,atk:2,front:3,ic:4};mr.sort((a,b)=>pr[role(a)]-pr[role(b)]||dS[a]-dS[b]||R[b].capital-R[a].capital);
- const sv=T.save||0;let bud=S.res.altin-h.reserveA(P,e),tah=S.res.tahil-h.reserveT(P,e),upT=e.net.tahil;
+ const sv=(T.save||0)+(T.saveSea||0);let bud=S.res.altin-h.reserveA(P,e),tah=S.res.tahil-h.reserveT(P,e),upT=e.net.tahil;
  for(const i of mr){const ro0=role(i),dr=ro0==='def'||ro0==='near';if(defOnly&&!dr)continue;const b2=dr?bud:bud-sv;if(b2<3)continue;const r=R[i],k=pick(i),U1=UNITS[k],c=unitCost(i,k);
   const popN=fl((r.pop-maxPop(i)*keep(i))/U1.pop);let n=Math.min(canRecruit(i,k),popN,fl(b2/(c.altin||1)),c.tahil?fl(tah/c.tahil):99);
   // bakım: tahıl net geliri 0'ın altına düşmesin (stok 6 tur karşılamıyorsa)
@@ -259,7 +280,8 @@ h.evPick=(q,P)=>{const E=EVM[q.id],d=q.d,ok=evOk(E,d),A=S.res.altin,e=economy(),
   case'E11':return isTgt(d.f)?(totTroops()>=1.5*aiTroops(d.f)?pick(2,1):pick(1)):pick(0,1);
   case'E12':return pick(0,1);case'E13':return pick(0,1);case'E14':return A>=60+rA?pick(0,1):pick(1);
   case'E15':{const r=S.regions[d.i];if(!r||r.owner!==0)return pick(1);const n=6+fl(r.pop*.1),dd=rawDef(r.u,0)*defMult(d.i,0);return dd>=n*1.35?pick(1,0):pick(0,1)}
-  case'E16':return pick(0,1);case'E17':return pick(0,1);case'S3':return h.vasOk(d.f)?pick(0,1):pick(1,0);
+  case'E16':return pick(0,1);case'E17':return pick(0,1);
+  case'E19':return S.ships&&S.ships.some(s=>s.t==='kadirga')?pick(1,0,2):A>=40+rA?pick(0,2):pick(2);case'S3':return h.vasOk(d.f)?pick(0,1):pick(1,0);
   default:return ok[0]}};
 // Biat kabulü Fetih'i kilitler mi: f vasal olunca kalan (vasal olmayan) bölgelerin hepsine kendi topraklarımızdan vasal/sıradağ geçmeden ulaşılabilmeli
 h.vasOk=f=>{const R=S.regions,G=MAP.regions,bad=w=>w===BLOCK||w===f||isVas(w),seen=new Set(own()),q=[...seen];
@@ -271,7 +293,7 @@ h.events=(P,st)=>{let n=0;while(S.evQ.length&&!S.over&&n<20){const q=S.evQ[0],k=
 // G1: rakip saldırıları resolve() sarmalayıcısıyla sayılır (rnd() tüketmez, sonucu değiştirmez): toplam, oyuncuya, başarılı, aynı tur aynı bölgeye 2+ saldırı (eşgüdüm)
 const telHook=()=>{const R0=window.resolve;if(R0.__tel)return;const w=function(ao,from,to,A){const d0=S.regions[to].owner,c0=S.regions[to].capital,x=R0(ao,from,to,A);const T=U.telCur;if(T&&T.hit)T.hit(ao,d0,c0,to,x);return x};w.__tel=1;window.resolve=w};
 U.tel=function(){telHook();const RS=['tahil','odun','tas','demir','altin','bilgi'],P0=MAP.playN,snap={},idle={},curve=[];let prev=S.regions.map(r=>r.owner),peak=0,peakT=0,aiPeak=0,aiPeakT=0,t50=null,lost=0,lostAfter50=0,recap=0,hazine=0,famT=0,aiTake=0;const conqT={},ser=[];
- const A={n:0,p:0,pw:0,coord:0,grp:0,cap:0,capW:0,aiCapLost:0,last:{}};let idaS=0,grS=0;
+ const A={n:0,p:0,pw:0,coord:0,grp:0,cap:0,capW:0,aiCapLost:0,last:{}};let idaS=0,grS=0;const SE={seaT:0,capT:0,trS:0,gaS:0,trAll:0,shipMax:0,fishMax:0,firstShip:null,port:null};
  RS.forEach(k=>idle[k]=[]);
  const T0={hit(ao,d0,c0,to,x){if(ao>0&&ao<NEUTRAL){A.n++;if(d0===0){A.p++;if(x.win)A.pw++;if(c0){A.cap++;if(x.win)A.capW++}const k=S.turn+':'+to;A.last[k]=(A.last[k]||0)+1;if(A.last[k]===2){A.grp++;A.coord+=2}else if(A.last[k]>2)A.coord++}}
    if(ao===0&&x.win&&c0&&isAI(d0))A.aiCapLost++},
@@ -281,15 +303,17 @@ U.tel=function(){telHook();const RS=['tahil','odun','tas','demir','altin','bilgi
    R.forEach((r,i)=>{const p=prev[i];if(p!==0&&r.owner===0)conqT[i]=t;if(p===0&&r.owner!==0){lost++;if(t50!=null)lostAfter50++;if(isAI(r.owner)){aiTake++;if(conqT[i]!=null&&t-conqT[i]<=3)recap++}}});prev=R.map(r=>r.owner);
    if(S.log.some(l=>l.t===t&&/^Hazine boş/.test(l.m)))hazine++;if(S.log.some(l=>l.t===t&&/^Kıtlık/.test(l.m)))famT++;
    const e=economy();if(t>=15&&t<=60)for(const k of RS)if(e.net[k]>.5)idle[k].push(S.res[k]/e.net[k]);idaS+=e.idare||0;grS+=e.gross.altin;
+   if(e.trade){const q=e.trade;if(q.n){SE.seaT++;if(SE.firstShip==null)SE.firstShip=t;if(q.raw>=q.cap*.98)SE.capT++}if(q.ports&&SE.port==null)SE.port=t;SE.trAll+=q.v;if(t>=50&&t<=80){SE.trS+=q.v;SE.gaS+=e.gross.altin}SE.shipMax=Math.max(SE.shipMax,q.n);SE.fishMax=Math.max(SE.fishMax,own().reduce((s,i)=>s+S.regions[i].fields.filter(f=>f.t==='balik').length,0))}
    if(t%10===0)curve.push(n);
    if(t%5===0){const at=S.cfg.ais.map(f=>aiTroops(f)),ar=S.cfg.ais.map(f=>aiRegs(f));ser.push([t,n,totTroops(),at.reduce((a,b)=>a+b,0),Math.max(0,...at),Math.max(0,...ar),+e.net.altin.toFixed(1),+e.net.tahil.toFixed(1),Math.round(RS.reduce((a,k)=>a+e.gross[k],0)),Math.round(S.res.altin),Math.round(S.res.tahil)])}
    if([20,40,60,80].includes(t))snap[t]={own:n,troops:totTroops(),res:Object.fromEntries(RS.map(k=>[k,Math.round(S.res[k])])),net:Object.fromEntries(RS.map(k=>[k,+e.net[k].toFixed(1)])),gross:Object.fromEntries(RS.map(k=>[k,+e.gross[k].toFixed(1)])),fields:own().reduce((s,i)=>s+S.regions[i].fields.length,0),flv:+(own().reduce((s,i)=>s+S.regions[i].fields.reduce((a,f)=>a+f.lv,0),0)/Math.max(1,own().reduce((s,i)=>s+S.regions[i].fields.length,0))).toFixed(2),milMax:Math.max(0,...own().map(i=>S.regions[i].mil)),tech:techCount(),morale:Math.round(S.morale),
     eq:typeof eqSummary==='function'&&S.cfg.rules!==1?(()=>{const q=eqSummary(),ws=own().flatMap(i=>S.regions[i].ws||[]);return{cov:Object.fromEntries(Object.entries(q).map(([k,v])=>[k,+v.cov.toFixed(2)])),T:Object.fromEntries(Object.entries(q).map(([k,v])=>[k,+v.T.toFixed(2)])),n:Object.fromEntries(Object.entries(q).map(([k,v])=>[k,Math.round(v.n)])),ws:ws.length,wsLv:ws.reduce((a,w)=>a+w.lv,0),wsMax:Math.max(0,...ws.map(w=>w.lv)),wage:+((e.wage&&e.wage.altin)||0).toFixed(1)}})():null,
+    sea:e.trade?(()=>{const q=e.trade,P=own().filter(i=>portLv(i)>0);return{ports:P.length,plv:P.reduce((s,i)=>s+portLv(i),0),yard:P.reduce((s,i)=>s+(S.regions[i].port.yard||0),0),ships:q.n,Y:q.Y,tr:+q.v.toFixed(1),cap:+q.cap.toFixed(1),raw:+q.raw.toFixed(1),up:e.sea?+e.sea.altin.toFixed(1):0,fish:own().reduce((s,i)=>s+S.regions[i].fields.filter(f=>f.t==='balik').length,0),aiPort:S.regions.reduce((s,r)=>s+(isAI(r.owner)&&r.port?r.port.lv:0),0)}})():null,
     idare:+(e.idare||0).toFixed(1),cap:typeof stockCap==='function'?Object.fromEntries(RS.map(k=>[k,Math.round(stockCap(k))])):null,unr:own().filter(i=>(S.regions[i].unr||0)>0).length,
     ai:S.cfg.ais.filter(f=>aliveAI(f)).map(f=>{const a=S.ai[f];return[aiRegs(f),aiTroops(f),Math.round(a.h||0),a.tier||0,+(typeof aiB==='function'?aiB(f):0).toFixed(2),typeof aiIncome==='function'&&S.cfg.rules!==1?Math.round(aiIncome(f)):null]})}},
   end(){const med=a=>{if(!a.length)return null;const b=a.slice().sort((x,y)=>x-y);return+b[fl(b.length/2)].toFixed(1)};if(U.telCur===T0)U.telCur=null;
    return{peak:+peak.toFixed(3),peakT,aiPeak:+aiPeak.toFixed(3),aiPeakT,lost,lostAfter50,recap,aiTake,hazine,famT,idle:Object.fromEntries(RS.map(k=>[k,med(idle[k])])),snap,curve,ser,rec:Object.assign({},S.stats.recruited),
-    aiA:{n:A.n,p:A.p,pw:A.pw,coord:A.coord,grp:A.grp,cap:A.cap,capW:A.capW,aiCapLost:A.aiCapLost},idaShare:grS?+(idaS/grS).toFixed(3):0,rot:S.stats.rot?Object.fromEntries(Object.entries(S.stats.rot).map(([k,v])=>[k,Math.round(v)])):null,riot:S.stats.riot||0,annex:S.stats.annex||0,milis:S.stats.milis||0,recPO:(S.stats.recruited.piy||0)+(S.stats.recruited.okc||0)}}};
+    aiA:{n:A.n,p:A.p,pw:A.pw,coord:A.coord,grp:A.grp,cap:A.cap,capW:A.capW,aiCapLost:A.aiCapLost},idaShare:grS?+(idaS/grS).toFixed(3):0,rot:S.stats.rot?Object.fromEntries(Object.entries(S.stats.rot).map(([k,v])=>[k,Math.round(v)])):null,riot:S.stats.riot||0,annex:S.stats.annex||0,milis:S.stats.milis||0,sea:{...SE,trShare:SE.gaS?+(SE.trS/SE.gaS).toFixed(3):null,st:S.stats.sea||null},recPO:(S.stats.recruited.piy||0)+(S.stats.recruited.okc||0)}}};
  U.telCur=T0;return T0};
 
 // ---- Koşu: bot2 ile aynı satır biçimi (+ usta alanları) ----
